@@ -1,108 +1,112 @@
 <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PEGA 1 PAGA 2 - RICO</title><style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui} body{background:#000;display:flex;justify-content:center}
 #game{width:100%;max-width:440px;background:#FFFBEA;min-height:100vh;display:flex;flex-direction:column}
-header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-content:space-between}
 .hud{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:8px;background:#222}
 .hud div{background:#111;border-radius:10px;padding:7px;color:#fff;text-align:center;font-size:11px} .hud b{display:block;font-size:15px}
 #palco{padding:12px;text-align:center}
-#wrap{display:flex;justify-content:center;gap:8px;align-items:end}
-#cliente{width:86px;height:86px;background:#fff;border:3px solid #111;border-radius:50%;font-size:46px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#agiota{width:115px;height:115px;background:url('agiota.png') center/contain no-repeat;transition:1s;filter:drop-shadow(0 4px 0 #111)}
-.agiota-lvl2{transform:scale(1.1);filter:brightness(1.1) drop-shadow(0 0 10px gold)} .agiota-lvl3{transform:scale(1.2);filter:drop-shadow(0 0 14px #00FF88)}
-#bubble{background:#111;color:#fff;padding:12px 14px;border-radius:14px;margin:10px auto;text-align:left;font-size:15px}
+#wrap{display:flex;justify-content:center;gap:8px}
+#cliente{width:86px;height:86px;background:#fff;border:3px solid #111;border-radius:50%;font-size:46px;display:flex;align-items:center;justify-content:center}
+#agiota{width:115px;height:115px;background:url('agiota.png') center/contain no-repeat;filter:drop-shadow(0 4px 0 #111)}
+#bubble{background:#111;color:#fff;padding:12px;border-radius:14px;margin:10px auto;text-align:left;font-size:14px}
 #info{background:#fff;border:2.5px solid #111;border-radius:12px;padding:12px;text-align:left}
-#info h3{display:flex;justify-content:space-between;font-size:16px} #info h3 span{font-size:11px;padding:4px 8px;border-radius:20px;color:#111;font-weight:900}
 .btn{width:100%;padding:14px;border-radius:12px;border:3px solid #111;font-weight:900;font-size:14px;margin-top:8px;text-align:left;cursor:pointer}
 .verde{background:#00E676} .amarelo{background:#FFD600} .branco{background:#fff} .preto{background:#111;color:#FFD600}
 #shop{display:none;position:fixed;inset:0;background:#000c;padding:14px;z-index:20;overflow:auto} #shop .card{background:#fff;border:3px solid #111;border-radius:12px;padding:12px;margin-bottom:8px}
-</style></head><body><div id="game">
-<header><b>PEGA 1 PAGA 2 💰</b><div style="font-size:10px;color:#aaa">DIA <span id="day" style="color:#fff">1</span>/30 | LVL <span id="lvl" style="color:#FFD600">1</span></div></header>
-<div class="hud"><div>CAIXA<b id="money" style="color:#00FF88">R$100</b></div><div>FAMA<b id="fame" style="color:#FFD600">⭐1</b></div><div>VIDAS<b id="lives" style="color:#FF5252">❤️❤️❤️</b></div><div>PATRÃO<b id="patrao" style="color:#fff">MOLEQUE</b></div></div>
-<div id="palco">
-<div id="wrap"><div id="cliente">💈</div><div id="agiota"></div></div>
-<div id="bubble">...</div>
-<div id="info"><h3><span id="nome">Nego do Corte</span><span id="tag" style="background:#FF5252">ALTO</span></h3><p id="hist" style="font-size:13px;margin-top:6px;color:#333"></p><div style="display:flex;gap:6px;margin-top:8px"><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">PEDE<b id="pede" style="display:block;font-size:13px"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">VOLTA<b id="volta" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">CHANCE<b id="chance" style="display:block"></b></div></div></div>
-<div id="choices"></div>
-<div style="display:flex;gap:6px;margin-top:10px"><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="openShop()">🛒 LOJINHA</button><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="verAd()">📺 ANÚNCIO +R$100</button><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="milicia()">🚔 MILÍCIA R$400</button></div>
-<div id="log" style="font-size:11px;text-align:left;color:#666;margin-top:10px;height:70px;overflow:auto"></div>
-</div>
-<div id="shop"><h2 style="color:#FFD600;margin-bottom:10px">🛒 LOJINHA DO PATRÃO</h2>
-<div class="card"><b>👑 Boné de Patrão - R$500</b><br><small>+10% chance de pagamento, muda visual</small><br><button class="btn amarelo" onclick="comprar('bone',500)">COMPRAR</button></div>
-<div class="card"><b>🏍️ Moto da Cobrança - R$1200</b><br><small>Recupera 50% dos calotes automaticamente</small><br><button class="btn amarelo" onclick="comprar('moto',1200)">COMPRAR</button></div>
-<div class="card"><b>💎 Cordão de Ouro - R$2500</b><br><small>Fama dobra mais rápido, vira lenda</small><br><button class="btn amarelo" onclick="comprar('cordao',2500)">COMPRAR</button></div>
-<div class="card"><b>🐶 Pitbull - R$4000</b><br><small>Ninguém dá calote com medo</small><br><button class="btn amarelo" onclick="comprar('pit',4000)">COMPRAR</button></div>
-<button class="btn branco" onclick="closeShop()">FECHAR</button></div>
+#adSave{display:none;position:fixed;inset:0;background:#000e;z-index:30;padding:20px;display:flex;align-items:center;justify-content:center}
+</style></head><body><div id="game"><header><b>PEGA 1 PAGA 2 💰</b><div style="font-size:10px;color:#aaa">DIA <span id="day">1</span>/30 LVL <span id="lvl">1</span></div></header><div class="hud"><div>CAIXA<b id="money" style="color:#00FF88">R$500</b></div><div>FAMA<b id="fame" style="color:#FFD600">⭐1</b></div><div>VIDAS<b id="lives" style="color:#FF5252">❤️❤️❤️❤️❤️</b></div><div>PATRÃO<b id="patrao">MOLEQUE</b></div></div><div id="palco"><div id="wrap"><div id="cliente">💈</div><div id="agiota"></div></div><div id="bubble">...</div><div id="info"><h3><span id="nome"></span> <span id="tag" style="padding:4px 8px;border-radius:20px;font-size:11px;color:#111;font-weight:900"></span></h3><p id="hist" style="font-size:13px;margin-top:6px;color:#333"></p><div style="display:flex;gap:6px;margin-top:8px"><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">PEDE<b id="pede" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">VOLTA<b id="volta" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">CHANCE<b id="chance" style="display:block"></b></div></div></div><div id="choices"></div><div style="display:flex;gap:6px;margin-top:10px"><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="openShop()">🛒 LOJA</button><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="verAdGrana()">📺 +R$100</button><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="milicia()">🚔 VIDAS</button></div><div id="log" style="font-size:11px;text-align:left;color:#666;margin-top:10px;height:80px;overflow:auto"></div></div><div id="shop"><h2 style="color:#FFD600">🛒 LOJINHA</h2><div class="card"><b>👑 Boné R$500 +10%</b><br><button class="btn amarelo" onclick="comprar('bone',500)">COMPRAR</button></div><div class="card"><b>🏍️ Moto R$1200 recupera 50%</b><br><button class="btn amarelo" onclick="comprar('moto',1200)">COMPRAR</button></div><div class="card"><b>💎 Cordão R$2500</b><br><button class="btn amarelo" onclick="comprar('cordao',2500)">COMPRAR</button></div><div class="card"><b>🐶 Pitbull R$4000 +15%</b><br><button class="btn amarelo" onclick="comprar('pit',4000)">COMPRAR</button></div><button class="btn branco" onclick="closeShop()">FECHAR</button></div>
+<div id="adSave" style="display:none"><div style="background:#fff;border:3px solid #111;border-radius:16px;padding:20px;text-align:center;max-width:340px"><h2 style="font-size:22px">💀 TOMOU CALOTE!</h2><p id="adText" style="margin:12px 0;font-size:14px"></p><button class="btn amarelo" onclick="salvarComAnuncio()">📺 VER ANÚNCIO E NÃO PERDER NADA</button><button class="btn branco" onclick="aceitarPerda()">💸 ACEITAR PERDA (só metade)</button></div></div>
 </div>
 <script>
-let day=1,money=460,fame=3,lives=2,level=1,patrao='MOLEQUE',inventario=[];
+let day=1,money=500,fame=1,lives=5,level=1,inv=[],pendentePerda=0,pendenteVida=false;
 let usado={};
 const personagens=[
-{n:"Beto da Laje",e:"👷",r:"BAIXO",c:88,p:50,d:100,h:["Mulher no hospital, precisa remédio","Filho quebrou braço na laje","Chefe não pagou a semana"],f:["Se me ajudar hoje nunca esqueço"]},
-{n:"Tia da Coxinha",e:"👩‍🍳",r:"BAIXO",c:82,p:70,d:130,h:["Geladeira queimou, perdi tudo","Preciso comprar frango pra amanhã","Aluguel atrasou 2 meses"],f:["Minhas coxinhas sustentam 3 netos"]},
-{n:"Nego do Corte",e:"💈",r:"ALTO",c:38,p:200,d:600,h:["Máquina quebrou no dia da noiva","Devo pra distribuidora","Milícia cobrando taxa da barbearia"],f:["Se eu não pagar hoje me fecham"]},
-{n:"Jéssica Nail",e:"💅",r:"MÉDIO",c:62,p:90,d:200,h:["Cliente grande quer unhas de gel","Meu kit acabou no meio","Insta dela bomba, pode me indicar"],f:["Se bombar te marco nos stories"]},
-{n:"Magrão da 12",e:"😎",r:"MÉDIO",c:55,p:120,d:300,h:["Baile da favela vai lotar","Preciso de bebida pra vender","Já vendi 50 ingressos"],f:["Vai voltar triplo, confia pai"]},
-{n:"Kevin da Bike",e:"🚲",r:"MÉDIO",c:60,p:100,d:220,h:["Corrente da bike arrebentou","Tenho 20 entregas hoje","Se não trabalhar não como"],f:["Hoje faço R$300 no iFood"]},
-{n:"Dona Cida do Bolo",e:"🎂",r:"BAIXO",c:85,p:60,d:110,h:["Encomenda de casamento gigante","Falta comprar chantilly","Noiva paga amanhã"],f:["Faço bolo há 20 anos, nunca dei calote"]},
-{n:"DJ Nego R",e:"🎧",r:"ALTO",c:40,p:250,d:700,h:["Caixa de som queimou","Festa de 15 anos amanhã","Família rica vai pagar bem"],f:["Se tocar lá me chamam pra mais 5"]},
-{n:"Pastor Isac",e:"🙏",r:"BAIXO",c:90,p:60,d:90,h:["Igreja precisa de cadeiras","Fiel prometeu dízimo","Deus vai te abençoar em dobro"],f:["Não é lucro, é bênção"]},
-{n:"MC Livinha",e:"🎤",r:"ALTO",c:35,p:180,d:600,h:["Preciso gravar clipe","Produtor famoso me chamou","Se estourar te pago no palco"],f:["Imagina seu nome na música?"]},
-{n:"Seu Jorge Mecânico",e:"🔧",r:"MÉDIO",c:58,p:150,d:320,h:["Ferramenta cara quebrou","Carro de cliente na oficina","Se não consertar perco cliente"],f:["Tenho a oficina há 12 anos"]},
-{n:"Marlene da Marmita",e:"🍱",r:"BAIXO",c:80,p:80,d:150,h:["Panela furou","Preciso entregar 30 marmitas","Empresa paga na sexta"],f:["Minhas marmitas sustentam a comunidade"]},
-{n:"Léo da Adega",e:"🍺",r:"MÉDIO",c:50,p:200,d:500,h:["Cerveja acabou no fds","Final do Flamengo lota","Lucro certo no sábado"],f:["Sábado vendo tudo e te pago"]},
-{n:"Bruna Trança",e:"💇‍♀️",r:"MÉDIO",c:65,p:110,d:250,h:["Cabelo da noiva amanhã","Falta comprar aplique","Noiva é influencer"],f:["Ela me indica pra 10 amigas"]},
-{n:"Toninho da Lotação",e:"🚐",r:"ALTO",c:42,p:300,d:800,h:["Van quebrou na subida","Preciso pagar guincho","Amanhã tem 40 passageiros"],f:["Rota lota todo dia, lucro garantido"]}
+{n:"Beto da Laje",e:"👷",r:"BAIXO",c:88,p:50,d:100,h:["Mulher no hospital","Filho quebrou braço","Chefe não pagou"],f:["Nunca esqueço"]},
+{n:"Tia Coxinha",e:"👩‍🍳",r:"BAIXO",c:82,p:70,d:130,h:["Geladeira queimou","Preciso frango","Aluguel atrasado"],f:["Sustento 3 netos"]},
+{n:"Nego do Corte",e:"💈",r:"ALTO",c:38,p:200,d:600,h:["Máquina quebrou","Devo distribuidora","Milícia cobra"],f:["Me fecham hoje"]},
+{n:"Jéssica Nail",e:"💅",r:"MÉDIO",c:62,p:90,d:200,h:["Cliente grande","Kit acabou","Insta bomba"],f:["Te marco nos stories"]},
+{n:"Magrão 12",e:"😎",r:"MÉDIO",c:55,p:120,d:300,h:["Baile vai lotar","Preciso bebida","Vendi 50 ingressos"],f:["Volta triplo"]},
+{n:"Kevin Bike",e:"🚲",r:"MÉDIO",c:60,p:100,d:220,h:["Corrente quebrou","20 entregas","Sem trampo não como"],f:["Faço R$300 hoje"]},
+{n:"Dona Cida",e:"🎂",r:"BAIXO",c:85,p:60,d:110,h:["Bolo casamento","Falta chantilly","Noiva paga amanhã"],f:["20 anos sem calote"]},
+{n:"DJ Nego R",e:"🎧",r:"ALTO",c:40,p:250,d:700,h:["Caixa queimou","Festa 15 anos","Família rica"],f:["Me chamam pra mais 5 festas"]},
+{n:"Pastor Isac",e:"🙏",r:"BAIXO",c:90,p:60,d:90,h:["Cadeiras igreja","Dízimo fiel","Deus abençoa"],f:["É bênção"]},
+{n:"MC Livinha",e:"🎤",r:"ALTO",c:35,p:180,d:600,h:["Gravar clipe","Produtor famoso","Se estourar pago no palco"],f:["Seu nome na música"]},
+{n:"Seu Jorge",e:"🔧",r:"MÉDIO",c:58,p:150,d:320,h:["Ferramenta quebrou","Carro na oficina","Perco cliente"],f:["12 anos de oficina"]},
+{n:"Marlene Marmita",e:"🍱",r:"BAIXO",c:80,p:80,d:150,h:["Panela furou","30 marmitas","Empresa paga sexta"],f:["Sustento comunidade"]},
+{n:"Léo Adega",e:"🍺",r:"MÉDIO",c:50,p:200,d:500,h:["Cerveja acabou","Final Flamengo","Lucro sábado"],f:["Sábado te pago"]},
+{n:"Bruna Trança",e:"💇‍♀️",r:"MÉDIO",c:65,p:110,d:250,h:["Cabelo noiva","Falta aplique","Noiva influencer"],f:["Indica 10 amigas"]},
+{n:"Toninho Van",e:"🚐",r:"ALTO",c:42,p:300,d:800,h:["Van quebrou","Pagar guincho","40 passageiros"],f:["Rota lota"]}
 ];
-let cur, falaIdx=0;
+let cur;
 function novo(){
-let disponiveis=personagens.filter(p=>!usado[p.n] || usado[p.n]<2);
-if(disponiveis.length==0){usado={}; disponiveis=personagens}
-cur=disponiveis[Math.floor(Math.random()*disponiveis.length)];
+let disp=personagens.filter(p=>!usado[p.n]||usado[p.n]<2);
+if(disp.length==0){usado={};disp=personagens}
+cur=disp[Math.floor(Math.random()*disp.length)];
 usado[cur.n]=(usado[cur.n]||0)+1;
-falaIdx=Math.floor(Math.random()*cur.h.length);
 document.getElementById('cliente').innerText=cur.e;
 document.getElementById('nome').innerText=cur.n;
 document.getElementById('tag').innerText=cur.r;
 document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
-document.getElementById('hist').innerText=cur.h[falaIdx];
-document.getElementById('bubble').innerText=cur.n+': "'+cur.f[0]+' - '+cur.h[falaIdx]+'"';
+document.getElementById('hist').innerText=cur.h[Math.floor(Math.random()*cur.h.length)];
+document.getElementById('bubble').innerText=cur.n+': "'+cur.f[0]+'"';
 document.getElementById('pede').innerText='R$'+cur.p;
 document.getElementById('volta').innerText='R$'+cur.d;
 document.getElementById('chance').innerText=cur.c+'%';
-let div=document.getElementById('choices'); div.innerHTML='';
-[
-{t:'Emprestar',c:'verde',txt:`💸 EMPRESTAR R$${cur.p} → R$${cur.d}`,act:'normal'},
-{t:'Dobrar',c:'amarelo',txt:`🔥 DOBRAR R$${cur.p*2} → R$${cur.d*2}`,act:'dobro'},
-{t:'Negar',c:'branco',txt:'❌ NEGAR',act:'negar'},
-{t:'Juros',c:'preto',txt:`😈 JUROS ABUSIVO → R$${cur.d+150}`,act:'juros'}
-].forEach(o=>{let b=document.createElement('button'); b.className='btn '+o.c; b.innerText=o.txt; b.onclick=()=>jogar(o.act); div.appendChild(b)});
+let div=document.getElementById('choices');div.innerHTML='';
+[{t:`💸 EMPRESTAR R$${cur.p}`,c:'verde',a:'normal'},{t:`🔥 DOBRAR R$${cur.p*2}`,c:'amarelo',a:'dobro'},{t:'❌ NEGAR',c:'branco',a:'negar'},{t:`😈 JUROS R$${cur.d+150}`,c:'preto',a:'juros'}].forEach(o=>{
+let b=document.createElement('button');b.className='btn '+o.c;b.innerText=o.t;b.onclick=()=>jogar(o.a);div.appendChild(b)
+});
 }
 function jogar(tipo){
-if(tipo=='negar'){log('Negou '+cur.n); day++; check(); novo(); return}
-let chance=cur.c, pede=cur.p, devolve=cur.d;
-if(tipo=='dobro'){pede*=2; devolve*=2; chance-=12}
-if(tipo=='juros'){devolve+=150; chance-=22}
-if(inventario.includes('bone')) chance+=10;
-if(inventario.includes('pit')) chance+=15;
-let pagou=Math.random()*100 < chance;
-if(pagou){money+=devolve-pede; fame++; log('✅ '+cur.n+' PAGOU R$'+devolve);}else{money-=pede; lives--; if(inventario.includes('moto')){money+=pede*0.5; log('🏍️ Moto recuperou metade');} log('💀 CALOTE '+cur.n+' -R$'+pede);}
-day++; check(); if(lives>0 && money>0) novo();
+if(tipo=='negar'){log('Negou '+cur.n);day++;check();novo();return}
+let ch=cur.c,pe=cur.p,de=cur.d;
+if(tipo=='dobro'){pe*=2;de*=2;ch-=12}
+if(tipo=='juros'){de+=150;ch-=22}
+if(inv.includes('bone')) ch+=10;
+if(inv.includes('pit')) ch+=15;
+let pagou=Math.random()*100 < ch;
+if(pagou){
+money+=de-pe;fame++;
+log('✅ '+cur.n+' PAGOU R$'+de);
+day++;check();novo();
+}else{
+pendentePerda=Math.floor(pe*0.5);
+document.getElementById('adText').innerText=cur.n+' ia te dar calote de R$'+pe+'. Você perderia R$'+pendentePerda+' e 1 vida. Quer ver anúncio pra não perder NADA?';
+document.getElementById('adSave').style.display='flex';
+}
+}
+function salvarComAnuncio(){
+document.getElementById('adSave').style.display='none';
+// simula anúncio
+log('📺 Anúncio visto! '+cur.n+' foi cobrado e pagou!');
+money+=0; // não perde nada
+fame++;
+document.getElementById('adSave').style.display='none';
+day++;check();novo();
+}
+function aceitarPerda(){
+document.getElementById('adSave').style.display='none';
+money-=pendentePerda;lives--;
+if(inv.includes('moto')){let recup=Math.floor(pendentePerda*0.5);money+=recup;log('🏍️ Moto recuperou R$'+recup);}
+log('💀 CALOTE '+cur.n+' perdeu R$'+pendentePerda);
+pendentePerda=0;
+day++;check();novo();
 }
 function check(){
-document.getElementById('day').innerText=day; document.getElementById('money').innerText='R$'+money;
-document.getElementById('fame').innerText='⭐'+fame; document.getElementById('lives').innerText='❤️'.repeat(lives);
-let ag=document.getElementById('agiota');
-if(money>=5000 && money<15000){patrao='PATRÃO'; level=2; ag.className='agiota-lvl2'; document.getElementById('patrao').innerText='PATRÃO';}
-if(money>=15000 && money<30000){patrao='DONO'; level=3; ag.className='agiota-lvl3';}
-if(money>=30000){alert('🏆 VOCÊ ZEROU! R$30k! Virou Rei da Quebrada!'); day=1; money=100; location.reload()}
-document.getElementById('lvl').innerText=level;
-if(day>30||lives<=0||money<=0){alert('Faliu! Fez R$'+money); day=1; money=100; lives=3}
+document.getElementById('day').innerText=day;
+document.getElementById('money').innerText='R$'+money;
+document.getElementById('fame').innerText='⭐'+fame;
+document.getElementById('lives').innerText='❤️'.repeat(lives);
+if(money<=0){money=300;log('Pegou R$300 emprestado')}
+if(lives<=0){lives=3;money=Math.max(0,money-200);log('Comprou vidas')}
+if(day>30){alert('Fim 30 dias R$'+money);day=1;money=500;lives=5;fame=1;}
+if(money>=30000){alert('ZEROU REI DA QUEBRADA!');day=1;money=500;lives=5;fame=1;}
 }
 function openShop(){document.getElementById('shop').style.display='block'}
 function closeShop(){document.getElementById('shop').style.display='none'}
-function comprar(item,preco){if(money>=preco){money-=preco; inventario.push(item); log('Comprou '+item); check(); closeShop();}else alert('Sem grana')}
-function verAd(){money+=100; log('+R$100 anúncio'); check()}
-function milicia(){if(money>=400){money-=400; lives=3; log('Milícia paga, vidas full'); check()}else alert('Sem grana')}
+function comprar(i,p){if(money>=p){money-=p;inv.push(i);log('Comprou '+i);check();closeShop();}else alert('Sem grana')}
+function verAdGrana(){money+=100;log('+R$100 anúncio');check()}
+function milicia(){if(money>=300){money-=300;lives=5;log('Vidas full');check()}else alert('Precisa R$300')}
 function log(t){document.getElementById('log').innerHTML='> '+t+'<br>'+document.getElementById('log').innerHTML}
-novo(); check();
+novo();check();
 </script></body></html>
