@@ -1,64 +1,49 @@
-const clients = ["Seu João","Dona Maria","Marcos","Ana","Pedrão","Cléber"]
-let day=1, money=0, lives=3, currentFiado=0, currentClient=""
-let adsRemoved = false
+const clients = [
+  {nome:"Dona Maria", emoji:"👵", fala:["Meu filho, anota aí...", "Pago dia 5 sem falta!"], chanceCalote:0.1},
+  {nome:"Seu João", emoji:"👨‍🌾", fala:["Anota aí patrão", "Tô sem nada hoje"], chanceCalote:0.7},
+  {nome:"Cléber", emoji:"😎", fala:["Confia!", "Depois te pago com juros"], chanceCalote:0.5},
+]
+let day=1, money=0, lives=3, current=null, streak=0
 
 function newClient(){
-  currentClient = clients[Math.floor(Math.random()*clients.length)]
-  currentFiado = [20,35,50,80,120,150][Math.floor(Math.random()*6)]
-  document.getElementById('clientName').innerText = currentClient
-  document.getElementById('fiadoValue').innerText = "???"
-  document.getElementById('bubble').innerText = `${currentClient}: "Anota R$ ${currentFiado} aí pra mim?"`
+  current = clients[Math.floor(Math.random()*clients.length)]
+  current.fiado = [20,50,90,150][Math.floor(Math.random()*4)]
+  document.getElementById('client').innerText=current.emoji
+  document.getElementById('clientName').innerText=current.nome
+  document.getElementById('bubble').innerText=`"${current.fala[0]} R$ ${current.fiado}"`
+  
   setTimeout(()=>{
-    document.getElementById('fiadoValue').innerText = "???"
-    document.getElementById('bubble').innerText = `Quanto que ${currentClient} fiou?`
-    const choices = document.getElementById('choices')
+    document.getElementById('bubble').innerText=`Quanto ${current.nome} pediu? Se errar leva calote!`
+    const choices=document.getElementById('choices')
     choices.innerHTML=""
-    let opts = [currentFiado, currentFiado+15, currentFiado-10].sort(()=>0.5-Math.random())
+    let opts=[current.fiado, current.fiado+20, current.fiado-15].sort(()=>0.5-Math.random())
     opts.forEach(v=>{
-      const b=document.createElement('button')
-      b.innerText = `R$ ${v}`
-      b.onclick=()=>check(v)
-      choices.appendChild(b)
+      let b=document.createElement('button'); b.innerText=`R$ ${v}`
+      b.onclick=()=>check(v); choices.appendChild(b)
     })
-  }, 2000)
+  },2200)
 }
 
-function check(val){
-  if(val===currentFiado){
-    money+=currentFiado
-    document.getElementById('bubble').innerText="Boa! Pagou certinho."
+function check(v){
+  if(v===current.fiado){
+    money+=v; streak++; 
+    document.getElementById('bubble').innerText=streak>=3 ? `🔥 ${streak} SEGUIDOS!` : "Pagou certinho!"
+    if(streak%5==0) money+=50 // bônus streak
   }else{
-    lives--
-    document.getElementById('bubble').innerText=`Errou! Era R$ ${currentFiado}. Levou calote.`
+    if(Math.random() < current.chanceCalote){ money=Math.max(0,money-current.fiado); document.getElementById('bubble').innerText=`💸 CALOTE do ${current.nome}! Perdeu R$ ${current.fiado}` }
+    lives--; streak=0
   }
+  day++; 
+  if(day%6==0){ document.getElementById('bubble').innerText="😱 AGIO CHEGOU! Pague R$ 100 ou perde tudo!"; money-=100 }
   updateHUD()
-  if(lives<=0){alert(`Faliu! Fez R$ ${money} em ${day} dias`); reset()}
-  else {day++; setTimeout(newClient,1500)}
+  if(lives<=0){ alert(`Faliu com R$ ${money}. Seu recorde foi dia ${day}`); day=1;money=0;lives=3;streak=0; }
+  setTimeout(newClient,1500)
 }
-
-function updateHUD(){
-  document.getElementById('day').innerText=day
-  document.getElementById('money').innerText=money
-  document.getElementById('lives').innerText="❤️".repeat(lives)
+function updateHUD(){ 
+  document.getElementById('day').innerText=day; 
+  document.getElementById('money').innerText=money; 
+  document.getElementById('lives').innerText="❤️".repeat(lives) 
 }
+updateHUD(); newClient()
 
-function reset(){day=1;money=0;lives=3;updateHUD();newClient()}
-
-document.getElementById('btnAd').onclick=()=>{
-  if(adsRemoved) return alert("Você já tirou anúncios!")
-  // AQUI você cola seu código AdMob Rewarded
-  alert("[ANÚNCIO PREMIADO] - usuário assistiu, ganhando vida + R$10")
-  lives=Math.min(3,lives+1)
-  money+=10
-  updateHUD()
-}
-document.getElementById('btnRemoveAds').onclick=()=>{
-  // AQUI você coloca seu link de PIX ou Stripe R$4,90
-  const pixLink = prompt("Cole seu link de pagamento PIX R$4,90 ou digite OK pra simular")
-  adsRemoved=true
-  document.getElementById('btnAd').style.display="none"
-  alert("Anúncios removidos! Obrigado pelo apoio.")
-}
-
-updateHUD()
-newClient()
+document.getElementById('btnAd').onclick=()=>{ lives=3; alert("Você viu anúncio e ganhou vidas!"); updateHUD() }
