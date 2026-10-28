@@ -1,15 +1,9 @@
-*{box-sizing:border-box} body{margin:0;background:#111;display:flex;justify-content:center;font-family:system-ui, Arial}
-#game{width:100%;max-width:400px;background:#fff7d1;min-height:100vh;padding:12px}
-h1{text-align:center;margin:8px 0;font-size:28px} .sub{text-align:center;margin:0 0 10px;font-weight:800}
-#hud{display:flex;justify-content:space-between;background:#111;color:#00ff88;padding:10px 12px;border-radius:12px;font-weight:900}
-#palco{text-align:center;padding:15px 0}
-#agiota{font-size:70px;width:90px;height:90px;line-height:90px;margin:0 auto;background:#111;border-radius:50%;border:4px solid #f1c40f;animation:agiotaAnim 2.2s infinite}
-@keyframes agiotaAnim{0%{transform:translateY(0) scale(1)}20%{transform:translateY(-10px) scale(1.05)}40%{transform:translateY(0) scale(1)}50%{transform:translateX(-5px) rotate(-4deg)}55%{transform:translateX(5px) rotate(4deg)}60%{transform:translateX(-5px)}65%{transform:translateX(5px)}70%{transform:translateX(0)}100%{transform:translateY(0)}}
-#agiota.bravo{animation:bravoAnim 0.15s infinite !important; background:#e74c3c}
-@keyframes bravoAnim{0%{transform:translateX(-8px) scale(1.3)}50%{transform:translateX(8px) scale(1.3)}100%{transform:translateX(-8px) scale(1.3)}}
-#bubble{background:#111;color:#fff;padding:12px 14px;border-radius:14px;display:inline-block;margin:12px 0;max-width:90%;font-weight:700;font-size:16px}
-#cliente{font-size:55px}
-#clienteNome{margin:5px 0}
-#choices button{width:100%;padding:16px;margin:7px 0;font-size:17px;font-weight:900;border-radius:12px;border:3px solid #111;cursor:pointer}
-#btnAd{width:100%;padding:12px;background:#f1c40f;border:3px solid #111;border-radius:10px;font-weight:900;margin-top:12px}
-.foot{text-align:center;font-size:12px;opacity:.7}
+@keyframes andar {
+  0% { transform: translateX(-120px) }
+  50% { transform: translateX(120px) scaleX(1) }
+  51% { transform: translateX(120px) scaleX(-1) }
+  100% { transform: translateX(-120px) scaleX(-1) }
+}
+#agiota.andando {
+  animation: andar 3s linear infinite, agiotaAnim 0.4s infinite !important;
+}
