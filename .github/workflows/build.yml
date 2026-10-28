@@ -28,7 +28,7 @@ jobs:
           npm install @capacitor/cli@5 @capacitor/core@5 @capacitor/android@5 @capacitor-community/admob@5
 
       - name: Iniciar projeto
-        run: npx cap init "Pega1Paga2" com.guto157.estoquinho --web-dir=www --npm-client npm
+        run: npx cap init "Pega1Paga2" com.guto157.estoquinho --web-dir=www
 
       - name: Add Android
         run: npx cap add android
