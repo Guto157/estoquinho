@@ -1,65 +1,137 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pega1Paga2 - Estoquinho</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding-bottom: 80px;
-    }
-    /* SEU CONTEÚDO EXISTENTE CONTINUA AQUI - NÃO APAGUE O RESTO */
-    
-    /* BOTÃO FIXO DOWNLOAD APK */
-    #btn-baixar-apk {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #25D366;
-      color: white;
-      padding: 15px 24px;
-      border-radius: 30px;
-      font-weight: bold;
-      text-decoration: none;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 16px;
-      animation: pulse 2s infinite;
-    }
-    #btn-baixar-apk:hover {
-      background: #128C7E;
-      transform: scale(1.05);
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-      50% { box-shadow: 0 4px 20px rgba(37,211,102,0.6); }
-      100% { box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- TODO O SEU CONTEÚDO DO SITE FICA AQUI -->
-  <!-- Se você já tinha código no index.html, cola ele aqui dentro -->
-  <div id="app">
-    <h1 style="text-align:center; margin-top:50px;">Pega1Paga2</h1>
-    <p style="text-align:center;">Seu estoquinho na mão</p>
-  </div>
-
-  <!-- BOTÃO FIXO - LINK DIRETO PARA O APK QUE VOCÊ JÁ SUBIU -->
-  <a id="btn-baixar-apk" href="app.apk" download="Pega1Paga2.apk">
-    📥 Baixar APP
-  </a>
-
-  <!-- Script original do seu app -->
-  <script>
-    // Se já tinha JS, mantém aqui
-  </script>
-</body>
-</html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PEGA 1 PAGA 2 - RICO</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-565976483764863" crossorigin="anonymous"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui} body{background:#000;display:flex;justify-content:center}
+#game{width:100%;max-width:440px;background:#FFFBEA;min-height:100vh;display:flex;flex-direction:column}
+header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-content:space-between}
+.hud{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:8px;background:#222}
+.hud div{background:#111;border-radius:10px;padding:7px;color:#fff;text-align:center;font-size:11px} .hud b{display:block;font-size:15px}
+#palco{padding:12px;text-align:center}
+#wrap{display:flex;justify-content:center;gap:8px}
+#cliente{width:86px;height:86px;background:#fff;border:3px solid #111;border-radius:50%;font-size:46px;display:flex;align-items:center;justify-content:center}
+#agiota{width:115px;height:115px;background:url('agiota.png') center/contain no-repeat;filter:drop-shadow(0 4px 0 #111)}
+#bubble{background:#111;color:#fff;padding:12px;border-radius:14px;margin:10px auto;text-align:left;font-size:14px}
+#info{background:#fff;border:2.5px solid #111;border-radius:12px;padding:12px;text-align:left}
+.btn{width:100%;padding:14px;border-radius:12px;border:3px solid #111;font-weight:900;font-size:14px;margin-top:8px;text-align:left;cursor:pointer}
+.verde{background:#00E676} .amarelo{background:#FFD600} .branco{background:#fff} .preto{background:#111;color:#FFD600}
+#shop{display:none;position:fixed;inset:0;background:#000c;padding:14px;z-index:20;overflow:auto} #shop .card{background:#fff;border:3px solid #111;border-radius:12px;padding:12px;margin-bottom:8px}
+#adSave{position:fixed;inset:0;background:#000e;z-index:30;padding:20px;display:none;align-items:center;justify-content:center}
+#adModal{position:fixed;inset:0;background:#000e;z-index:40;display:none;align-items:center;justify-content:center;padding:20px}
+</style>
+<!-- IDs AdMob guardados para virar APP depois 
+APP ID: ca-app-pub-565976483764863~1718924622
+AD UNIT: ca-app-pub-565976483764863/4493969614 (bonus_100)
+-->
+</head><body><div id="game"><header><b>PEGA 1 PAGA 2 💰</b><div style="font-size:10px;color:#aaa">DIA <span id="day">1</span>/30 LVL <span id="lvl">1</span></div></header><div class="hud"><div>CAIXA<b id="money" style="color:#00FF88">R$500</b></div><div>FAMA<b id="fame" style="color:#FFD600">⭐1</b></div><div>VIDAS<b id="lives" style="color:#FF5252">❤️❤️❤️❤️❤️</b></div><div>PATRÃO<b id="patrao">MOLEQUE</b></div></div><div id="palco"><div id="wrap"><div id="cliente">💈</div><div id="agiota"></div></div><div id="bubble">...</div><div id="info"><h3><span id="nome"></span> <span id="tag" style="padding:4px 8px;border-radius:20px;font-size:11px;color:#111;font-weight:900"></span></h3><p id="hist" style="font-size:13px;margin-top:6px;color:#333"></p><div style="display:flex;gap:6px;margin-top:8px"><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">PEDE<b id="pede" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">VOLTA<b id="volta" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">CHANCE<b id="chance" style="display:block"></b></div></div></div><div id="choices"></div><div style="display:flex;gap:6px;margin-top:10px"><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="openShop()">🛒 LOJA</button><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="verAdGrana()">📺 +R$100</button><button class="btn preto" style="flex:1;padding:10px;font-size:11px" onclick="milicia()">🚔 VIDAS</button></div><div id="log" style="font-size:11px;text-align:left;color:#666;margin-top:10px;height:80px;overflow:auto"></div></div><div id="shop"><h2 style="color:#FFD600">🛒 LOJINHA</h2><div class="card"><b>👑 Boné R$500 +10%</b><br><button class="btn amarelo" onclick="comprar('bone',500)">COMPRAR</button></div><div class="card"><b>🏍️ Moto R$1200 recupera 50%</b><br><button class="btn amarelo" onclick="comprar('moto',1200)">COMPRAR</button></div><div class="card"><b>💎 Cordão R$2500</b><br><button class="btn amarelo" onclick="comprar('cordao',2500)">COMPRAR</button></div><div class="card"><b>🐶 Pitbull R$4000 +15%</b><br><button class="btn amarelo" onclick="comprar('pit',4000)">COMPRAR</button></div><button class="btn branco" onclick="closeShop()">FECHAR</button></div>
+<div id="adSave"><div style="background:#fff;border:3px solid #111;border-radius:16px;padding:20px;text-align:center;max-width:340px"><h2 style="font-size:22px">💀 TOMOU CALOTE!</h2><p id="adText" style="margin:12px 0;font-size:14px"></p><button class="btn amarelo" onclick="salvarComAnuncio()">📺 VER ANÚNCIO E NÃO PERDER NADA</button><button class="btn branco" onclick="aceitarPerda()">💸 ACEITAR PERDA (só metade)</button></div></div>
+<div id="adModal"><div style="background:#fff;border:3px solid #111;border-radius:16px;padding:20px;text-align:center;max-width:360px;width:100%"><h2>📺 ANÚNCIO</h2><p id="adTimer" style="margin:10px">Assistindo... 5s</p><div style="background:#111;min-height:120px;display:flex;align-items:center;justify-content:center;color:#FFD600;margin:10px 0;border-radius:8px">
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-565976483764863" data-ad-slot="4493969614" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+<span style="font-size:12px">Seu anúncio vai aparecer aqui quando o AdSense aprovar</span>
+</div><button id="btnClaim" class="btn verde" style="display:none" onclick="recompensaLiberada()">✅ PEGAR RECOMPENSA</button></div></div>
+</div>
+<script>
+let day=1,money=500,fame=1,lives=5,level=1,inv=[],pendentePerda=0,pendenteTipo=null;
+let usado={};
+const personagens=[
+{n:"Beto da Laje",e:"👷",r:"BAIXO",c:88,p:50,d:100,h:["Mulher no hospital","Filho quebrou braço","Chefe não pagou"],f:["Nunca esqueço"]},
+{n:"Tia Coxinha",e:"👩‍🍳",r:"BAIXO",c:82,p:70,d:130,h:["Geladeira queimou","Preciso frango","Aluguel atrasado"],f:["Sustento 3 netos"]},
+{n:"Nego do Corte",e:"💈",r:"ALTO",c:38,p:200,d:600,h:["Máquina quebrou","Devo distribuidora","Milícia cobra"],f:["Me fecham hoje"]},
+{n:"Jéssica Nail",e:"💅",r:"MÉDIO",c:62,p:90,d:200,h:["Cliente grande","Kit acabou","Insta bomba"],f:["Te marco nos stories"]},
+{n:"Magrão 12",e:"😎",r:"MÉDIO",c:55,p:120,d:300,h:["Baile vai lotar","Preciso bebida","Vendi 50 ingressos"],f:["Volta triplo"]},
+{n:"Kevin Bike",e:"🚲",r:"MÉDIO",c:60,p:100,d:220,h:["Corrente quebrou","20 entregas","Sem trampo não como"],f:["Faço R$300 hoje"]},
+{n:"Dona Cida",e:"🎂",r:"BAIXO",c:85,p:60,d:110,h:["Bolo casamento","Falta chantilly","Noiva paga amanhã"],f:["20 anos sem calote"]},
+{n:"DJ Nego R",e:"🎧",r:"ALTO",c:40,p:250,d:700,h:["Caixa queimou","Festa 15 anos","Família rica"],f:["Me chamam pra mais 5 festas"]},
+{n:"Pastor Isac",e:"🙏",r:"BAIXO",c:90,p:60,d:90,h:["Cadeiras igreja","Dízimo fiel","Deus abençoa"],f:["É bênção"]},
+{n:"MC Livinha",e:"🎤",r:"ALTO",c:35,p:180,d:600,h:["Gravar clipe","Produtor famoso","Se estourar pago no palco"],f:["Seu nome na música"]},
+{n:"Seu Jorge",e:"🔧",r:"MÉDIO",c:58,p:150,d:320,h:["Ferramenta quebrou","Carro na oficina","Perco cliente"],f:["12 anos de oficina"]},
+{n:"Marlene Marmita",e:"🍱",r:"BAIXO",c:80,p:80,d:150,h:["Panela furou","30 marmitas","Empresa paga sexta"],f:["Sustento comunidade"]},
+{n:"Léo Adega",e:"🍺",r:"MÉDIO",c:50,p:200,d:500,h:["Cerveja acabou","Final Flamengo","Lucro sábado"],f:["Sábado te pago"]},
+{n:"Bruna Trança",e:"💇‍♀️",r:"MÉDIO",c:65,p:110,d:250,h:["Cabelo noiva","Falta aplique","Noiva influencer"],f:["Indica 10 amigas"]},
+{n:"Toninho Van",e:"🚐",r:"ALTO",c:42,p:300,d:800,h:["Van quebrou","Pagar guincho","40 passageiros"],f:["Rota lota"]}
+];
+let cur;
+function novo(){
+let disp=personagens.filter(p=>!usado[p.n]||usado[p.n]<2);
+if(disp.length==0){usado={};disp=personagens}
+cur=disp[Math.floor(Math.random()*disp.length)];
+usado[cur.n]=(usado[cur.n]||0)+1;
+document.getElementById('cliente').innerText=cur.e;
+document.getElementById('nome').innerText=cur.n;
+document.getElementById('tag').innerText=cur.r;
+document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
+document.getElementById('hist').innerText=cur.h[Math.floor(Math.random()*cur.h.length)];
+document.getElementById('bubble').innerText=cur.n+': "'+cur.f[0]+'"';
+document.getElementById('pede').innerText='R$'+cur.p;
+document.getElementById('volta').innerText='R$'+cur.d;
+document.getElementById('chance').innerText=cur.c+'%';
+let div=document.getElementById('choices');div.innerHTML='';
+[{t:`💸 EMPRESTAR R$${cur.p}`,c:'verde',a:'normal'},{t:`🔥 DOBRAR R$${cur.p*2}`,c:'amarelo',a:'dobro'},{t:'❌ NEGAR',c:'branco',a:'negar'},{t:`😈 JUROS R$${cur.d+150}`,c:'preto',a:'juros'}].forEach(o=>{
+let b=document.createElement('button');b.className='btn '+o.c;b.innerText=o.t;b.onclick=()=>jogar(o.a);div.appendChild(b)
+});
+}
+function jogar(tipo){
+if(tipo=='negar'){log('Negou '+cur.n);day++;check();novo();return}
+let ch=cur.c,pe=cur.p,de=cur.d;
+if(tipo=='dobro'){pe*=2;de*=2;ch-=12}
+if(tipo=='juros'){de+=150;ch-=22}
+if(inv.includes('bone')) ch+=10;
+if(inv.includes('pit')) ch+=15;
+let pagou=Math.random()*100 < ch;
+if(pagou){
+money+=de-pe;fame++;
+log('✅ '+cur.n+' PAGOU R$'+de);
+day++;check();novo();
+}else{
+pendentePerda=Math.floor(pe*0.5);
+document.getElementById('adText').innerText=cur.n+' ia te dar calote de R$'+pe+'. Você perderia R$'+pendentePerda+' e 1 vida. Quer ver anúncio pra não perder NADA?';
+document.getElementById('adSave').style.display='flex';
+}
+}
+function mostrarAnuncio(tipo){
+pendenteTipo=tipo;
+document.getElementById('adModal').style.display='flex';
+let t=5;
+document.getElementById('btnClaim').style.display='none';
+document.getElementById('adTimer').innerText='Assistindo... '+t+'s';
+let timer=setInterval(()=>{
+ t--;
+ document.getElementById('adTimer').innerText='Assistindo... '+t+'s';
+ if(t<=0){clearInterval(timer);document.getElementById('adTimer').innerText='Anúncio finalizado!';document.getElementById('btnClaim').style.display='block';}
+},1000);
+}
+function salvarComAnuncio(){document.getElementById('adSave').style.display='none';mostrarAnuncio('salvar');}
+function verAdGrana(){mostrarAnuncio('grana');}
+function recompensaLiberada(){
+ document.getElementById('adModal').style.display='none';
+ if(pendenteTipo=='grana'){money+=100;log('+R$100 anúncio 📺');check();}
+ if(pendenteTipo=='salvar'){log('📺 Anúncio visto! '+cur.n+' foi cobrado e pagou!');fame++;day++;check();novo();}
+ pendenteTipo=null;
+}
+function aceitarPerda(){
+document.getElementById('adSave').style.display='none';
+money-=pendentePerda;lives--;
+if(inv.includes('moto')){let recup=Math.floor(pendentePerda*0.5);money+=recup;log('🏍️ Moto recuperou R$'+recup);}
+log('💀 CALOTE '+cur.n+' perdeu R$'+pendentePerda);
+pendentePerda=0;
+day++;check();novo();
+}
+function check(){
+document.getElementById('day').innerText=day;
+document.getElementById('money').innerText='R$'+money;
+document.getElementById('fame').innerText='⭐'+fame;
+document.getElementById('lives').innerText='❤️'.repeat(Math.max(0,lives));
+if(money<=0){money=300;log('Pegou R$300 emprestado')}
+if(lives<=0){lives=3;money=Math.max(0,money-200);log('Comprou vidas')}
+if(day>30){alert('Fim 30 dias R$'+money);day=1;money=500;lives=5;fame=1;}
+if(money>=30000){alert('ZEROU REI DA QUEBRADA!');day=1;money=500;lives=5;fame=1;}
+}
+function openShop(){document.getElementById('shop').style.display='block'}
+function closeShop(){document.getElementById('shop').style.display='none'}
+function comprar(i,p){if(money>=p){money-=p;inv.push(i);log('Comprou '+i);check();closeShop();}else alert('Sem grana')}
+function milicia(){if(money>=300){money-=300;lives=5;log('Vidas full');check()}else alert('Precisa R$300')}
+function log(t){document.getElementById('log').innerHTML='> '+t+'<br>'+document.getElementById('log').innerHTML}
+novo();check();
+</script></body></html>
