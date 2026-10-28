@@ -8,8 +8,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+      - run: |
+          mkdir -p www
+          cp index.html www/index.html || true
+          cp agiota.png www/agiota.png || true
+          cp -r *.png www/ 2>/dev/null || true
+      - run: npm init -y
       - run: npm install @capacitor/cli @capacitor/core @capacitor/android @capacitor-community/admob
-      - run: npx cap init "Pega1Paga2" com.guto157.estoquinho --web-dir=.
+      - run: npx cap init "Pega1Paga2" com.guto157.estoquinho --web-dir=www
       - run: npx cap add android
       - run: npx cap copy android
       - uses: actions/setup-java@v4
