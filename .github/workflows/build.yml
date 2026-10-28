@@ -1,5 +1,7 @@
 name: Gerar APK AdMob
-on: [push]
+on: 
+  push:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,17 +19,16 @@ jobs:
         run: |
           mkdir -p www
           cp index.html www/index.html
-          cp agiota.png www/agiota.png 2>/dev/null || true
+          cp agiota.png www/ 2>/dev/null || true
           cp *.png www/ 2>/dev/null || true
-          ls www
 
-      - name: Instalar Capacitor 5 (versão estável)
+      - name: Instalar Capacitor 5
         run: |
           npm init -y
-          npm install @capacitor/cli@5.9.0 @capacitor/core@5.9.0 @capacitor/android@5.9.0 @capacitor-community/admob@5.0.0
+          npm install @capacitor/cli@5 @capacitor/core@5 @capacitor/android@5 @capacitor-community/admob@5
 
       - name: Iniciar projeto
-        run: npx cap init "Pega1Paga2" com.guto157.estoquinho --web-dir=www
+        run: npx cap init "Pega1Paga2" com.guto157.estoquinho --web-dir=www --npm-client npm
 
       - name: Add Android
         run: npx cap add android
@@ -35,12 +36,10 @@ jobs:
       - name: Copiar web
         run: npx cap copy android
 
-      - name: Limpar cache que dá erro
+      - name: Limpar cache
         run: |
-          ./android/gradlew --stop || true
           rm -rf ~/.gradle/caches/jars-9
           rm -rf ~/.gradle/caches/modules-2
-          rm -rf ~/.gradle/caches/transforms-3
 
       - name: Build APK
         run: |
