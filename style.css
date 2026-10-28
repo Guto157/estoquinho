@@ -1,0 +1,12 @@
+body{margin:0;font-family:Arial;background:#fef9e7;display:flex;justify-content:center}
+#game{width:360px;background:white;min-height:100vh;padding:15px;box-shadow:0 0 20px #ccc}
+#hud{display:flex;justify-content:space-between;background:#f39c12;color:white;padding:8px;border-radius:8px;font-size:14px}
+#clientArea{text-align:center;margin:20px 0}
+#client{font-size:60px}
+#bubble{background:#eee;border-radius:12px;padding:10px;margin-top:10px;display:inline-block}
+#notebook{border:2px dashed #8e44ad;padding:15px;border-radius:10px}
+#choices button{display:block;width:100%;margin:8px 0;padding:12px;font-size:18px;border-radius:8px;border:1px solid #333;background:#fff}
+#actions{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+#actions button{padding:12px;border-radius:8px;border:none;font-weight:bold}
+#btnAd{background:#2ecc71;color:white}
+#btnRemoveAds{background:#3498db;color:white}
