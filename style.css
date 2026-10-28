@@ -1,9 +1,0 @@
-@keyframes andar {
-  0% { transform: translateX(-120px) }
-  50% { transform: translateX(120px) scaleX(1) }
-  51% { transform: translateX(120px) scaleX(-1) }
-  100% { transform: translateX(-120px) scaleX(-1) }
-}
-#agiota.andando {
-  animation: andar 3s linear infinite, agiotaAnim 0.4s infinite !important;
-}
