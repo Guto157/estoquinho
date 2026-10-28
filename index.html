@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PEGA 1 PAGA 2 - O Império do Agiota</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family: 'Segoe UI', system-ui, sans-serif}
+body{background:#0f0f0f;display:flex;justify-content:center}
+#game{width:100%;max-width:420px;background:#FFF8E1;min-height:100vh;display:flex;flex-direction:column}
+header{background:#111;color:#FFD600;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:18px;letter-spacing:1px} header h1 span{color:#fff}
+#hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px;background:#222}
+.hud-card{background:#111;border:1px solid #333;border-radius:10px;padding:8px 10px;color:#fff;text-align:center}
+.hud-card b{color:#00FF88;display:block;font-size:18px} .hud-card.risco b{color:#FF5252}
+#palco{padding:16px;text-align:center}
+#agiota-wrap{display:flex;justify-content:center;align-items:end;gap:12px;margin-bottom:8px}
+#agiota-img{width:110px;height:110px;background:url('agiota.png') center/contain no-repeat;animation:float 2.5s infinite}
+#cliente-img{width:85px;height:85px;background:#fff;border-radius:50%;border:3px solid #111;display:flex;align-items:center;justify-content:center;font-size:48px;animation:float 2.8s infinite reverse}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#bubble{position:relative;background:#111;color:#fff;padding:14px 16px;border-radius:16px 16px 0 16px;font-size:16px;line-height:1.3;margin:0 auto;max-width:92%;text-align:left}
+#bubble:after{content:'';position:absolute;bottom:-10px;right:20px;border-width:10px 10px 0 0;border-style:solid;border-color:#111 transparent}
+#clienteInfo{text-align:left;background:#fff;border:2px solid #111;border-radius:14px;padding:12px 14px;margin-top:14px}
+#clienteInfo h3{font-size:17px;display:flex;justify-content:space-between}
+#clienteInfo h3 span{font-size:12px;background:#FFD600;padding:3px 8px;border-radius:20px}
+#clienteInfo p{font-size:13px;margin-top:6px;color:#444;line-height:1.35}
+#stats-linha{display:flex;gap:8px;margin-top:10px}
+.stat{flex:1;background:#FFF3B0;border:1.5px dashed #111;border-radius:8px;padding:6px;text-align:center;font-size:12px}
+.stat b{display:block;font-size:14px}
+#choices{padding:12px;display:flex;flex-direction:column;gap:10px}
+.btn{width:100%;padding:14px 12px;border-radius:12px;border:3px solid #111;font-weight:900;font-size:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn-verde{background:#00E676} .btn-amarelo{background:#FFD600} .btn-vermelho{background:#fff}
+.btn small{display:block;font-weight:600;font-size:11px;opacity:.8}
+.btn:disabled{opacity:.4}
+#actions{padding:0 12px 12px;display:flex;gap:8px}
+#actions button{flex:1;padding:10px;background:#111;color:#FFD600;border:none;border-radius:10px;font-weight:800;font-size:12px}
+#log{font-size:11px;padding:0 16px 16px;color:#666;max-height:90px;overflow:auto}
+</style>
+</head>
+<body>
+<div id="game">
+<header><h1>PEGA 1 PAGA 2 <span>💰</span></h1><div style="font-size:11px;text-align:right;color:#aaa">DIA <b id="day" style="color:#fff">1</b>/30<br>REC <span id="rec">0</span></div></header>
+<div id="hud">
+<div class="hud-card">CAIXA <b id="money">R$100</b></div>
+<div class="hud-card">FAMA <b id="fame">⭐1</b></div>
+<div class="hud-card risco">VIDAS <b id="lives">❤️❤️❤️</b></div>
+</div>
+<div id="palco">
+<div id="agiota-wrap"><div id="cliente-img">😰</div><div id="agiota-img"></div></div>
+<div id="bubble">Começou com R$100 da vó. Se chegar a R$10k em 30 dias, você compra o Bar do Zé. Bora?</div>
+<div id="clienteInfo"><h3 id="cNome">Beto da Laje <span id="cRisco">RISCO BAIXO</span></h3><p id="cHist">Pedreiro, 2 filhos. A mulher tá no hospital e precisa de R$50 pra remédio. Todo mundo na rua fala que ele é homem de palavra.</p><div id="stats-linha"><div class="stat">PEDE <b id="cPede">R$50</b></div><div class="stat">DEVOLVE <b id="cDevolve">R$100</b></div><div class="stat">CHANCE <b id="cChance">85%</b></div></div></div>
+</div>
+<div id="choices"></div>
+<div id="actions"><button onclick="verAd()">📺 ANÚNCIO +R$80</button><button onclick="comprarCapanga()">👊 CAPANGA R$200</button><button onclick="pagarMilicia()">🚔 MILÍCIA R$300</button></div>
+<div id="log">> Jogo iniciado. Boa sorte, patrão.<br></div>
+</div>
+<script>
+let day=1,money=100,fame=1,lives=3,hasCapanga=false;
+let rec=localStorage.getItem('recP12')||0; document.getElementById('rec').innerText=rec;
+const clientes=[
+{n:"Beto da Laje",e:"👷‍♂️",r:"BAIXO",chance:85,pede:50,devolve:100,h:"Pedreiro, 2 filhos. Mulher no hospital. Precisa de remédio. Homem de palavra."},
+{n:"Tia da Coxinha",e:"👩‍🍳",r:"BAIXO",chance:80,pede:80,devolve:140,h:"Vende coxinha na praça há 15 anos. Geladeira queimou. Se não vender, fica devendo o aluguel."},
+{n:"Magrão da 12",e:"😎",r:"MÉDIO",chance:55,pede:100,devolve:250,h:"Diz que vai fazer um baile e lucrar. Mas já deve pra 3 agiotas. Papo de vendedor."},
+{n:"Kevin da Bike",e:"🚲",r:"MÉDIO",chance:60,pede:120,devolve:260,h:"Quer comprar peças pra fazer entregas no iFood. Se der certo, te paga com gorjeta."},
+{n:"Nego do Corte",e:"💈",r:"ALTO",chance:35,pede:200,devolve:600,h:"Deve pra milícia. Se você emprestar e ele não pagar, a milícia vem atrás de VOCÊ também."},
+{n:"MC Livinha",e:"🎤",r:"ALTO",chance:40,pede:150,devolve:450,h:"Precisa gravar clipe. Promete que vai estourar e te pagar no pix. Todo mundo ri dela, mas e se virar?"},
+{n:"Pastor Isac",e:"🙏",r:"BAIXO",chance:90,pede:60,devolve:90,h:"Igreja precisa de cadeiras. Não dá muito lucro, mas todo mundo vai falar bem de você."}
+];
+let cur; const $=id=>document.getElementById(id);
+function log(t){$("log").innerHTML=`> ${t}<br>`+$("log").innerHTML}
+function novoCliente(){
+ cur=clientes.filter(c=> day<10?c.r=="BAIXO": day<20?c.r!="ALTO":true)[Math.floor(Math.random()*clientes.length)];
+ $("cNome").innerHTML=`${cur.n} <span>${cur.r}</span>`; $("cNome").querySelector("span").style.background=cur.r=="BAIXO"?"#00E676":cur.r=="MÉDIO"?"#FFD600":"#FF5252";
+ $("cliente-img").innerText=cur.e; $("bubble").innerText=cur.fala || `"Patrão, ${cur.h.split('.')[0]}..."`; $("cHist").innerText=cur.h; $("cPede").innerText="R$"+cur.pede; $("cDevolve").innerText="R$"+cur.devolve; $("cChance").innerText=cur.chance+"%";
+ let ch=$("choices"); ch.innerHTML="";
+ ch.innerHTML+=`<button class="btn btn-verde" onclick="acao('empresta')"><div>💸 EMPRESTAR R$${cur.pede}<small>Recebe R$${cur.devolve} | ${cur.chance}% paga</small></div><div>▶</div></button>`;
+ ch.innerHTML+=`<button class="btn btn-amarelo" onclick="acao('dobro')"><div>🔥 DOBRAR APOSTA R$${cur.pede*2}<small>Recebe R$${cur.devolve*2} | Risco maior</small></div><div>▶</div></button>`;
+ ch.innerHTML+=`<button class="btn btn-vermelho" onclick="acao('negar')"><div>❌ NEGAR<small>Fama -1, mas seguro</small></div><div>▶</div></button>`;
+ ch.innerHTML+=`<button class="btn btn-vermelho" style="background:#111;color:#fff" onclick="acao('juros')"><div>😈 JUROS ABUSIVO R$${cur.pede} -> R$${cur.devolve+100}<small>Chance cai pra ${Math.max(10,cur.chance-25)}% mas lucra muito</small></div><div>▶</div></button>`;
+}
+function acao(tipo){
+ let pagaChance=cur.chance; let pede=cur.pede; let devolve=cur.devolve;
+ if(tipo=='dobro'){pede*=2; devolve*=2; pagaChance-=15}
+ if(tipo=='juros'){devolve+=100; pagaChance-=25}
+ if(tipo=='negar'){fame=Math.max(0,fame-1); log(`Negou ${cur.n}. Fama caiu.`); day++; check(); novoCliente(); return}
+ let paga=Math.random()*100 < pagaChance;
+ if(paga){money+= (devolve-pede); fame++; log(`✅ ${cur.n} PAGOU R$${devolve}! Lucro +R$${devolve-pede}`); $("bubble").innerText=`Tá na mão patrão! Você é o melhor da quebrada!`}
+ else{money-=pede; lives--; log(`💀 CALOTE de ${cur.n}! Perdeu R$${pede}`); $("bubble").innerText=`Foi mal patrão... me atrasei...`; if(hasCapanga){money+=pede*0.5; log(`👊 Seu capanga recuperou metade!`)} }
+ day++; check(); if(lives>0 && money>0) novoCliente();
+}
+function check(){
+ $("day").innerText=day; $("money").innerText="R$"+money; $("fame").innerText="⭐"+fame; $("lives").innerText="❤️".repeat(lives);
+ if(money>=10000){alert(`🏆 ZEROU! Virou dono do Bar do Zé em ${day} dias!`); localStorage.setItem('recP12',day); location.reload()}
+ if(day>30 || lives<=0 || money<=0){let msg=day>30?"⏰ 30 dias acabaram!":lives<=0?"💀 Milícia te pegou!":"💸 Faliu!"; if(day>rec){localStorage.setItem('recP12',day)} alert(`${msg} Fez R$${money} em ${day} dias.`); day=1; money=100; lives=3; fame=1; $("log").innerHTML=""; novoCliente()}
+}
+function verAd(){money+=80; log("📺 Anúncio: +R$80"); check()}
+function comprarCapanga(){if(money>=200){money-=200; hasCapanga=true; log("👊 Capanga contratado! Recupera 50% dos calotes"); check()}else alert("Sem grana!")}
+function pagarMilicia(){if(money>=300){money-=300; lives=3; log("🚔 Milícia paga! Vidas restauradas"); check()}else alert("Sem grana!")}
+novoCliente(); check();
+if(!$("agiota-img").style.backgroundImage) $("agiota-img").innerText="🤑";
+</script>
+</body>
+</html>
