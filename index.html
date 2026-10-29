@@ -13,16 +13,14 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 #avatarWrap{display:grid;grid-template-columns:38px 94px 38px;gap:6px;align-items:center;justify-content:center}
 .colSlots{display:flex;flex-direction:column;gap:6px}
 #agiota{width:94px;height:98px;background:#222;border-radius:14px;border:2.5px solid #111;overflow:hidden}
-.slot{width:34px;height:34px;border:2.5px solid #111;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative;transition:all 0.2s}
+.slot{width:34px;height:34px;border:2.5px solid #111;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
 .slot.vazio{opacity:0.25;border-style:dashed}
 .slot .buffMini{position:absolute;bottom:-6px;right:-6px;font-size:7px;background:#111;color:#FFD600;border-radius:5px;padding:1px 3px;font-weight:900;border:1px solid #fff}
-/* NÉON POR RARIDADE */
-.raridade-comum{border-color:#9E9E9E; box-shadow:0 0 6px #9E9E9E, inset 0 0 6px #9E9E9E22}
-.raridade-raro{border-color:#2196F3; box-shadow:0 0 8px #2196F3, 0 0 14px #2196F344, inset 0 0 8px #2196F322}
-.raridade-epico{border-color:#9C27B0; box-shadow:0 0 10px #9C27B0, 0 0 18px #9C27B066, inset 0 0 10px #9C27B033}
-.raridade-lendario{border-color:#FF9800; box-shadow:0 0 12px #FF9800, 0 0 22px #FF980066, inset 0 0 10px #FF980044}
-.raridade-ultimate{border-color:#FFD600; background:#111; color:#FFD600; box-shadow:0 0 14px #FFD600, 0 0 26px #FFD60099, 0 0 40px #FFD60055, inset 0 0 12px #FFD60066; animation:neonPulse 1.5s infinite alternate}
-@keyframes neonPulse{from{box-shadow:0 0 12px #FFD600, 0 0 22px #FFD60099} to{box-shadow:0 0 18px #FFD600, 0 0 32px #FFD600, 0 0 50px #FFD60077}}
+.raridade-comum{border-color:#9E9E9E; box-shadow:0 0 6px #9E9E9E}
+.raridade-raro{border-color:#2196F3; box-shadow:0 0 8px #2196F3, 0 0 14px #2196F344}
+.raridade-epico{border-color:#9C27B0; box-shadow:0 0 10px #9C27B0, 0 0 18px #9C27B066}
+.raridade-lendario{border-color:#FF9800; box-shadow:0 0 12px #FF9800, 0 0 22px #FF980066}
+.raridade-ultimate{border-color:#FFD600; background:#111; color:#FFD600; box-shadow:0 0 14px #FFD600, 0 0 26px #FFD60099}
 #buffsLinha{font-size:10px;background:#111;color:#FFD600;border-radius:8px;padding:5px 8px;text-align:center;border:1px solid #333}
 #tituloExclusivo{font-size:10px;background:linear-gradient(90deg,#FFD600,#FF9800);color:#111;border-radius:20px;padding:3px 10px;font-weight:900;display:none}
 #clienteBox{width:72px;height:72px;border:3px solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden}
@@ -37,14 +35,9 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 .verde{background:#00E676} .amarelo{background:#FFD600} .branco{background:#fff} .preto{background:#111;color:#FFD600} .roxo{background:#B388FF} .azul{background:#40C4FF}
 .modal{position:fixed;inset:0;background:#000e;z-index:30;padding:12px;display:none;align-items:center;justify-content:center}
 .modal .box{background:#FFFBEA;border:3px solid #111;border-radius:16px;padding:14px;max-width:420px;width:100%;max-height:90vh;overflow:auto}
-.card{background:#fff;border:2px solid #111;border-radius:10px;padding:10px;margin-bottom:6px;position:relative;overflow:hidden}
-.card.raridade-comum{box-shadow:0 0 6px #9E9E9E55}
-.card.raridade-raro{box-shadow:0 0 10px #2196F355, inset 0 0 0 1px #2196F3}
-.card.raridade-epico{box-shadow:0 0 14px #9C27B055, inset 0 0 0 1px #9C27B0}
-.card.raridade-lendario{box-shadow:0 0 16px #FF980066, inset 0 0 0 1px #FF9800}
-.card.raridade-ultimate{box-shadow:0 0 20px #FFD60088, inset 0 0 0 1px #FFD600; background:linear-gradient(135deg,#FFFDE7,#FFF9C4)}
+.card{background:#fff;border:2px solid #111;border-radius:10px;padding:10px;margin-bottom:6px}
 .progress{height:8px;background:#333;border-radius:8px;overflow:hidden;margin-top:4px} .bar{height:8px;background:#FFD600}
-.tagRar{font-size:8px;padding:3px 7px;border-radius:10px;color:#fff;font-weight:900;box-shadow:0 0 6px currentColor}
+.tagRar{font-size:8px;padding:3px 7px;border-radius:10px;color:#fff;font-weight:900}
 .conquistaCard{background:#fff;border:2px solid #111;border-radius:10px;padding:10px;margin-bottom:8px}
 .conquistaCard.feita{border-color:#00E676;background:#E8F5E9}
 #menuDrawer{position:fixed;inset:0;background:#000a;z-index:40;display:none}
@@ -114,8 +107,8 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 <button class="btn amarelo" onclick="fazerLogin()">ENTRAR / CRIAR</button>
 </div></div>
 
-<div id="shopModal" class="modal"><div class="box"><h2>🛒 LOJINHA - BALANCEADA</h2><div style="font-size:10px;background:#FFF3B0;border:2px dashed #111;padding:6px;border-radius:8px;margin-bottom:8px">⚖️ Buffs balanceados: máximo 34% chance total. Juros ainda tem risco mesmo com tudo no máximo.</div><div id="shopList"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="conquistasModal" class="modal"><div class="box"><h2>🏆 CONQUISTAS</h2>
+<div id="shopModal" class="modal"><div class="box"><h2>🛒 LOJINHA</h2><div id="shopList"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="conquistasModal" class="modal"><div class="box"><h2>🏆 CONQUISTAS DA QUEBRADA</h2>
 <div style="display:flex;gap:6px;margin-bottom:10px">
 <button id="tabAbertas" class="tabBtn ativo" onclick="mostrarAbaConquista('abertas')">🎯 ABERTAS (<span id="countAbertas">10</span>)</button>
 <button id="tabFeitas" class="tabBtn" onclick="mostrarAbaConquista('feitas')">✅ FEITAS (<span id="countFeitas">0</span>)</button>
@@ -123,8 +116,8 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 <div id="listaConquistas"></div>
 <button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="bancoModal" class="modal"><div class="box"><h2>🏦 BANCO</h2><div class="card"><b>R$300</b><button class="btn verde" onclick="pedirBanco(300,3)">📺 +R$300</button></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="missoesModal" class="modal"><div class="box"><h2>🎯 MISSÕES</h2><div id="listaMissoes"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="desafiosModal" class="modal"><div class="box"><h2>🏆 DESAFIOS ★</h2><p style="font-size:11px">1★=1💲 até 5★=5💲</p><div id="listaDesafios"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="missoesModal" class="modal"><div class="box"><h2>🎯 MISSÕES DA LAJE</h2><div id="listaMissoes"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="desafiosModal" class="modal"><div class="box"><h2>🏆 DESAFIOS DO MORRO ★</h2><p style="font-size:11px">1★=1💲 até 5★=5💲</p><div id="listaDesafios"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="titulosModal" class="modal"><div class="box"><h2>👑 TÍTULOS</h2><div id="listaTitulos"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="pixModal" class="modal"><div class="box" style="text-align:center"><h2>💲 DOLINHA VIA PIX</h2>
 <div class="card"><b>10 💲 - R$5</b><button class="btn roxo" onclick="comprarDolar(10)">COMPRAR</button></div>
@@ -165,85 +158,140 @@ const raridades=[
 {id:"lendario",nome:"LENDÁRIO",cor:"#FF9800",mult:2.2,preco:50},
 {id:"ultimate",nome:"ULTIMATE",cor:"#FFD600",mult:2.6,preco:90}
 ];
-// BALANCEAMENTO NOVO - MENOS AGRESSIVO
 const lojaItens=[
-{id:"bone",nome:"Boné",icon:"🧢",slot:"s1",baseChance:3, baseLucro:0, baseRec:0},
-{id:"cordao",nome:"Cordão",icon:"📿",slot:"s2",baseChance:0, baseLucro:8, baseRec:0},
-{id:"relogio",nome:"Relógio",icon:"⌚",slot:"s3",baseChance:3, baseLucro:0, baseRec:0},
-{id:"glock",nome:"Glock",icon:"🔫",slot:"s4",baseChance:0, baseLucro:0, baseRec:0, especial:"glock"},
-{id:"pit",nome:"Pitbull",icon:"🦮",slot:"s5",baseChance:4, baseLucro:0, baseRec:0},
-{id:"moto",nome:"Moto",icon:"🏍️",slot:"s6",baseChance:0, baseLucro:0, baseRec:10}
+{id:"bone",nome:"Boné",icon:"🧢",slot:"s1",baseChance:3},
+{id:"cordao",nome:"Cordão",icon:"📿",slot:"s2",baseChance:0},
+{id:"relogio",nome:"Relógio",icon:"⌚",slot:"s3",baseChance:3},
+{id:"glock",nome:"Glock",icon:"🔫",slot:"s4",baseChance:0},
+{id:"pit",nome:"Pitbull",icon:"🦮",slot:"s5",baseChance:4},
+{id:"moto",nome:"Moto",icon:"🏍️",slot:"s6",baseChance:0}
 ];
 function toggleEye(id,btn){let i=document.getElementById(id);i.type=i.type=="password"?"text":"password";btn.innerText=i.type=="password"?"👁️":"🙈";}
-
 function getBuffValor(id,rIdx){
  let item=lojaItens.find(x=>x.id==id);
- let r=raridades[rIdx];
- if(id=="glock"){
-   if(rIdx==0) return "+10% vs ALTO";
-   if(rIdx==1) return "+18% vs ALTO";
-   if(rIdx==2) return "+26% vs ALTO";
-   if(rIdx==3) return "+35% vs ALTO";
-   if(rIdx==4) return "+45% vs ALTO (max)";
- }
+ if(id=="glock"){ return ["+10% vs ALTO","+18% vs ALTO","+26% vs ALTO","+35% vs ALTO","+45% vs ALTO"][rIdx]; }
  if(item.baseChance) return `+${(item.baseChance + rIdx*2).toFixed(0)}% chance`;
- if(item.baseLucro) return `+${Math.floor(item.baseLucro + rIdx*4)}% lucro`;
- if(item.baseRec) return `Recup ${Math.floor(item.baseRec + rIdx*5)}% calote`;
+ if(id=="cordao") return `+${Math.floor(8 + rIdx*4)}% lucro`;
+ if(id=="moto") return `Rec ${Math.floor(10 + rIdx*5)}%`;
  return "";
 }
-function getTotalChanceBonus(){
- let total=0;
- if(inv['bone']!==undefined) total+=3+inv['bone']*2;
- if(inv['relogio']!==undefined) total+=3+inv['relogio']*2;
- if(inv['pit']!==undefined) total+=4+inv['pit']*2;
- return Math.min(total,34); // CAP 34% máximo total
+function getTotalChanceBonus(){let total=0; if(inv['bone']!==undefined) total+=3+inv['bone']*2; if(inv['relogio']!==undefined) total+=3+inv['relogio']*2; if(inv['pit']!==undefined) total+=4+inv['pit']*2; return Math.min(total,34);}
+function getTotalLucroBonus(){let total=0; if(inv['cordao']!==undefined) total+=8+inv['cordao']*4; return Math.min(total,24);}
+function getGlockBonusVsAlto(){if(inv['glock']===undefined) return 0; return [10,18,26,35,45][inv['glock']]||0;}
+function getRecuperacaoBonus(){if(inv['moto']===undefined) return 0; return 10+inv['moto']*5;}
+function getTotalBuffsTexto(){let parts=[]; let chance=getTotalChanceBonus(); let lucro=getTotalLucroBonus(); let rec=getRecuperacaoBonus(); let glock=getGlockBonusVsAlto(); if(chance) parts.push(`+${chance}% chance`); if(lucro) parts.push(`+${lucro}% lucro`); if(rec) parts.push(`Rec ${rec}%`); if(glock) parts.push(`🔫 +${glock}% vs ALTO`); return parts.length?parts.join(" | "):"Sem buffs - BALANCEADO (max 34%)";}
+function renderSlots(){lojaItens.forEach(it=>{let el=document.getElementById(it.slot); let rIdx=inv[it.id]; if(rIdx===undefined){el.innerHTML="?"; el.className="slot vazio";} else {let r=raridades[rIdx]; el.innerHTML=`${it.icon}<span class="buffMini" style="background:${r.cor};color:#fff">${getBuffValor(it.id,rIdx).split(' ')[0]}</span>`; el.className=`slot raridade-${r.id}`;}}); document.getElementById('buffsLinha').innerText=getTotalBuffsTexto();}
+
+// RENOMEAÇÃO: MISSÕES TEMÁTICAS DA QUEBRADA (50)
+function gerarMissoes(){
+ const nomesMissoes=[
+  "1. Primeiro Giro na Laje","2. Troco do Beco","3. Respeito na Quebrada","4. Sequência de Cobrança","5. Juros do Bar do Seu Zé",
+  "6. Ronda na Comunidade","7. Lucro da Banca","8. Moral no Morro","9. Embalo da Cobrança","10. Taxa do Atraso",
+  "11. Corre da Madrugada","12. Caixa da Birosca","13. Nome na Rua","14. Fio de Cobrança","15. Multa do Calote",
+  "16. Giro no Campinho","17. Lucro da Laje","18. Fama no Baile","19. Sequência no Beco","20. Juros do Padrinho",
+  "21. Rastreio na Favela","22. Grana da Festa","23. Voz na Comunidade","24. Corrente de Pagamento","25. Corre do Agiota",
+  "26. Plantão na Quebrada","27. Troco do Rolezinho","28. Respeito do Dono","29. Fila de Cobrança","30. Juros do Esquina",
+  "31. Patrulha do Morro","32. Cofre da Laje","33. Nome no Muro","34. Rajada de Recebimento","35. Tarifa do Atraso",
+  "36. Giro na Feira","37. Lucro do Fluxo","38. Moral na Boca","39. Sequência de Pix","40. Juros da Noite",
+  "41. Ronda do Beco","42. Grana do Baile","43. Voz do Paredão","44. Linha de Cobrança","45. Juros do Caloteiro",
+  "46. Corre do Patrão","47. Caixa Cheia da Laje","48. Lenda da Quebrada","49. Combo de Cobrança","50. Juros Final do Morro"
+ ];
+ let arr=[];
+ for(let i=1;i<=50;i++){
+  let tipo=i%5,meta,premio,tipoStr;
+  let nomeBase=nomesMissoes[i-1];
+  if(tipo==0){meta=6+Math.floor(i*0.9);premio=35+Math.floor(i*2.5);tipoStr="emp";arr.push({id:i,t:`${nomeBase} - Emprestar ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}
+  if(tipo==1){meta=900+i*280;premio=40+Math.floor(i*3);tipoStr="lucro";arr.push({id:i,t:`${nomeBase} - Lucrar R$${meta}`,meta,premio,prog:0,tipo:tipoStr});}
+  if(tipo==2){meta=8+Math.floor(i/1.6);premio=45+Math.floor(i*2.8);tipoStr="fama";arr.push({id:i,t:`${nomeBase} - Fama ${meta}`,meta,premio,prog:0,tipo:tipoStr});}
+  if(tipo==3){meta=6+Math.floor(i/2);premio=50+Math.floor(i*3);tipoStr="seq";arr.push({id:i,t:`${nomeBase} - Seq ${meta} pagamentos`,meta,premio,prog:0,tipo:tipoStr});}
+  if(tipo==4){meta=5+Math.floor(i/2.5);premio=55+Math.floor(i*3.2);tipoStr="juros";arr.push({id:i,t:`${nomeBase} - Cobrar Juros ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}
+ }
+ return arr;
 }
-function getTotalLucroBonus(){
- let total=0;
- if(inv['cordao']!==undefined) total+=8+inv['cordao']*4;
- return Math.min(total,24);
+
+// RENOMEAÇÃO: DESAFIOS DO MORRO (50)
+function gerarDesafios(){
+ const nomesDesafios=[
+  "1. Cofre Cheio da Laje","2. Carteira do Morro","3. Imposto do Atraso","4. Barão da Quebrada","5. Fluxo da Favela",
+  "6. Caixa do Baile","7. Giro do Patrão","8. Tarifa Noturna","9. Fortuna da Boca","10. Rolezinho do Lucro",
+  "11. Muro Cheio de Nome","12. Lista do Caderninho","13. Cobrança Pesada","14. Grana do Fluxo","15. Lenda do Beco",
+  "16. Tropa do Cofre","17. Agenda do Agiota","18. Jurão do Morro","19. Tesouro da Laje","20. Maratona de Empréstimo",
+  "21. Favela Rica","22. Caderneta Cheia","23. Noite de Juros","24. Império da Laje","25. Sequência da Quebrada",
+  "26. Reserva do Morro","27. Giro Infinito","28. Colete de Juros","29. Fortuna no Paredão","30. Desafio do Chefão",
+  "31. Banco da Comunidade","32. Rolo da Quebrada","33. Taxa Braba","34. Ouro da Favela","35. Lenda Viva",
+  "36. Cofre do Dono","37. Corrida de Empréstimo","38. Jurão Final","39. Milhão da Laje","40. Legado do Agiota",
+  "41. Baú do Morro","42. Corre Sem Fim","43. Juros Monstro","44. Patrimônio da Laje","45. Sequência de Ouro",
+  "46. Caixa Forte da Favela","47. Ciclo do Patrão","48. Imposto Final","49. Cofre do Barão","50. Domínio da Quebrada"
+ ];
+ let arr=[];
+ for(let i=1;i<=50;i++){
+  let estrelas=1,meta,tipo,nome,dif;
+  let nomeBase=nomesDesafios[i-1];
+  if(i<=10){estrelas=1;dif="FÁCIL";meta=8000+i*1200;tipo="caixa";nome=`${nomeBase} - Juntar R$${meta}`;}
+  else if(i<=20){estrelas=2;dif="MÉDIO";meta=30+i*3;tipo="totalEmp";nome=`${nomeBase} - Emprestar ${meta}x na rua`;}
+  else if(i<=30){estrelas=3;dif="DIFÍCIL";meta=20+i*2;tipo="jurosTotal";nome=`${nomeBase} - Cobrar Juros ${meta}x`;}
+  else if(i<=40){estrelas=4;dif="AVANÇADO";meta=30000+i*8000;tipo="lucroTotal";nome=`${nomeBase} - Lucrar R$${meta} no morro`;}
+  else{estrelas=5;dif="EXPERT";meta=150+i*5;tipo="totalEmp";nome=`${nomeBase} - Dominar ${meta}x empréstimos`;}
+  arr.push({id:i,t:nome,meta:meta,premioDolar:estrelas,estrelas:estrelas,dif:dif,prog:0,tipo:tipo});
+ }
+ return arr;
 }
-function getGlockBonusVsAlto(){
- if(inv['glock']===undefined) return 0;
- let r=inv['glock'];
- return [10,18,26,35,45][r]||0;
-}
-function getRecuperacaoBonus(){
- if(inv['moto']===undefined) return 0;
- return 10+inv['moto']*5;
-}
-function getTotalBuffsTexto(){
- let parts=[];
- let chance=getTotalChanceBonus();
- let lucro=getTotalLucroBonus();
- let rec=getRecuperacaoBonus();
- let glock=getGlockBonusVsAlto();
- if(chance) parts.push(`+${chance}% chance`);
- if(lucro) parts.push(`+${lucro}% lucro`);
- if(rec) parts.push(`Rec ${rec}%`);
- if(glock) parts.push(`🔫 +${glock}% vs ALTO`);
- return parts.length?parts.join(" | "):"Sem buffs - BALANCEADO (max 34%)";
-}
-function renderSlots(){
- lojaItens.forEach(it=>{
-   let el=document.getElementById(it.slot);
-   let rIdx=inv[it.id];
-   if(rIdx===undefined){el.innerHTML="?"; el.className="slot vazio";}
-   else {let r=raridades[rIdx]; el.innerHTML=`${it.icon}<span class="buffMini" style="background:${r.cor};color:#fff">${getBuffValor(it.id,rIdx).split(' ')[0]}</span>`; el.className=`slot raridade-${r.id}`;}
- });
- document.getElementById('buffsLinha').innerText=getTotalBuffsTexto();
-}
-function gerarMissoes(){let arr=[];for(let i=1;i<=50;i++){let tipo=i%5,meta,premio,tipoStr;if(tipo==0){meta=6+Math.floor(i*0.9);premio=35+Math.floor(i*2.5);tipoStr="emp";arr.push({id:i,t:`Emprestar ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==1){meta=900+i*280;premio=40+Math.floor(i*3);tipoStr="lucro";arr.push({id:i,t:`Lucrar R$${meta}`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==2){meta=8+Math.floor(i/1.6);premio=45+Math.floor(i*2.8);tipoStr="fama";arr.push({id:i,t:`Fama ${meta}`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==3){meta=6+Math.floor(i/2);premio=50+Math.floor(i*3);tipoStr="seq";arr.push({id:i,t:`Seq ${meta}`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==4){meta=5+Math.floor(i/2.5);premio=55+Math.floor(i*3.2);tipoStr="juros";arr.push({id:i,t:`Juros ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}}return arr;}
-function gerarDesafios(){let arr=[];for(let i=1;i<=50;i++){let estrelas=1,meta,tipo,nome,dif;if(i<=10){estrelas=1;dif="FÁCIL";meta=8000+i*1200;tipo="caixa";nome=`Juntar R$${meta}`;}else if(i<=20){estrelas=2;dif="MÉDIO";meta=30+i*3;tipo="totalEmp";nome=`Emprestar ${meta}x`;}else if(i<=30){estrelas=3;dif="DIFÍCIL";meta=20+i*2;tipo="jurosTotal";nome=`Juros ${meta}x`;}else if(i<=40){estrelas=4;dif="AVANÇADO";meta=30000+i*8000;tipo="lucroTotal";nome=`Lucrar R$${meta}`;}else{estrelas=5;dif="EXPERT";meta=150+i*5;tipo="totalEmp";nome=`Emprestar ${meta}x`;}arr.push({id:i,t:nome,meta:meta,premioDolar:estrelas,estrelas:estrelas,dif:dif,prog:0,tipo:tipo});}return arr;}
+
 let todasMissoes=gerarMissoes();let todosDesafios=gerarDesafios();let ativasMissoes=todasMissoes.slice(0,3);let ativasDesafios=todosDesafios.slice(0,3);let proxMissaoIdx=3,proxDesafioIdx=3;
+
+// RENOMEAÇÃO: CONQUISTAS DA QUEBRADA (50) - NOMES COMPATÍVEIS COM OBJETIVO
 const conquistas=[
-{id:"c1", nome:"Primeiro Passo", objetivo:"Emprestar 5x", meta:5, tipo:"emp", premioTitulo:"", premioDolar:2},
-{id:"c2", nome:"Coração de Pedra", objetivo:"Negar 10", meta:10, tipo:"negar", premioTitulo:"CORAÇÃO DE PEDRA", premioDolar:5},
-{id:"c3", nome:"Mão Leve", objetivo:"Juros 10x", meta:10, tipo:"jurosTotal", premioTitulo:"", premioDolar:5},
-{id:"c4", nome:"Sobrevivente", objetivo:"R$5.000", meta:5000, tipo:"caixa", premioDolar:5},
-{id:"c5", nome:"Fama", objetivo:"LVL 10", meta:10, tipo:"lvl", premioTitulo:"FAMOSO", premioDolar:8},
+{id:"c1", nome:"Calouro da Laje", objetivo:"Emprestar 5x na quebrada", meta:5, tipo:"emp", premioTitulo:"", premioDolar:2},
+{id:"c2", nome:"Coração de Concreto", objetivo:"Negar 10 caloteiros", meta:10, tipo:"negar", premioTitulo:"CORAÇÃO DE PEDRA", premioDolar:5},
+{id:"c3", nome:"Mão Pesada no Juros", objetivo:"Cobrar Juros 10x no beco", meta:10, tipo:"jurosTotal", premioTitulo:"", premioDolar:5},
+{id:"c4", nome:"Cofre da Birosca", objetivo:"Juntar R$5.000 na laje", meta:5000, tipo:"caixa", premioTitulo:"", premioDolar:5},
+{id:"c5", nome:"Voz no Baile da Favela", objetivo:"Chegar no LVL 10 de respeito", meta:10, tipo:"lvl", premioTitulo:"FAMOSO NA QUEBRADA", premioDolar:8},
+{id:"c6", nome:"Plantão da Madrugada", objetivo:"Emprestar 120x na rua", meta:120, tipo:"emp", premioTitulo:"", premioDolar:8},
+{id:"c7", nome:"Cobrador de Elite", objetivo:"Emprestar 140x no morro", meta:140, tipo:"emp", premioTitulo:"TÍTULO COBRADOR", premioDolar:9},
+{id:"c8", nome:"Dono da Banca", objetivo:"Emprestar 160x na comunidade", meta:160, tipo:"emp", premioTitulo:"", premioDolar:10},
+{id:"c9", nome:"Rei do Caderninho", objetivo:"Emprestar 180x anotado", meta:180, tipo:"emp", premioTitulo:"TÍTULO REI DO CADERNO", premioDolar:11},
+{id:"c10", nome:"Patrão do Beco", objetivo:"Emprestar 200x no beco", meta:200, tipo:"emp", premioTitulo:"", premioDolar:12},
+{id:"c11", nome:"Barão da Laje", objetivo:"Emprestar 220x na laje", meta:220, tipo:"emp", premioTitulo:"", premioDolar:13},
+{id:"c12", nome:"Lenda do Fluxo", objetivo:"Emprestar 240x no fluxo", meta:240, tipo:"emp", premioTitulo:"TÍTULO LENDA DO FLUXO", premioDolar:14},
+{id:"c13", nome:"Chefão da Quebrada", objetivo:"Emprestar 260x com moral", meta:260, tipo:"emp", premioTitulo:"", premioDolar:15},
+{id:"c14", nome:"Imperador do Morro", objetivo:"Emprestar 280x no morro", meta:280, tipo:"emp", premioTitulo:"", premioDolar:16},
+{id:"c15", nome:"Dono do Paredão", objetivo:"Emprestar 300x no paredão", meta:300, tipo:"emp", premioTitulo:"TÍTULO DONO DO PAREDÃO", premioDolar:17},
+{id:"c16", nome:"Senhor do Baile", objetivo:"Emprestar 320x no baile", meta:320, tipo:"emp", premioTitulo:"", premioDolar:18},
+{id:"c17", nome:"Guardião da Favela", objetivo:"Emprestar 340x na favela", meta:340, tipo:"emp", premioTitulo:"", premioDolar:19},
+{id:"c18", nome:"Mito da Comunidade", objetivo:"Emprestar 360x na comunidade", meta:360, tipo:"emp", premioTitulo:"TÍTULO MITO DA COMUNIDADE", premioDolar:20},
+{id:"c19", nome:"Tesoureiro da Laje", objetivo:"Emprestar 380x na laje", meta:380, tipo:"emp", premioTitulo:"", premioDolar:21},
+{id:"c20", nome:"Rei do Pix Atrasado", objetivo:"Emprestar 400x no pix", meta:400, tipo:"emp", premioTitulo:"", premioDolar:22},
+{id:"c21", nome:"Colecionador de Nomes", objetivo:"Emprestar 420x com nome no muro", meta:420, tipo:"emp", premioTitulo:"TÍTULO COLECIONADOR", premioDolar:23},
+{id:"c22", nome:"Coronel da Quebrada", objetivo:"Emprestar 440x com respeito", meta:440, tipo:"emp", premioTitulo:"", premioDolar:24},
+{id:"c23", nome:"General do Morro", objetivo:"Emprestar 460x no morro", meta:460, tipo:"emp", premioTitulo:"", premioDolar:25},
+{id:"c24", nome:"Barão do Asfalto", objetivo:"Emprestar 480x no asfalto", meta:480, tipo:"emp", premioTitulo:"TÍTULO BARÃO DO ASFALTO", premioDolar:26},
+{id:"c25", nome:"Dono da Noite", objetivo:"Emprestar 500x na noite", meta:500, tipo:"emp", premioTitulo:"", premioDolar:27},
+{id:"c26", nome:"Lenda Urbana da Laje", objetivo:"Emprestar 520x lendário", meta:520, tipo:"emp", premioTitulo:"", premioDolar:28},
+{id:"c27", nome:"Patrimônio da Favela", objetivo:"Emprestar 540x patrimônio", meta:540, tipo:"emp", premioTitulo:"TÍTULO PATRIMÔNIO", premioDolar:29},
+{id:"c28", nome:"Rei do Corre", objetivo:"Emprestar 560x no corre", meta:560, tipo:"emp", premioTitulo:"", premioDolar:30},
+{id:"c29", nome:"Senhor do Cofre", objetivo:"Emprestar 580x cofrando", meta:580, tipo:"emp", premioTitulo:"", premioDolar:31},
+{id:"c30", nome:"Imperador da Quebrada", objetivo:"Emprestar 600x imperando", meta:600, tipo:"emp", premioTitulo:"TÍTULO IMPERADOR", premioDolar:32},
+{id:"c31", nome:"Mestre da Cobrança", objetivo:"Emprestar 620x cobrando", meta:620, tipo:"emp", premioTitulo:"", premioDolar:33},
+{id:"c32", nome:"Dominador do Beco", objetivo:"Emprestar 640x dominando", meta:640, tipo:"emp", premioTitulo:"", premioDolar:34},
+{id:"c33", nome:"Guardião do Caixa", objetivo:"Emprestar 660x guardando", meta:660, tipo:"emp", premioTitulo:"TÍTULO GUARDIÃO DO CAIXA", premioDolar:35},
+{id:"c34", nome:"Barão Supremo", objetivo:"Emprestar 680x supremo", meta:680, tipo:"emp", premioTitulo:"", premioDolar:36},
+{id:"c35", nome:"Lenda Imortal", objetivo:"Emprestar 700x imortal", meta:700, tipo:"emp", premioTitulo:"", premioDolar:37},
+{id:"c36", nome:"Chefão Final da Laje", objetivo:"Emprestar 720x final", meta:720, tipo:"emp", premioTitulo:"TÍTULO CHEFÃO FINAL", premioDolar:38},
+{id:"c37", nome:"Deus da Quebrada", objetivo:"Emprestar 740x divino", meta:740, tipo:"emp", premioTitulo:"", premioDolar:39},
+{id:"c38", nome:"Senhor do Morro Alto", objetivo:"Emprestar 760x no alto", meta:760, tipo:"emp", premioTitulo:"", premioDolar:40},
+{id:"c39", nome:"Rei do Asfalto Quente", objetivo:"Emprestar 780x no quente", meta:780, tipo:"emp", premioTitulo:"TÍTULO REI DO ASFALTO", premioDolar:41},
+{id:"c40", nome:"Imortal da Favela", objetivo:"Emprestar 800x imortal", meta:800, tipo:"emp", premioTitulo:"", premioDolar:42},
+{id:"c41", nome:"Titã da Laje", objetivo:"Emprestar 820x titã", meta:820, tipo:"emp", premioTitulo:"", premioDolar:43},
+{id:"c42", nome:"Colosso da Quebrada", objetivo:"Emprestar 840x colosso", meta:840, tipo:"emp", premioTitulo:"TÍTULO COLOSSO", premioDolar:44},
+{id:"c43", nome:"Gigante do Morro", objetivo:"Emprestar 860x gigante", meta:860, tipo:"emp", premioTitulo:"", premioDolar:45},
+{id:"c44", nome:"Monstro da Comunidade", objetivo:"Emprestar 880x monstro", meta:880, tipo:"emp", premioTitulo:"", premioDolar:46},
+{id:"c45", nome:"Lenda Viva da Quebrada", objetivo:"Emprestar 900x vivo", meta:900, tipo:"emp", premioTitulo:"TÍTULO LENDA VIVA", premioDolar:47},
+{id:"c46", nome:"Mito Supremo", objetivo:"Emprestar 920x supremo", meta:920, tipo:"emp", premioTitulo:"", premioDolar:48},
+{id:"c47", nome:"Deus do Caderninho", objetivo:"Emprestar 940x anotando", meta:940, tipo:"emp", premioTitulo:"", premioDolar:49},
+{id:"c48", nome:"Imperador Supremo da Laje", objetivo:"Emprestar 960x supremo", meta:960, tipo:"emp", premioTitulo:"TÍTULO IMPERADOR SUPREMO", premioDolar:50},
+{id:"c49", nome:"Barão Eterno", objetivo:"Emprestar 980x eterno", meta:980, tipo:"emp", premioTitulo:"", premioDolar:51},
+{id:"c50", nome:"PATRÃO ETERNO DA FAVELA", objetivo:"Emprestar 1000x - DOMINOU A QUEBRADA", meta:1000, tipo:"emp", premioTitulo:"TÍTULO PATRÃO ETERNO", premioDolar:100}
 ];
-for(let i=6;i<=50;i++){conquistas.push({id:"c"+i, nome:`Lenda ${i}`, objetivo:`Emprestar ${i*20}x`, meta:i*20, tipo:"emp", premioTitulo:i%3==0?`TÍTULO ${i}`:"", premioDolar:5+Math.floor(i/2)});}
 let conquistasColetadas={};
 function getProgConquista(c){if(c.tipo=="emp") return totalEmp||0; if(c.tipo=="lucro") return totalLucro||0; if(c.tipo=="lvl") return level||1; if(c.tipo=="caixa") return money||0; if(c.tipo=="negar") return negarCount||0; if(c.tipo=="policia") return (usado._policia||0); if(c.tipo=="jurosTotal") return jurosCount||0; if(c.tipo=="seq") return seq||0; return 0;}
 function mostrarErroLogin(msg){let el=document.getElementById('loginErro');el.innerText=msg;el.style.display='block';setTimeout(()=>{el.style.display='none';},3000);}
@@ -263,11 +311,11 @@ function renderConquistasAba(){
   let paraMostrar = disponiveis.slice(0,10);
   paraMostrar.forEach((c,i)=>{
    let prog=getProgConquista(c);let pct=Math.min(100,Math.floor(prog/c.meta*100));let feito=prog>=c.meta;
-   html+=`<div class="conquistaCard ${feito?'feita':''}"><b>${i+1}. ${c.nome}</b><br><small>🎯 ${c.objetivo} | 💲${c.premioDolar}</small><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${prog}/${c.meta} ${pct}%</small>${feito?`<button class="btn verde" onclick="coletarConquista('${c.id}')">✅ RESGATAR</button>`:''}</div>`;
+   html+=`<div class="conquistaCard ${feito?'feita':''}"><b>${i+1}. ${c.nome}</b><br><small>🎯 ${c.objetivo}</small><br><small>🎁 💲${c.premioDolar} ${c.premioTitulo?'🏷️ '+c.premioTitulo:''}</small><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${prog}/${c.meta} ${pct}%</small>${feito?`<button class="btn verde" onclick="coletarConquista('${c.id}')">✅ RESGATAR</button>`:''}</div>`;
   });
  }else{
-  if(concluidas.length==0) html+=`<div class="card"><small>Nenhuma concluída</small></div>`;
-  else concluidas.reverse().forEach(c=>{html+=`<div class="conquistaCard feita"><b>✔️ ${c.nome}</b></div>`;});
+  if(concluidas.length==0) html+=`<div class="card"><small>Nenhuma concluída - complete as da aba ABERTAS que elas vêm pra cá automaticamente.</small></div>`;
+  else concluidas.reverse().forEach(c=>{html+=`<div class="conquistaCard feita"><b>✔️ ${c.nome}</b><br><small>🎯 ${c.objetivo} - CONCLUÍDA | 🎁 💲${c.premioDolar}</small></div>`;});
  }
  document.getElementById('listaConquistas').innerHTML=html;
 }
@@ -287,14 +335,11 @@ const personagensComuns=[
 {n:"Ana",sig:"AN",cor:"#EC407A",r:"MÉDIO",c:75,p:120,d:250,falas:falas.Ana},
 ];
 const policiaisDisfarcados=[{n:"Rafael",sig:"RS",cor:"#78909C",r:"MÉDIO",c:92,p:400,d:850,falas:["Você emite comprovante?","Qual sua taxa?","Posso anotar seu nome?","Você declara IR?","Qual seu CNPJ?"],policia:true}];
-const personagens=[...personagensComuns,...policiaisDisfarcados];
 let cur;
-
 function carregarSave(){let raw=localStorage.getItem('save_'+currentUser);if(!raw){novo();check();return;}try{let s=JSON.parse(raw);day=s.day||1;money=s.money||500;fame=s.fame||1;level=s.level||1;dolar=s.dolar||0;inv=s.inv||{};usado=s.usado||{};totalEmp=s.totalEmp||0;totalLucro=s.totalLucro||0;jurosCount=s.jurosCount||0;negarCount=s.negarCount||0;conquistasColetadas=s.conquistasColetadas||{};tituloEscolhido=s.tituloEscolhido||null;proxMissaoIdx=s.proxMissaoIdx||3;proxDesafioIdx=s.proxDesafioIdx||3;if(s.ativasMissoes) ativasMissoes=s.ativasMissoes;if(s.ativasDesafios) ativasDesafios=s.ativasDesafios;renderSlots();atualizarTituloAvatar();novo();check();}catch(e){novo();check();}}
 function saveGame(){if(!currentUser) return;let old=JSON.parse(localStorage.getItem('save_'+currentUser)||'{}');let data={pass:old.pass||'1234',day,money,fame,level,dolar,inv,usado,totalEmp,totalLucro,jurosCount,negarCount,conquistasColetadas,tituloEscolhido,proxMissaoIdx,proxDesafioIdx,ativasMissoes,ativasDesafios};localStorage.setItem('save_'+currentUser,JSON.stringify(data));localStorage.setItem('currentUser',currentUser);}
 function logout(){if(currentUser) saveGame();localStorage.removeItem('currentUser');currentUser=null;document.getElementById('loginModal').style.display='flex';closeMenu();}
 function atualizarTituloAvatar(){let el=document.getElementById('tituloExclusivo');let hud=document.getElementById('patrao');hud.innerText=getTituloLevel(level);if(tituloEscolhido){el.innerText="🏆 "+tituloEscolhido;el.style.display='block';}else{el.style.display='none';}}
-
 function check(){
  document.getElementById('money').innerText='R$'+Math.floor(money);
  document.getElementById('dolar').innerText='💲'+dolar;
@@ -306,7 +351,6 @@ function check(){
  saveGame();
  atualizarProgress();
 }
-
 function novo(){
  let lista = Math.random()<0.15 ? policiaisDisfarcados : personagensComuns;
  let disp = lista.filter(p=>!usado[p.n]||usado[p.n]<4);
@@ -337,7 +381,7 @@ function novo(){
  let opcoes=[
    {t:`💵 EMPRESTAR R$${cur.p}`,d:`Recebe R$${volta} | Chance ${cur.c}% (+${getTotalChanceBonus()}% itens)`,c:'amarelo',a:'pagar'},
    {t:`❌ NEGAR`,d:`Paga R$${valorNegar} - evita calote`,c:'branco',a:'negar'},
-   {t:`😈 JUROS R$${volta+80}`,d:`Lucro +80 mas chance -30% (itens não salvam 100%)`,c:'preto',a:'juros'}
+   {t:`😈 JUROS R$${volta+80}`,d:`Lucro +80 mas chance -30%`,c:'preto',a:'juros'}
  ];
  opcoes.forEach(o=>{
    let b=document.createElement('button');
@@ -347,7 +391,6 @@ function novo(){
    div.appendChild(b);
  });
 }
-
 function atualizarProgress(){
  ativasMissoes.forEach(m=>{
   if(m.tipo=="emp") m.prog=totalEmp;
@@ -370,45 +413,25 @@ function atualizarProgress(){
  renderColeta();
  if(document.getElementById('conquistasModal').style.display=='flex'){renderConquistasAba();}
 }
-function renderColeta(){let area=document.getElementById('areaColeta');area.innerHTML='';missaoParaColetar.forEach(m=>{area.innerHTML+=`<button class="btn verde" onclick="coletarMissao(${m.id})">🎯 ${m.t} +R$${m.premio}</button>`;});desafiosParaColetar.forEach(d=>{area.innerHTML+=`<button class="btn roxo" onclick="coletarDesafio(${d.id})">🏆 ${'★'.repeat(d.estrelas)} +${d.premioDolar}💲</button>`;});}
+function renderColeta(){let area=document.getElementById('areaColeta');area.innerHTML='';missaoParaColetar.forEach(m=>{area.innerHTML+=`<button class="btn verde" onclick="coletarMissao(${m.id})">🎯 ${m.t} +R$${m.premio}</button>`;});desafiosParaColetar.forEach(d=>{area.innerHTML+=`<button class="btn roxo" onclick="coletarDesafio(${d.id})">🏆 ${'★'.repeat(d.estrelas)} ${d.t.split(' - ')[0]} +${d.premioDolar}💲</button>`;});}
 function coletarMissao(id){let idx=ativasMissoes.findIndex(m=>m.id==id);if(idx==-1) return;let m=ativasMissoes[idx];money+=m.premio;ativasMissoes.splice(idx,1);if(proxMissaoIdx<todasMissoes.length){ativasMissoes.push(todasMissoes[proxMissaoIdx]);proxMissaoIdx++;}renderColeta();check();}
 function coletarDesafio(id){let idx=ativasDesafios.findIndex(d=>d.id==id);if(idx==-1) return;let d=ativasDesafios[idx];dolar+=d.premioDolar;ativasDesafios.splice(idx,1);if(proxDesafioIdx<todosDesafios.length){ativasDesafios.push(todosDesafios[proxDesafioIdx]);proxDesafioIdx++;}renderColeta();check();}
-
 function jogar(tipo){
  if(!cur){novo(); return;}
- if(tipo=='negar'){
-  money-=valorNegar;negarCount++;valorNegar=Math.floor(25+(negarCount*8)+(money*0.02));fame=Math.max(0,fame-0.5);seq=0;day++;
-  log(`❌ Negou ${cur.n}`);check();novo();return;
- }
- if(cur.policia){
-  usado._policia=(usado._policia||0)+1;let fianca=Math.floor(money*0.5);if(fianca<100) fianca=100;money-=fianca;
-  log(`🚨 POLÍCIA! -R$${fianca}`);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;
- }
+ if(tipo=='negar'){money-=valorNegar;negarCount++;valorNegar=Math.floor(25+(negarCount*8)+(money*0.02));fame=Math.max(0,fame-0.5);seq=0;day++;log(`❌ Negou ${cur.n}`);check();novo();return;}
+ if(cur.policia){usado._policia=(usado._policia||0)+1;let fianca=Math.floor(money*0.5);if(fianca<100) fianca=100;money-=fianca;log(`🚨 POLÍCIA! -R$${fianca}`);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;}
  let ch=cur.c,pe=cur.p,de=cur.d;
- let bonusLucro=getTotalLucroBonus();
- de=Math.floor(de*(1+bonusLucro/100));
+ let bonusLucro=getTotalLucroBonus(); de=Math.floor(de*(1+bonusLucro/100));
  if(tipo=='pagar'){pe=cur.p*2;de=pe*2;ch-=8;}
  if(tipo=='juros'){de+=80;ch-=30;jurosCount++;}
  ch+=getTotalChanceBonus();
  if(cur.r=='ALTO'){ ch+=getGlockBonusVsAlto(); }
- // BALANCEAMENTO: chance máxima 92% mesmo com tudo, juros máximo 78%
  if(tipo=='juros'){ if(ch>78) ch=78; } else { if(ch>92) ch=92; }
  if(ch<5) ch=5;
  let pagou=Math.random()*100<ch;
- if(pagou){
-  let lucro=de-pe;money+=lucro;fame+=1;totalEmp++;totalLucro+=lucro;seq++;
-  document.getElementById('bubble').innerText=`✅ ${cur.n} pagou R$${de}! (${ch.toFixed(0)}% chance)`;
-  log(`✅ ${cur.n} pagou R$${de} [${ch.toFixed(0)}%]`);day++;check();novo();
- }else{
-  fame=Math.max(0,fame-0.5);seq=0;pendentePerda=pe;
-  let rec=getRecuperacaoBonus();
-  if(rec>0){let recuperado=Math.floor(pe*rec/100); document.getElementById('adText').innerText=cur.n+` calote R$${pe} - Moto recupera ${rec}% (R$${recuperado}) se salvar`; }
-  else { document.getElementById('adText').innerText=cur.n+` calote R$${pe} - chance era ${ch.toFixed(0)}%`; }
-  document.getElementById('adSave').style.display='flex';
-  check();
- }
+ if(pagou){let lucro=de-pe;money+=lucro;fame+=1;totalEmp++;totalLucro+=lucro;seq++;document.getElementById('bubble').innerText=`✅ ${cur.n} pagou R$${de}! (${ch.toFixed(0)}% chance)`;log(`✅ ${cur.n} pagou R$${de} [${ch.toFixed(0)}%]`);day++;check();novo();}
+ else{fame=Math.max(0,fame-0.5);seq=0;pendentePerda=pe;let rec=getRecuperacaoBonus(); if(rec>0){document.getElementById('adText').innerText=cur.n+` calote R$${pe} - Moto recupera ${rec}%`;} else {document.getElementById('adText').innerText=cur.n+` calote R$${pe} - chance era ${ch.toFixed(0)}%`;} document.getElementById('adSave').style.display='flex';check();}
 }
-
 function openTitulos(){
  let html='<div style="background:#FFF9C4;border:2px dashed #FFD600;padding:8px;border-radius:8px;margin-bottom:8px;font-size:11px">👑 LEVEL: ordem crescente - quando conquista um novo, o anterior sai.</div>';
  let indiceAtual = 0; for(let i=0;i<titulosLevel.length;i++){ if(level>=titulosLevel[i].l) indiceAtual=i; }
@@ -429,11 +452,7 @@ function salvarComAnuncio(){document.getElementById('adSave').style.display='non
 function pedirBanco(v,t){pendenteBanco=v;closeAll();mostrarAnuncio('banco',t);}
 function recompensaLiberada(){
  document.getElementById('adModal').style.display='none';
- if(pendenteTipo=='salvar'){
-   let rec=getRecuperacaoBonus();
-   if(rec>0){let recuperado=Math.floor(pendentePerda*rec/100); money+=recuperado; log(`🏍️ Moto recuperou R$${recuperado}`);}
-   fame+=1;totalEmp++;seq++;day++;check();novo();
- }
+ if(pendenteTipo=='salvar'){let rec=getRecuperacaoBonus(); if(rec>0){let recuperado=Math.floor(pendentePerda*rec/100); money+=recuperado; log(`🏍️ Moto recuperou R$${recuperado}`);} fame+=1;totalEmp++;seq++;day++;check();novo();}
  if(pendenteTipo=='banco'){money+=pendenteBanco;check();}
  if(pendenteTipo=='gameoverBanco'){money+=pendenteBanco;document.getElementById('gameOver').style.display='none';check();novo();}
  pendenteTipo=null;
@@ -451,7 +470,7 @@ const tutPassos=[
 {icon:"💵", titulo:"EMPRESTAR 2/5", texto:"EMPRESTAR: você empresta PEDE e recebe VOLTA se pagar. BAIXO paga 88%, ALTO paga 38%. Cordão aumenta volta.", acao:"👉 O QUE FAZER: Clique em 💵 EMPRESTAR R$ quando cliente for BAIXO. Seu CAIXA no topo vai aumentar!"},
 {icon:"❌", titulo:"NEGAR E JUROS 3/5", texto:"NEGAR: paga multa pequena mas evita calote grande. JUROS: ganha +R$80 mas chance cai 30%. Use com estratégia.", acao:"👉 O QUE FAZER: Se cliente for ALTO risco (vermelho), clique ❌ NEGAR pra não quebrar."},
 {icon:"🛒", titulo:"LOJINHA E TÍTULOS 4/5", texto:"LOJINHA com néon por raridade: COMUM cinza, RARO azul, ÉPICO roxo, LENDÁRIO laranja, ULTIMATE dourado pulsando. Buffs balanceados max 34%.", acao:"👉 O QUE FAZER: Abra MENU ☰ → LOJINHA e TÍTULOS. Compre com Dolinha 💲."},
-{icon:"🏆", titulo:"CONQUISTAS 5/5", texto:"CONQUISTAS separadas em 2 abas pra não ficar lista gigante: ABERTAS (10) e FEITAS. Missões dão R$ e Desafios ★ dão Dolinha.", acao:"👉 O QUE FAZER: Clique em MISSÕES e DESAFIOS. Agora feche tutorial e JOGUE até LVL 5!"},
+{icon:"🏆", titulo:"CONQUISTAS 5/5", texto:"CONQUISTAS renomeadas com nomes da quebrada, compatíveis com objetivo. ABERTAS (10) e FEITAS.", acao:"👉 O QUE FAZER: Clique em MISSÕES DA LAJE e DESAFIOS DO MORRO. Agora feche tutorial e JOGUE até LVL 5!"},
 ];
 function forcarTutorial(){tutPasso=0;if(currentUser) localStorage.removeItem('tutorialVisto_'+currentUser);mostrarTutorial();}
 function verificarTutorial(forcar=false){if(!currentUser) return; if(level>=5 && !forcar) return; if(!forcar && localStorage.getItem('tutorialVisto_'+currentUser)) return; if(forcar) tutPasso=0; mostrarTutorial();}
@@ -468,12 +487,12 @@ function openShop(){
    let proxIdx=(idx===undefined)?0:idx+1;
    if(proxIdx>=raridades.length){
      let r=raridades[4];
-     list.innerHTML+=`<div class="card raridade-${r.id}"><b>${item.icon} ${item.nome} - MAX ULTIMATE</b><br><small>${getBuffValor(item.id,4)}</small><div style="font-size:9px;color:${r.cor}">● NÉON ${r.nome}</div></div>`;
+     list.innerHTML+=`<div class="card raridade-${r.id}"><b>${item.icon} ${item.nome} - MAX ULTIMATE</b><br><small>${getBuffValor(item.id,4)}</small></div>`;
      return;
    }
    let rar=raridades[proxIdx];
    let atual=idx!==undefined?`Atual: ${getBuffValor(item.id,idx)}<br>`:'';
-   list.innerHTML+=`<div class="card raridade-${rar.id}"><b>${item.icon} ${item.nome}</b> <span class="tagRar" style="background:${rar.cor};box-shadow:0 0 8px ${rar.cor}">${rar.nome}</span><br><small>${atual}Próximo: ${getBuffValor(item.id,proxIdx)}</small><br><button class="btn roxo" onclick="comprarItem('${item.id}',${proxIdx},${rar.preco})">COMPRAR ${rar.preco}💲 - NÉON ${rar.nome}</button></div>`;
+   list.innerHTML+=`<div class="card raridade-${rar.id}"><b>${item.icon} ${item.nome}</b> <span class="tagRar" style="background:${rar.cor}">${rar.nome}</span><br><small>${atual}Próximo: ${getBuffValor(item.id,proxIdx)}</small><br><button class="btn roxo" onclick="comprarItem('${item.id}',${proxIdx},${rar.preco})">COMPRAR ${rar.preco}💲</button></div>`;
  });
  document.getElementById('shopModal').style.display='flex';
 }
