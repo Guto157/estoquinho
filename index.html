@@ -1,113 +1,166 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PEGA 1 PAGA 2</title>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1">
+<title>PEGA 1 PAGA 2 - Agiota</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui} body{background:#000;display:flex;justify-content:center}
-#game{width:100%;max-width:440px;background:#FFFBEA;min-height:100vh;display:flex;flex-direction:column}
-header{background:#111;color:#FFD600;padding:12px;display:flex;justify-content:space-between}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui, sans-serif}
+body{background:#000;display:flex;justify-content:center}
+#game{width:100%;max-width:460px;background:#FFFBEA;min-height:100vh;display:flex;flex-direction:column}
+header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:15px}
 .hud{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:8px;background:#222}
-.hud div{background:#111;border-radius:10px;padding:7px;color:#fff;text-align:center;font-size:11px} .hud b{display:block}
-#palco{padding:12px;text-align:center}
-#cliente{width:86px;height:86px;background:#fff;border:3px solid #111;border-radius:50%;font-size:42px;display:flex;align-items:center;justify-content:center;margin:auto}
-#bubble{background:#111;color:#fff;padding:12px;border-radius:14px;margin:10px auto;text-align:left;font-size:14px}
-#info{background:#fff;border:2.5px solid #111;border-radius:12px;padding:12px;text-align:left}
-.btn{width:100%;padding:14px;border-radius:12px;border:3px solid #111;font-weight:900;font-size:13px;margin-top:8px;text-align:left;cursor:pointer}
+.hud div{background:#111;border-radius:10px;padding:8px;color:#fff;text-align:center;font-size:10px;line-height:1.2}
+.hud b{display:block;margin-top:3px;font-size:13px}
+#palco{padding:12px;text-align:center;flex:1}
+#cliente{width:90px;height:90px;background:#fff;border:3px solid #111;border-radius:50%;font-size:44px;display:flex;align-items:center;justify-content:center;margin:0 auto}
+#bubble{background:#111;color:#fff;padding:12px 14px;border-radius:16px;margin:10px auto;text-align:left;font-size:14px;max-width:400px}
+#info{background:#fff;border:2.5px solid #111;border-radius:14px;padding:12px;text-align:left;margin-top:8px}
+#info h3{display:flex;justify-content:space-between;align-items:center}
+#tag{padding:4px 10px;border-radius:20px;font-size:10px;color:#111;font-weight:900}
+#hist{font-size:13px;color:#333;margin-top:6px}
+.stats{display:flex;gap:6px;margin-top:10px}
+.stats div{flex:1;background:#FFF3B0;border:1.5px solid #111;border-radius:10px;padding:6px;text-align:center;font-size:10px}
+.stats b{display:block;font-size:13px;margin-top:2px}
+.btn{width:100%;padding:14px 12px;border-radius:14px;border:2.5px solid #111;font-weight:900;font-size:13px;margin-top:8px;text-align:left;cursor:pointer;display:flex;justify-content:space-between}
+.btn small{font-weight:700;opacity:.8}
 .verde{background:#00E676}.amarelo{background:#FFD600}.branco{background:#fff}.preto{background:#111;color:#FFD600}
-#log{font-size:11px;color:#666;margin-top:10px;height:80px;overflow:auto}
+#log{font-size:11px;color:#666;margin-top:10px;height:90px;overflow:auto;text-align:left;background:#fff;border:1.5px dashed #ccc;border-radius:10px;padding:8px}
+#loja{margin-top:12px;background:#111;border-radius:14px;padding:10px;color:#FFD600;text-align:left}
+#loja h4{font-size:12px;margin-bottom:6px}
+.item{display:flex;justify-content:space-between;background:#222;padding:8px;border-radius:8px;margin-top:4px;font-size:12px;color:#fff}
 </style>
 </head><body>
 <div id="game">
-<header><b>PEGA 1 PAGA 2 💰</b><div>DIA <span id="day">1</span></div></header>
+<header><b>PEGA 1 PAGA 2 💰</b><div>DIA <span id="day">1</span> • NÍVEL <span id="lvl">1</span></div></header>
 <div class="hud">
 <div>CAIXA<b id="money" style="color:#00FF88">R$500</b></div>
-<div>DÓLAR<b>💲0</b></div>
-<div style="background:#FFD600;color:#111">BANCO</div>
-<div>TÍTULO<b style="font-size:9px">MOLEQUE</b></div>
+<div>DÓLAR<b id="dolar">💲0</b></div>
+<div style="background:#FFD600;color:#111">BANCO<b id="bank" style="color:#111">R$0</b></div>
+<div>TÍTULO<b id="patrao" style="font-size:9px">MOLEQUE</b></div>
 </div>
+
 <div id="palco">
 <div id="cliente">💈</div>
 <div id="bubble">...</div>
+
 <div id="info">
-<h3><span id="nome"></span> <span id="tag" style="padding:4px 8px;border-radius:20px;font-size:11px;color:#111;font-weight:900"></span></h3>
+<h3><span id="nome"></span> <span id="tag"></span></h3>
 <p id="hist"></p>
-<div style="display:flex;gap:6px;margin-top:8px">
-<div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">PEDE<b id="pede" style="display:block"></b></div>
-<div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">VOLTA<b id="volta" style="display:block"></b></div>
-<div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">CHANCE<b id="chance" style="display:block"></b></div>
+<div class="stats">
+<div>PEDE<b id="pede"></b></div>
+<div style="background:#FFD600">RECEBER<b id="volta"></b></div>
+<div>CHANCE<b id="chance"></b></div>
 </div>
 </div>
+
 <div id="choices"></div>
 <div id="log"></div>
+
+<div id="loja">
+<h4>🏪 LOJINHA - AGITOA (itens vestem no avatar)</h4>
+<div id="itensLoja"></div>
+</div>
 </div>
 </div>
 
 <script>
-let day=1,money=500;
+let day=1,money=500,bank=0,fame=1,level=1;
 let usado={};
+let inv=[];
 const personagens=[
-{n:"Beto",e:"👷",r:"BAIXO",c:88,p:50,d:100,h:["Mulher no hospital"]},
-{n:"Tia Coxinha",e:"👩‍🍳",r:"BAIXO",c:82,p:70,d:130,h:["Geladeira queimou"]},
-{n:"Nego do Corte",e:"💈",r:"ALTO",c:38,p:200,d:600,h:["Máquina quebrou"]},
-{n:"Jéssica Nail",e:"💅",r:"MÉDIO",c:62,p:90,d:200,h:["Cliente grande"]},
-{n:"Magrão 12",e:"😎",r:"MÉDIO",c:55,p:120,d:300,h:["Baile vai lotar"]}
+{n:"Beto Pedreiro",e:"👷",r:"BAIXO",c:88,p:50,h:["Minha mulher tá no hospital, patrão"]},
+{n:"Tia Coxinha",e:"👩‍🍳",r:"BAIXO",c:82,p:70,h:["Geladeira da coxinha queimou"]},
+{n:"Nego do Corte",e:"💈",r:"ALTO",c:38,p:200,h:["Preciso de máquina nova, os mano tão esperando"]},
+{n:"Jéssica Nail",e:"💅",r:"MÉDIO",c:62,p:90,h:["Chegou cliente grande, preciso de material"]},
+{n:"Magrão 12",e:"😎",r:"MÉDIO",c:55,p:120,h:["Baile vai lotar, preciso investir"]},
+{n:"Léo da Adega",e:"🍺",r:"MÉDIO",c:60,p:110,h:["Fornecedor não entrega sem pagar"]},
+{n:"Kevin do Bike",e:"🚲",r:"BAIXO",c:85,p:60,h:["Furou pneu, sem bike não trabalho"]}
+];
+const lojaItens=[
+{n:"bone",label:"🧢 Boné FAVELA",preco:80},
+{n:"cordao",label:"⛓️ Cordão Ouro",preco:200},
+{n:"relogio",label:"⌚ Relógio",preco:150},
+{n:"moto",label:"🏍️ Moto 160",preco:500},
+{n:"pit",label:"🐕 Pitbull",preco:300}
 ];
 let cur;
+
+function renderLoja(){
+let html='';
+lojaItens.forEach(it=>{
+if(!inv.includes(it.n)){
+html+=`<div class="item"><span>${it.label}</span><button onclick="comprar('${it.n}',${it.preco})" style="background:#FFD600;border:1px solid #111;border-radius:6px;padding:2px 8px;font-weight:900;cursor:pointer">R$${it.preco}</button></div>`;
+}
+});
+document.getElementById('itensLoja').innerHTML=html||'<div style="color:#0f0;font-size:11px">Tudo comprado!</div>';
+}
+
+function comprar(nome,preco){
+if(money<preco){log('Sem grana pra '+nome);return}
+money-=preco;
+inv.push(nome);
+log(`Comprou ${nome} - agiota agora veste ${nome}`);
+renderLoja(); check();
+}
+
 function novo(){
 let disp=personagens.filter(p=>!usado[p.n]||usado[p.n]<3);
 if(disp.length==0){usado={};disp=personagens}
 cur=disp[Math.floor(Math.random()*disp.length)];
 usado[cur.n]=(usado[cur.n]||0)+1;
+
 document.getElementById('cliente').innerText=cur.e;
 document.getElementById('nome').innerText=cur.n;
 document.getElementById('tag').innerText=cur.r;
 document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
 document.getElementById('hist').innerText=cur.h[0];
-document.getElementById('bubble').innerText=cur.n+': "Preciso de ajuda"';
+document.getElementById('bubble').innerText=cur.n+': "'+cur.h[0]+'"';
+
 document.getElementById('pede').innerText='R$'+cur.p;
-document.getElementById('volta').innerText='R$'+(cur.p*2);
+// CORREÇÃO AQUI: RECEBER É SEMPRE 2x DO QUE PEDE
+let receber = cur.p * 2; // pede 100 -> receber 200
+document.getElementById('volta').innerText='R$'+receber;
 document.getElementById('chance').innerText=cur.c+'%';
 
 let div=document.getElementById('choices');
 div.innerHTML='';
-// CORREÇÃO: Se cliente pede 100, botão será RECEBER 200 (dobro do pedido)
-let valorPedido = cur.p; // ex: 100
-let valorReceber = valorPedido * 2; // ex: 200
-
 [
-{t:`💰 RECEBER ${valorReceber}`,c:'amarelo',a:'normal',pede:valorPedido,recebe:valorReceber},
-{t:`❌ NEGAR`,c:'branco',a:'negar'},
-{t:`😈 JUROS R$${valorReceber+150}`,c:'preto',a:'juros'}
+{t:`💰 RECEBER ${receber}`,sub:`empresta ${cur.p} / lucra ${receber-cur.p}`,c:'amarelo',a:'normal',p:cur.p,r:receber},
+{t:`❌ NEGAR`,sub:`sem risco`,c:'branco',a:'negar'},
+{t:`😈 JUROS RECEBER ${receber+150}`,sub:`+risco`,c:'preto',a:'juros',p:cur.p,r:receber+150}
 ].forEach(o=>{
 let b=document.createElement('button');
 b.className='btn '+o.c;
-b.innerText=o.t;
-b.onclick=()=>jogar(o.a,o.pede,o.recebe);
+b.innerHTML=`<span>${o.t}</span><small>${o.sub}</small>`;
+b.onclick=()=>jogar(o.a,o.p,o.r);
 div.appendChild(b);
 });
 }
 
 function jogar(tipo,pede,recebe){
-if(tipo=='negar'){log('Negou '+cur.n);day++;novo();return}
-let pe=pede;
-let de=recebe;
-if(tipo=='juros'){de=recebe+150}
-let pagou=Math.random()*100 < cur.c;
+if(tipo=='negar'){log('❌ Negou '+cur.n); day++; novo(); check(); return}
+let pagou=Math.random()*100 < (tipo=='juros'?cur.c-18:cur.c);
 if(pagou){
-money+=(de-pe);
-log(`✅ ${cur.n} pediu ${pe} pagou ${de} lucro ${de-pe}`);
-day++;
-novo();
+money+=(recebe-pede);
+log(`✅ ${cur.n} pediu ${pede} PAGOU ${recebe} (+${recebe-pede})`);
 }else{
-money-=Math.floor(pe*0.5);
-log(`💀 ${cur.n} CALOTE de R$${pe}`);
-day++;
-novo();
+money-=pede;
+log(`💀 ${cur.n} CALOTE de R$${pede} - Perdeu ${pede}`);
 }
-document.getElementById('day').innerText=day;
-document.getElementById('money').innerText='R$'+money;
+day++;
+if(day%5==0){level++; fame+=2}
+novo(); check();
 }
 
-function log(t){document.getElementById('log').innerHTML='> '+t+'<br>'+document.getElementById('log').innerHTML}
-novo();
+function check(){
+document.getElementById('day').innerText=day;
+document.getElementById('lvl').innerText=level;
+document.getElementById('money').innerText='R$'+money;
+document.getElementById('bank').innerText='R$'+bank;
+document.getElementById('patrao').innerText=level<3?'MOLEQUE':level<6?'AGIOTA':'PATRÃO';
+if(money<0) log('⚠️ Faliu! Mas continua...');
+}
+function log(t){let l=document.getElementById('log'); l.innerHTML='> '+t+'<br>'+l.innerHTML}
+
+renderLoja(); novo(); check();
 </script>
 </body></html>
