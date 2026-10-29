@@ -17,29 +17,30 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 .slot.vazio{opacity:0.25;border-style:dashed}
 .slot .buffMini{position:absolute;bottom:-5px;right:-5px;font-size:7px;background:#111;color:#FFD600;border-radius:5px;padding:1px 2px;font-weight:900}
 #buffsLinha{font-size:10px;background:#111;color:#FFD600;border-radius:8px;padding:5px 8px;min-height:22px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#tituloExclusivo{font-size:10px;background:linear-gradient(90deg,#FFD600,#FF9800);color:#111;border-radius:20px;padding:3px 8px;font-weight:900;display:none;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#clienteBox{width:70px;height:70px;border:2.5px solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;flex-shrink:0;transition:transform 0.3s}
-#clienteBox.trocando{transform:scale(0)}
+#tituloExclusivo{font-size:10px;background:linear-gradient(90deg,#FFD600,#FF9800);color:#111;border-radius:20px;padding:3px 10px;font-weight:900;display:none;max-width:220px;text-align:center}
+#clienteBox{width:72px;height:72px;border:3px solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;flex-shrink:0;transition:all 0.3s ease}
+#clienteBox.animOut{transform:scale(0) rotate(10deg);opacity:0}
+#clienteBox.animIn{transform:scale(1.15);opacity:1}
 #clienteAvatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#fff}
-#bubble{background:#111;color:#fff;padding:8px 10px;border-radius:10px;font-size:12px;text-align:left;flex-shrink:0;min-height:38px}
-#info{background:#fff;border:2px solid #111;border-radius:10px;padding:8px;text-align:left;flex-shrink:0}
+#bubble{background:#111;color:#fff;padding:8px 10px;border-radius:12px;font-size:12px;text-align:left;flex-shrink:0;min-height:40px;border-left:4px solid #FFD600}
+#info{background:#fff;border:2.5px solid #111;border-radius:12px;padding:8px;text-align:left;flex-shrink:0}
 #info .stats{display:flex;gap:4px;margin-top:6px}
-#info .stats div{flex:1;background:#FFF3B0;padding:4px;border-radius:6px;text-align:center;font-size:10px}
-#choices{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
-#choices .btn{position:relative;overflow:hidden;transition:transform 0.1s}
-#choices .btn:active{transform:scale(0.97)}
-#choices.disabled{pointer-events:none;opacity:0.5}
+#info .stats div{flex:1;background:#FFF3B0;padding:5px;border-radius:8px;text-align:center;font-size:10px;border:1px solid #111}
+#choices{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+#choices .btn{padding:12px;text-align:left;line-height:1.2;position:relative}
+#choices .btn small{display:block;font-size:9px;opacity:0.85;margin-top:2px;font-weight:600}
+#choices .btn:active{transform:scale(0.98)}
+#choices.bloqueado{pointer-events:none;opacity:0.6}
 .btn{width:100%;padding:10px;border-radius:10px;border:2.5px solid #111;font-weight:900;font-size:11px;cursor:pointer;flex-shrink:0}
-#areaColeta{max-height:36px;overflow:hidden;display:flex;gap:4px;flex-shrink:0}
-#areaColeta .btn{padding:6px;font-size:10px}
+#areaColeta{max-height:40px;overflow:hidden;display:flex;gap:4px;flex-shrink:0}
 #homeBtns{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex-shrink:0}
-#log{font-size:9px;color:#666;height:28px;overflow:hidden;flex-shrink:0}
+#log{font-size:9px;color:#666;height:26px;overflow:hidden;flex-shrink:0}
 .raridade-comum{border-color:#9E9E9E} .raridade-raro{border-color:#2196F3} .raridade-epico{border-color:#9C27B0} .raridade-lendario{border-color:#FF9800} .raridade-ultimate{border-color:#FFD600;background:#111;color:#FFD600}
 .verde{background:#00E676} .amarelo{background:#FFD600} .branco{background:#fff} .preto{background:#111;color:#FFD600} .roxo{background:#B388FF} .azul{background:#40C4FF}
 .modal{position:fixed;inset:0;background:#000e;z-index:30;padding:12px;display:none;align-items:center;justify-content:center;overflow:hidden}
 .modal .box{background:#FFFBEA;border:3px solid #111;border-radius:16px;padding:14px;max-width:420px;width:100%;max-height:90vh;overflow:auto}
 .card{background:#fff;border:2px solid #111;border-radius:10px;padding:10px;margin-bottom:6px}
-.card.selected{border-color:#FFD600;background:#FFF9C4}
+.card.selected{border-color:#FFD600;background:#FFF9C4;box-shadow:0 0 8px #FFD600}
 .progress{height:8px;background:#333;border-radius:8px;overflow:hidden;margin-top:4px} .bar{height:8px;background:#FFD600}
 .tagRar{font-size:8px;padding:2px 5px;border-radius:10px;color:#fff;font-weight:900}
 .conquistaCard{background:#fff;border:2px solid #111;border-radius:10px;padding:10px;margin-bottom:8px}
@@ -50,7 +51,10 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 .inputWrap{position:relative;display:flex;align-items:center;margin-top:6px}
 .inputWrap input{width:100%;padding:10px 40px 10px 10px;border:2.5px solid #111;border-radius:10px;font-weight:700;font-size:14px;margin:0}
 .inputWrap .eye{position:absolute;right:8px;background:#FFD600;border:2px solid #111;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:14px}
-.buffAtivo{background:#111;color:#00E676;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:900;margin:2px;display:inline-block}
+.subTitulo{font-size:12px;font-weight:900;background:#111;color:#FFD600;padding:6px 10px;border-radius:20px;margin:12px 0 6px 0;display:inline-block}
+.tutorial{position:fixed;inset:0;background:#000c;z-index:100;display:none;align-items:flex-end;justify-content:center;padding:12px}
+.tutorial .boxTut{background:#FFFBEA;border:3px solid #111;border-radius:16px;padding:14px;max-width:420px;width:100%;animation:pop 0.3s}
+@keyframes pop{from{transform:translateY(50px) scale(0.9)} to{transform:translateY(0) scale(1)}}
 </style>
 </head><body>
 <div id="game">
@@ -70,7 +74,6 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 <div class="colSlots"><div class="slot vazio" id="s4">?</div><div class="slot vazio" id="s5">?</div><div class="slot vazio" id="s6">?</div></div>
 </div>
 <div id="buffsLinha">Sem buffs</div>
-<div id="buffsTemporarios"></div>
 <div id="clienteBox"><div id="clienteAvatar">?</div></div>
 </div>
 <div id="bubble">...</div>
@@ -88,7 +91,6 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 <div class="menuItem" onclick="openConquistas();closeMenu()">🏆 CONQUISTAS</div>
 <div class="menuItem" onclick="openShop();closeMenu()">🛒 LOJINHA</div>
 <div class="menuItem" onclick="openTitulos();closeMenu()">👑 TÍTULOS</div>
-<div class="menuItem" onclick="openAlterarSenha();closeMenu()">🔑 ALTERAR SENHA</div>
 <button class="btn branco" onclick="closeMenu()">FECHAR</button>
 <button class="btn preto" onclick="logout()" style="margin-top:auto">SAIR</button>
 </div></div>
@@ -99,150 +101,168 @@ header{background:#111;color:#FFD600;padding:8px 12px;display:flex;justify-conte
 <div class="inputWrap"><input id="loginPass" type="password" placeholder="Senha min 4"><button class="eye" onclick="toggleEye('loginPass',this)">👁️</button></div>
 <div id="loginErro" style="display:none;background:#FFCDD2;color:#B71C1C;border:2px solid #EF5350;border-radius:8px;padding:8px;margin-top:8px;font-size:12px;font-weight:700"></div>
 <button class="btn amarelo" onclick="fazerLogin()">ENTRAR / CRIAR</button>
-<div style="display:flex;gap:6px;margin-top:8px">
-<button class="btn branco" style="font-size:11px;padding:8px" onclick="openRecuperar()">❓ SENHA</button>
-<button class="btn branco" style="font-size:11px;padding:8px" onclick="mostrarContas()">👥 CONTAS</button>
-</div>
-<div id="listaContasLocal" style="display:none;margin-top:8px"></div>
 </div></div>
 
-<div id="recuperarModal" class="modal"><div class="box">
-<h2>🔑 RECUPERAR</h2>
-<input id="recUser" placeholder="Seu nome" style="width:100%;padding:10px;border:2.5px solid #111;border-radius:10px">
-<div id="recErro" style="display:none;background:#FFCDD2;color:#B71C1C;border-radius:8px;padding:8px;margin-top:8px;font-size:12px"></div>
-<div class="inputWrap"><input id="recOldPass" type="password" placeholder="Senha atual"><button class="eye" onclick="toggleEye('recOldPass',this)">👁️</button></div>
-<div class="inputWrap"><input id="recNewPass" type="password" placeholder="Nova senha"><button class="eye" onclick="toggleEye('recNewPass',this)">👁️</button></div>
-<button class="btn amarelo" style="margin-top:8px" onclick="trocarSenhaRecuperar()">ALTERAR</button>
-<button class="btn branco" onclick="closeAll()">VOLTAR</button>
-</div></div>
-
-<div id="alterarSenhaModal" class="modal"><div class="box">
-<h2>🔑 ALTERAR SENHA</h2><p style="font-size:11px">Logado <b id="altUserLabel"></b></p>
-<div class="inputWrap"><input id="altOldPass" type="password" placeholder="Senha atual"><button class="eye" onclick="toggleEye('altOldPass',this)">👁️</button></div>
-<div class="inputWrap"><input id="altNewPass" type="password" placeholder="Nova senha"><button class="eye" onclick="toggleEye('altNewPass',this)">👁️</button></div>
-<div class="inputWrap"><input id="altConfPass" type="password" placeholder="Repita"><button class="eye" onclick="toggleEye('altConfPass',this)">👁️</button></div>
-<div id="altErro" style="display:none;background:#FFCDD2;color:#B71C1C;border-radius:8px;padding:8px;margin-top:8px;font-size:12px"></div>
-<button class="btn amarelo" onclick="alterarSenhaLogado()">SALVAR</button>
-<button class="btn branco" onclick="closeAll()">CANCELAR</button>
-</div></div>
-
-<div id="shopModal" class="modal"><div class="box"><h2>🛒 LOJINHA</h2><div id="shopList"></div><div style="background:#00E676;color:#111;padding:8px;border-radius:8px;margin:12px 0 8px 0;font-size:11px;font-weight:900">⚡ CONSUMÍVEIS</div><div id="shopConsumiveis"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="shopModal" class="modal"><div class="box"><h2>🛒 LOJINHA</h2><div id="shopList"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="conquistasModal" class="modal"><div class="box"><h2>🏆 CONQUISTAS</h2><div id="listaConquistas"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="bancoModal" class="modal"><div class="box"><h2>🏦 BANCO</h2><div class="card"><b>R$300</b><button class="btn verde" onclick="pedirBanco(300,10)">📺 +R$300</button></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="missoesModal" class="modal"><div class="box"><h2>🎯 MISSÕES</h2><div id="listaMissoes"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="desafiosModal" class="modal"><div class="box"><h2>🏆 DESAFIOS ★</h2><p style="font-size:11px">1★=1💲 até 5★=5💲</p><div id="listaDesafios"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="titulosModal" class="modal"><div class="box"><h2>👑 ESCOLHER TÍTULO</h2><p style="font-size:10px">Level e Conquistas. Escolha qual fica em cima do avatar.</p><div id="listaTitulos"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="pixModal" class="modal"><div class="box"><h2>💲 DOLINHA</h2><div class="card"><b>10 💲</b><button class="btn azul" onclick="comprarDolar(10)">JÁ PAGUEI</button></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="titulosModal" class="modal"><div class="box"><h2>👑 ESCOLHER TÍTULO DO AVATAR</h2><p style="font-size:10px">Level mantém no HUD. Aqui escolhe o que fica dourado em cima do avatar.</p><div id="listaTitulos"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="adSave" class="modal"><div class="box" style="text-align:center"><h2>💀 CALOTE!</h2><p id="adText"></p><button class="btn amarelo" onclick="salvarComAnuncio()">📺 SALVAR</button><button class="btn branco" onclick="aceitarPerda()">ACEITAR</button></div></div>
 <div id="adModal" class="modal"><div class="box" style="text-align:center"><h2>📺 ANÚNCIO</h2><p id="adTimer"></p><button id="btnClaim" class="btn verde" style="display:none" onclick="recompensaLiberada()">✅ PEGAR</button></div></div>
 <div id="gameOver" class="modal"><div class="box" style="text-align:center"><h2>🏦 QUEBROU!</h2><button class="btn amarelo" onclick="emprestimoBancoVideo()">📺 R$300</button><button class="btn roxo" onclick="emprestimoBancoDolar()">💲 10 DOLINHA - R$500</button><button class="btn branco" onclick="restartFull()">FALÊNCIA</button></div></div>
+
+<div id="tutorialModal" class="tutorial"><div class="boxTut">
+<div id="tutIcon" style="font-size:32px">👋</div>
+<h2 id="tutTitulo">BEM-VINDO AGIOTA!</h2>
+<p id="tutTexto" style="font-size:13px;margin:8px 0;line-height:1.4"></p>
+<div style="display:flex;gap:6px;margin-top:10px">
+<button class="btn branco" onclick="pularTutorial()">PULAR TUTORIAL</button>
+<button class="btn amarelo" onclick="proximoTutorial()">PRÓXIMO 👉</button>
+</div>
+<div style="font-size:10px;color:#666;margin-top:6px">Passo <span id="tutPasso">1</span>/5 - Até LVL 5</div>
+</div></div>
+
 </div>
 
 <script>
 let currentUser=null,day=1,money=500,fame=1,level=1,dolar=0,inv={},pendentePerda=0,pendenteTipo=null,pendenteBanco=0;
 let usado={},totalEmp=0,totalLucro=0,seq=0,jurosCount=0,negarCount=0,valorNegar=25;
 let missaoParaColetar=[],desafiosParaColetar=[];
-let buffsTemp={cafe:0,energetico:0,contrato:0};
-let tituloEscolhido=null; // null = usa level, ou string do titulo conquista
-const titulosLevel=[{l:1,n:"MOLEQUE"},{l:5,n:"FREGUÊS"},{l:10,n:"PATRÃO"},{l:20,n:"DONO DA LAJE"},{l:35,n:"REI DA QUEBRADA"},{l:50,n:"PATRÃO DA FAVELA"},{l:100,n:"CHEFÃO"}];
+let tituloEscolhido=null;
+const titulosLevel=[{l:1,n:"MOLEQUE"},{l:5,n:"FREGUÊS"},{l:10,n:"PATRÃO"},{l:20,n:"DONO DA LAJE"},{l:35,n:"REI DA QUEBRADA"},{l:50,n:"PATRÃO DA FAVELA"},{l:100,n:"CHEFÃO"},{l:200,n:"BARÃO"}];
 function getTituloLevel(lvl){let t="MOLEQUE";for(let x of titulosLevel){if(lvl>=x.l) t=x.n;}return t;}
 const raridades=[{id:"comum",nome:"COMUM",cor:"#9E9E9E",mult:1,preco:5},{id:"raro",nome:"RARO",cor:"#2196F3",mult:2,preco:12},{id:"epico",nome:"ÉPICO",cor:"#9C27B0",mult:3.5,preco:25},{id:"lendario",nome:"LENDÁRIO",cor:"#FF9800",mult:5.5,preco:50},{id:"ultimate",nome:"ULTIMATE",cor:"#FFD600",mult:9,preco:90}];
 const lojaItens=[{id:"bone",nome:"Boné",icon:"🧢",slot:"s1",base:10},{id:"cordao",nome:"Cordão",icon:"📿",slot:"s2",base:20},{id:"relogio",nome:"Relógio",icon:"⌚",slot:"s3",base:12},{id:"glock",nome:"Glock",icon:"🔫",slot:"s4",base:0},{id:"pit",nome:"Pitbull",icon:"🦮",slot:"s5",base:18},{id:"moto",nome:"Moto",icon:"🏍️",slot:"s6",base:30}];
-const consumiveis=[
-{id:"cafe",nome:"Café Forte",icon:"☕",desc:"+25% chance 2min",preco:2,duracao:120,buff:"cafe"},
-{id:"energetico",nome:"Energético",icon:"⚡",desc:"+50% lucro 3min",preco:3,duracao:180,buff:"energetico"},
-{id:"contrato",nome:"Contrato Blindado",icon:"📜",desc:"Bloqueia 1 calote 5min",preco:4,duracao:300,buff:"contrato"},
-];
-function toggleEye(id,btn){let inp=document.getElementById(id);inp.type=inp.type=="password"?"text":"password";btn.innerText=inp.type=="password"?"👁️":"🙈";}
+function toggleEye(id,btn){let i=document.getElementById(id);i.type=i.type=="password"?"text":"password";btn.innerText=i.type=="password"?"👁️":"🙈";}
 function getBuffValor(id,rIdx){let r=raridades[rIdx]; if(id=="glock") return rIdx>=2?"100%":`${40+rIdx*20}%`; return `+${Math.floor(lojaItens.find(i=>i.id==id).base*r.mult)}%`; }
 function getTotalBuffsTexto(){let c=0,l=0,r=0,g=""; if(inv['bone']!==undefined) c+=Math.floor(10*raridades[inv['bone']].mult); if(inv['relogio']!==undefined) c+=Math.floor(12*raridades[inv['relogio']].mult); if(inv['pit']!==undefined) c+=Math.floor(18*raridades[inv['pit']].mult); if(inv['cordao']!==undefined) l=Math.floor(20*raridades[inv['cordao']].mult); if(inv['moto']!==undefined) r=Math.floor(30*raridades[inv['moto']].mult); if(inv['glock']!==undefined){let rr=inv['glock']; g=rr>=2?"🔫 100%":`🔫 ${40+rr*20}%`;} let p=[]; if(c) p.push(`+${c}%`); if(l) p.push(`+${l}% LUCRO`); if(r) p.push(`Rec ${r}%`); if(g) p.push(g); return p.length?p.join(" | "):"Sem buffs"; }
 function renderSlots(){lojaItens.forEach(it=>{let el=document.getElementById(it.slot); let rIdx=inv[it.id]; if(rIdx===undefined){el.innerHTML="?"; el.className="slot vazio";} else {let r=raridades[rIdx]; el.innerHTML=`${it.icon}<span class="buffMini">${getBuffValor(it.id,rIdx)}</span>`; el.className=`slot raridade-${r.id}`;}}); document.getElementById('buffsLinha').innerText=getTotalBuffsTexto();}
-
 function gerarMissoes(){let arr=[];for(let i=1;i<=50;i++){let tipo=i%5,meta,premio,tipoStr;if(tipo==0){meta=6+Math.floor(i*0.9);premio=35+Math.floor(i*2.5);tipoStr="emp";arr.push({id:i,t:`Emprestar ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==1){meta=900+i*280;premio=40+Math.floor(i*3);tipoStr="lucro";arr.push({id:i,t:`Lucrar R$${meta}`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==2){meta=8+Math.floor(i/1.6);premio=45+Math.floor(i*2.8);tipoStr="fama";arr.push({id:i,t:`Fama ${meta}`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==3){meta=6+Math.floor(i/2);premio=50+Math.floor(i*3);tipoStr="seq";arr.push({id:i,t:`Seq ${meta}`,meta,premio,prog:0,tipo:tipoStr});}if(tipo==4){meta=5+Math.floor(i/2.5);premio=55+Math.floor(i*3.2);tipoStr="juros";arr.push({id:i,t:`Juros ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}}return arr;}
 function gerarDesafios(){let arr=[];for(let i=1;i<=50;i++){let estrelas=1,meta,tipo,nome,dif;if(i<=10){estrelas=1;dif="FÁCIL";meta=8000+i*1200;tipo="caixa";nome=`Juntar R$${meta}`;}else if(i<=20){estrelas=2;dif="MÉDIO";meta=30+i*3;tipo="totalEmp";nome=`Emprestar ${meta}x`;}else if(i<=30){estrelas=3;dif="DIFÍCIL";meta=20+i*2;tipo="jurosTotal";nome=`Juros ${meta}x`;}else if(i<=40){estrelas=4;dif="AVANÇADO";meta=30000+i*8000;tipo="lucroTotal";nome=`Lucrar R$${meta}`;}else{estrelas=5;dif="EXPERT";meta=150+i*5;tipo="totalEmp";nome=`Emprestar ${meta}x`;}arr.push({id:i,t:nome,meta:meta,premioDolar:estrelas,estrelas:estrelas,dif:dif,prog:0,tipo:tipo});}return arr;}
 let todasMissoes=gerarMissoes();let todosDesafios=gerarDesafios();let ativasMissoes=todasMissoes.slice(0,3);let ativasDesafios=todosDesafios.slice(0,3);let proxMissaoIdx=3,proxDesafioIdx=3;
-
 const conquistas=[
-{id:"c1", nome:"Primeiro Passo", objetivo:"Emprestar 5x", desc:"Começo", meta:5, tipo:"emp", premioTitulo:"", premioItem:"", premioDolar:2},
+{id:"c1", nome:"Primeiro Passo", objetivo:"Emprestar 5x", meta:5, tipo:"emp", premioTitulo:"", premioItem:"", premioDolar:2},
 {id:"c2", nome:"Coração de Pedra", objetivo:"Negar 10", meta:10, tipo:"negar", premioTitulo:"CORAÇÃO DE PEDRA", premioItem:"", premioDolar:5},
 {id:"c3", nome:"Mão Leve", objetivo:"Juros 10x", meta:10, tipo:"jurosTotal", premioTitulo:"", premioItem:"oculos", premioDolar:5},
 {id:"c4", nome:"Sobrevivente", objetivo:"R$5.000", meta:5000, tipo:"caixa", premioTitulo:"", premioItem:"", premioDolar:5},
 {id:"c5", nome:"Fama", objetivo:"LVL 10", meta:10, tipo:"lvl", premioTitulo:"FAMOSO", premioItem:"", premioDolar:8},
-{id:"c6", nome:"Imparável", objetivo:"10 seguidos", meta:10, tipo:"seq", premioTitulo:"IMPARÁVEL", premioItem:"", premioDolar:10},
-{id:"c7", nome:"Agiota Júnior", objetivo:"50x", meta:50, tipo:"emp", premioTitulo:"AGIOTA JÚNIOR", premioItem:"", premioDolar:10},
-{id:"c8", nome:"Caçado", objetivo:"5x polícia", meta:5, tipo:"policia", premioTitulo:"FORAGIDO", premioItem:"", premioDolar:12},
-{id:"c9", nome:"Colecionador", objetivo:"6 itens", meta:6, tipo:"colecao", premioTitulo:"", premioItem:"", premioDolar:15},
-{id:"c10", nome:"Ultimate", objetivo:"1 Ultimate", meta:1, tipo:"ultimate", premioTitulo:"ULTIMATE", premioItem:"", premioDolar:30},
 ];
-for(let i=11;i<=50;i++){conquistas.push({id:"c"+i, nome:`Lenda ${i}`, objetivo:`Emprestar ${i*20}x`, desc:`Desafio ${i}`, meta:i*20, tipo:"emp", premioTitulo:i%3==0?`TÍTULO ${i}`:"", premioItem:i%4==0?`item_${i}`:"", premioDolar:5+Math.floor(i/2)});}
+for(let i=6;i<=50;i++){conquistas.push({id:"c"+i, nome:`Lenda ${i}`, objetivo:`Emprestar ${i*20}x`, meta:i*20, tipo:"emp", premioTitulo:i%3==0?`TÍTULO ${i}`:"", premioItem:i%4==0?`item_${i}`:"", premioDolar:5+Math.floor(i/2)});}
 let conquistasColetadas={},itensExclusivos={};
 function getProgConquista(c){if(c.tipo=="emp") return totalEmp||0; if(c.tipo=="lucro") return totalLucro||0; if(c.tipo=="lvl") return level||1; if(c.tipo=="caixa") return money||0; if(c.tipo=="negar") return negarCount||0; if(c.tipo=="policia") return (usado._policia||0); if(c.tipo=="colecao"){let q=0;for(let k in inv) q++;return q;} if(c.tipo=="ultimate"){let q=0;for(let k in inv) if(inv[k]==4) q++;return q;} if(c.tipo=="jurosTotal") return jurosCount||0; if(c.tipo=="seq") return seq||0; return 0;}
-
-// LOGIN
-function mostrarErroLogin(msg){let el=document.getElementById('loginErro');el.innerText=msg;el.style.display='block';setTimeout(()=>{el.style.display='none';},5000);}
-function fazerLogin(){let u=document.getElementById('loginUser').value.trim().toLowerCase();let p=document.getElementById('loginPass').value.trim();if(u.length<2||p.length<4){mostrarErroLogin('Min 2 nome e 4 senha');return;}let key='save_'+u;let ex=localStorage.getItem(key);if(ex){try{let d=JSON.parse(ex);if(d.pass!==p){mostrarErroLogin('Senha errada');return;}currentUser=u;localStorage.setItem('currentUser',currentUser);document.getElementById('loginModal').style.display='none';carregarSave();return;}catch(e){}}currentUser=u;let nova={pass:p,day:1,money:500,fame:1,level:1,dolar:0,inv:{},usado:{},totalEmp:0,totalLucro:0,jurosCount:0,negarCount:0,conquistasColetadas:{},tituloEscolhido:null,buffsTemp:{cafe:0,energetico:0,contrato:0},proxMissaoIdx:3,proxDesafioIdx:3,ativasMissoes:todasMissoes.slice(0,3),ativasDesafios:todosDesafios.slice(0,3)};localStorage.setItem(key,JSON.stringify(nova));localStorage.setItem('currentUser',currentUser);document.getElementById('loginModal').style.display='none';carregarSave();}
-function openRecuperar(){document.getElementById('recuperarModal').style.display='flex';}
-function trocarSenhaRecuperar(){let u=document.getElementById('recUser').value.trim().toLowerCase();let oldP=document.getElementById('recOldPass').value.trim();let newP=document.getElementById('recNewPass').value.trim();let err=document.getElementById('recErro');if(!localStorage.getItem('save_'+u)){err.innerText='Conta não existe';err.style.display='block';return;}let data=JSON.parse(localStorage.getItem('save_'+u));if(data.pass!==oldP){err.innerText='Senha atual errada';err.style.display='block';return;}data.pass=newP;localStorage.setItem('save_'+u,JSON.stringify(data));currentUser=u;localStorage.setItem('currentUser',u);document.getElementById('recuperarModal').style.display='none';document.getElementById('loginModal').style.display='none';carregarSave();}
-function openAlterarSenha(){document.getElementById('altUserLabel').innerText=currentUser;document.getElementById('alterarSenhaModal').style.display='flex';}
-function alterarSenhaLogado(){let oldP=document.getElementById('altOldPass').value.trim();let newP=document.getElementById('altNewPass').value.trim();let conf=document.getElementById('altConfPass').value.trim();let err=document.getElementById('altErro');if(newP!==conf){err.innerText='Senhas diferentes';err.style.display='block';return;}let data=JSON.parse(localStorage.getItem('save_'+currentUser));if(data.pass!==oldP){err.innerText='Senha atual errada';err.style.display='block';return;}data.pass=newP;localStorage.setItem('save_'+currentUser,JSON.stringify(data));document.getElementById('alterarSenhaModal').style.display='none';}
-function mostrarContas(){let div=document.getElementById('listaContasLocal');let html='';for(let i=0;i<localStorage.length;i++){let k=localStorage.key(i);if(k.startsWith('save_')){let n=k.replace('save_','');html+=`<div style="display:flex;justify-content:space-between;background:#fff;border:2px solid #111;border-radius:8px;padding:6px;margin-bottom:4px"><b>${n}</b><button onclick="document.getElementById('loginUser').value='${n}'">USAR</button></div>`;}}div.innerHTML=html||'Nenhuma';div.style.display=div.style.display=='none'?'block':'none';}
+function mostrarErroLogin(msg){let el=document.getElementById('loginErro');el.innerText=msg;el.style.display='block';setTimeout(()=>{el.style.display='none';},4000);}
+function fazerLogin(){let u=document.getElementById('loginUser').value.trim().toLowerCase();let p=document.getElementById('loginPass').value.trim();if(u.length<2||p.length<4){mostrarErroLogin('Min 2 nome e 4 senha');return;}let key='save_'+u;let ex=localStorage.getItem(key);if(ex){try{let d=JSON.parse(ex);if(d.pass!==p){mostrarErroLogin('Senha errada');return;}currentUser=u;localStorage.setItem('currentUser',u);document.getElementById('loginModal').style.display='none';carregarSave();return;}catch(e){}}currentUser=u;let nova={pass:p,day:1,money:500,fame:1,level:1,dolar:0,inv:{},usado:{},totalEmp:0,totalLucro:0,jurosCount:0,negarCount:0,conquistasColetadas:{},tituloEscolhido:null,proxMissaoIdx:3,proxDesafioIdx:3,ativasMissoes:todasMissoes.slice(0,3),ativasDesafios:todosDesafios.slice(0,3)};localStorage.setItem(key,JSON.stringify(nova));localStorage.setItem('currentUser',u);document.getElementById('loginModal').style.display='none';carregarSave();}
 function openMenu(){document.getElementById('menuDrawer').style.display='block';}
 function closeMenu(){document.getElementById('menuDrawer').style.display='none';}
-function openConquistas(){let total=Object.keys(conquistasColetadas).length;let vis=10+total;if(vis>50)vis=50;let html="";for(let i=0;i<vis;i++){let c=conquistas[i];let prog=getProgConquista(c);let pct=Math.min(100,Math.floor(prog/c.meta*100));let feito=prog>=c.meta;let coletado=conquistasColetadas[c.id];html+=`<div class="conquistaCard ${feito?'feita':''}"><b>${i+1}. ${c.nome}</b><br><small>🎯 ${c.objetivo} | 💲${c.premioDolar} ${c.premioTitulo?'🏷️ '+c.premioTitulo:''}</small><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${prog}/${c.meta} ${pct}%</small>${feito&&!coletado?`<button class="btn verde" onclick="coletarConquista('${c.id}')">RESGATAR</button>`:''}${coletado?'✔️':''}</div>`;}document.getElementById('listaConquistas').innerHTML=html;document.getElementById('conquistasModal').style.display='flex';}
-function coletarConquista(id){let c=conquistas.find(x=>x.id==id);if(!c||getProgConquista(c)<c.meta||conquistasColetadas[id]) return;dolar+=c.premioDolar;if(c.premioTitulo){tituloEscolhido=c.premioTitulo;atualizarTituloAvatar();}if(c.premioItem){itensExclusivos[c.premioItem]=true;}conquistasColetadas[id]=true;saveGame();openConquistas();check();}
 
-// PERSONAGENS COM 25 INTERAÇÕES CADA
-const interacoesBase={
+// CONQUISTAS COM 2 SUBTÍTULOS - 10 DISPONÍVEIS + CONCLUÍDAS
+function openConquistas(){
+ let disponiveis = conquistas.filter(c=>!conquistasColetadas[c.id]);
+ let html="";
+ html+=`<div class="subTitulo">🎯 10 DISPONÍVEIS (sempre mantém 10)</div>`;
+ let paraMostrar = disponiveis.slice(0,10);
+ paraMostrar.forEach((c,i)=>{
+  let prog=getProgConquista(c);
+  let pct=Math.min(100,Math.floor(prog/c.meta*100));
+  let feito=prog>=c.meta;
+  html+=`<div class="conquistaCard ${feito?'feita':''}">
+  <b>${i+1}. ${c.nome}</b><br>
+  <small>🎯 ${c.objetivo} | 💲${c.premioDolar} ${c.premioTitulo?'🏷️ '+c.premioTitulo:''}</small>
+  <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
+  <small>${prog}/${c.meta} ${pct}%</small>
+  ${feito?`<button class="btn verde" onclick="coletarConquista('${c.id}')">RESGATAR E LIBERAR ESPAÇO</button>`:''}
+  </div>`;
+ });
+ if(disponiveis.length>10){
+  html+=`<small style="color:#666">+ ${disponiveis.length-10} na fila esperando espaço</small>`;
+ }
+ let concluidas = conquistas.filter(c=>conquistasColetadas[c.id]);
+ html+=`<div class="subTitulo">✅ CONQUISTAS REALIZADAS (${concluidas.length})</div>`;
+ if(concluidas.length==0){
+  html+=`<div class="card" style="opacity:0.6"><small>Nenhuma concluída ainda. Complete que elas vêm pra cá e liberam espaço.</small></div>`;
+ }else{
+  concluidas.slice(-20).reverse().forEach(c=>{
+   html+=`<div class="conquistaCard feita" style="opacity:0.8">
+   <b>✔️ ${c.nome}</b><br>
+   <small>🎯 ${c.objetivo} - CONCLUÍDA | 💲${c.premioDolar}</small>
+   <br><small>✔️ COLETADA - Liberou espaço</small>
+   </div>`;
+  });
+ }
+ document.getElementById('listaConquistas').innerHTML=html;
+ document.getElementById('conquistasModal').style.display='flex';
+}
+
+function coletarConquista(id){
+ let c=conquistas.find(x=>x.id==id);
+ if(!c||getProgConquista(c)<c.meta||conquistasColetadas[id]) return;
+ dolar+=c.premioDolar;
+ if(c.premioTitulo){tituloEscolhido=c.premioTitulo;atualizarTituloAvatar();}
+ if(c.premioItem){itensExclusivos[c.premioItem]=true;}
+ conquistasColetadas[id]=true;
+ log(`🏆 ${c.nome} → REALIZADAS e liberou espaço!`);
+ saveGame();
+ openConquistas();
+ check();
+}
+
+const falas={
  Beto:["Mulher no hospital, preciso urgente","Meu filho tá doente","Aluguel atrasado 3 meses","Minha moto quebrou","Preciso comprar remédio","Conta de luz vai cortar","Minha mãe precisa operar","Vou perder a casa","Preciso pra faculdade do filho","Minha geladeira queimou","Roubaram meu celular","Preciso viajar urgente","Meu pai tá internado","Vou ser despejado","Preciso comprar material escolar","Meu cachorro precisa operar","Bateram no meu carro","Preciso pagar pensão","Minha esposa vai ter bebê","Perdi meu emprego","Preciso abrir meu negócio","Meu irmão tá preso","Preciso pagar agiota mais caro","Vou montar uma barraca","Preciso comprar ferramentas"],
- Tia:["Geladeira queimou, perdi tudo","Meu neto tá doente","Preciso pagar meu remédio controlado","Aluguel subiu","Minha máquina de costura quebrou","Preciso comprar óculos","Conta d'água atrasada","Preciso pro meu enterro kkk","Meu filho não me ajuda","Preciso comprar comida","Meu telhado caiu","Preciso pagar IPTU","Vou fazer cirurgia","Preciso comprar botijão","Meu fogão explodiu","Preciso pagar empréstimo do banco","Minha aposentadoria atrasou","Preciso reformar casa","Meu cachorro fugiu","Preciso comprar colchão","Vou perder minha casa","Preciso pagar dentista","Minha luz cortaram","Preciso comprar cadeira de rodas","Vou montar doces pra vender"],
- Nego:["Máquina de lavar quebrou, trampo parado","Meu carro de app quebrou","Preciso comprar droga pra revender (zoeira)","Minha moto foi apreendida","Preciso pagar advogado","Tô devendo na boca","Preciso comprar peça","Meu irmão foi preso","Preciso fugir da cidade","Vou montar um lava jato","Preciso comprar celular novo","Minha mina tá grávida","Tô sem gás, sem luz","Preciso pagar fiança","Meu patrão não pagou","Preciso comprar arma (de airsoft)","Vou abrir barbearia","Preciso pagar pensão atrasada","Minha mãe foi despejada","Preciso comprar moto nova","Tô devendo pro chefe","Preciso de dinheiro pra cirurgia","Meu filho foi expulso da escola","Preciso comprar material de obra","Vou montar estúdio de tatuagem"]
+ Tia:["Geladeira queimou, perdi tudo","Meu neto tá doente","Preciso pagar meu remédio","Aluguel subiu","Máquina de costura quebrou","Preciso comprar óculos","Conta d'água atrasada","Meu filho não me ajuda","Preciso comprar comida","Meu telhado caiu","Preciso pagar IPTU","Vou fazer cirurgia","Preciso comprar botijão","Meu fogão explodiu","Preciso pagar empréstimo do banco","Minha aposentadoria atrasou","Preciso reformar casa","Meu cachorro fugiu","Preciso comprar colchão","Vou perder minha casa","Preciso pagar dentista","Minha luz cortaram","Preciso comprar cadeira de rodas","Vou montar doces","Preciso comprar gás"],
+ Nego:["Máquina quebrou, trampo parado","Meu carro de app quebrou","Minha moto foi apreendida","Preciso pagar advogado","Tô devendo na boca","Preciso comprar peça","Meu irmão foi preso","Preciso fugir da cidade","Vou montar um lava jato","Preciso comprar celular novo","Minha mina tá grávida","Tô sem gás, sem luz","Preciso pagar fiança","Meu patrão não pagou","Preciso comprar arma airsoft","Vou abrir barbearia","Preciso pagar pensão","Minha mãe foi despejada","Preciso comprar moto nova","Tô devendo pro chefe","Preciso de dinheiro pra cirurgia","Meu filho foi expulso","Preciso comprar material de obra","Vou montar estúdio","Preciso pagar aluguel"],
+ Ana:["Meu namorado me bateu, preciso sair","Preciso pagar creche","Meu ex não paga pensão","Preciso comprar leite pro bebê","Vou ser despejada com criança","Meu filho tá com pneumonia","Preciso fazer curso","Perdi bolsa da faculdade","Preciso comprar uniforme","Meu pai me expulsou","Preciso pagar psicólogo","Vou montar salão","Preciso comprar maquiagem","Meu celular quebrou","Preciso pagar cursinho","Minha mãe tá doente","Preciso comprar óculos pro filho","Vou abrir loja de roupa","Preciso pagar dentista","Minha geladeira tá vazia","Preciso comprar berço","Vou fazer unha","Preciso pagar luz","Meu marido me largou","Preciso recomeçar"]
 };
 const personagensComuns=[
-{n:"Beto",sig:"BL",cor:"#4A90E2",r:"BAIXO",c:88,p:50,d:100,interacoes:interacoesBase.Beto},
-{n:"Tia",sig:"TC",cor:"#E27A4A",r:"BAIXO",c:82,p:70,d:130,interacoes:interacoesBase.Tia},
-{n:"Nego",sig:"NC",cor:"#111",r:"ALTO",c:38,p:200,d:600,interacoes:interacoesBase.Nego},
-{n:"Ana",sig:"AN",cor:"#EC407A",r:"MÉDIO",c:75,p:120,d:250,interacoes:["Meu namorado me bateu, preciso sair","Preciso pagar creche","Meu ex não paga pensão","Preciso comprar leite pro bebê","Vou ser despejada com criança","Meu filho tá com pneumonia","Preciso fazer curso","Perdi bolsa da faculdade","Preciso comprar uniforme","Meu pai me expulsou de casa","Preciso pagar psicólogo","Vou montar salão","Preciso comprar maquiagem pra trabalhar","Meu celular quebrou e trabalho com ele","Preciso pagar cursinho","Minha mãe tá doente","Preciso comprar óculos pro filho","Vou abrir loja de roupa","Preciso pagar dentista do filho","Minha geladeira tá vazia","Preciso comprar berço","Vou fazer unha pra vender","Preciso pagar conta de luz","Meu marido me largou","Preciso recomeçar vida"]},
+{n:"Beto",sig:"BL",cor:"#4A90E2",r:"BAIXO",c:88,p:50,d:100,falas:falas.Beto},
+{n:"Tia",sig:"TC",cor:"#E27A4A",r:"BAIXO",c:82,p:70,d:130,falas:falas.Tia},
+{n:"Nego",sig:"NC",cor:"#111",r:"ALTO",c:38,p:200,d:600,falas:falas.Nego},
+{n:"Ana",sig:"AN",cor:"#EC407A",r:"MÉDIO",c:75,p:120,d:250,falas:falas.Ana},
 ];
-const policiaisDisfarcados=[{n:"Rafael",sig:"RS",cor:"#78909C",r:"MÉDIO",c:92,p:400,d:850,interacoes:["Você emite comprovante?","Qual sua taxa oficial?","Posso anotar seu nome?","Você declara IR?","Qual seu CNPJ?","Posso filmar nossa conversa?","Você tem alvará?","Qual a origem do dinheiro?","Você trabalha sozinho?","Quantas pessoas você já emprestou?","Posso ver seu contrato?","Você cobra juros abusivos?","Qual seu endereço fixo?","Você já foi preso?","Você tem sócio?","Qual seu faturamento?","Posso trazer um amigo?","Você aceita pix? Tem comprovante?","Qual sua garantia?","Você ameaça quem não paga?","Tem câmera aqui?","Posso anotar sua placa?","Você conhece o delegado?","Seu dinheiro é limpo?","Posso voltar amanhã com mais gente?"],policia:true}];
+const policiaisDisfarcados=[{n:"Rafael",sig:"RS",cor:"#78909C",r:"MÉDIO",c:92,p:400,d:850,falas:["Você emite comprovante?","Qual sua taxa oficial?","Posso anotar seu nome?","Você declara IR?","Qual seu CNPJ?","Posso filmar?","Você tem alvará?","Qual origem do dinheiro?","Você trabalha sozinho?","Quantas pessoas emprestou?","Posso ver contrato?","Você cobra juros abusivos?","Qual seu endereço?","Você já foi preso?","Você tem sócio?","Qual faturamento?","Posso trazer amigo?","Você aceita pix?","Qual garantia?","Você ameaça?","Tem câmera?","Posso anotar placa?","Você conhece delegado?","Dinheiro limpo?","Posso voltar amanhã?"],policia:true}];
 const personagens=[...personagensComuns,...policiaisDisfarcados];
-let cur;
-let bloqueado=false;
+let cur; let travado=false;
 
-function carregarSave(){let raw=localStorage.getItem('save_'+currentUser);if(!raw){novo();return;}try{let s=JSON.parse(raw);day=s.day||1;money=s.money||500;fame=s.fame||1;level=s.level||1;dolar=s.dolar||0;inv=s.inv||{};usado=s.usado||{};totalEmp=s.totalEmp||0;totalLucro=s.totalLucro||0;jurosCount=s.jurosCount||0;negarCount=s.negarCount||0;conquistasColetadas=s.conquistasColetadas||{};tituloEscolhido=s.tituloEscolhido||null;buffsTemp=s.buffsTemp||{cafe:0,energetico:0,contrato:0};proxMissaoIdx=s.proxMissaoIdx||3;proxDesafioIdx=s.proxDesafioIdx||3;if(s.ativasMissoes) ativasMissoes=s.ativasMissoes;if(s.ativasDesafios) ativasDesafios=s.ativasDesafios;renderSlots();atualizarTituloAvatar();novo();check();}catch(e){novo();}}
-function saveGame(){if(!currentUser) return;let old=JSON.parse(localStorage.getItem('save_'+currentUser)||'{}');let data={pass:old.pass||'1234',day,money,fame,level,dolar,inv,usado,totalEmp,totalLucro,jurosCount,negarCount,conquistasColetadas,tituloEscolhido,buffsTemp,proxMissaoIdx,proxDesafioIdx,ativasMissoes,ativasDesafios};localStorage.setItem('save_'+currentUser,JSON.stringify(data));localStorage.setItem('currentUser',currentUser);}
+function carregarSave(){let raw=localStorage.getItem('save_'+currentUser);if(!raw){novo();return;}try{let s=JSON.parse(raw);day=s.day||1;money=s.money||500;fame=s.fame||1;level=s.level||1;dolar=s.dolar||0;inv=s.inv||{};usado=s.usado||{};totalEmp=s.totalEmp||0;totalLucro=s.totalLucro||0;jurosCount=s.jurosCount||0;negarCount=s.negarCount||0;conquistasColetadas=s.conquistasColetadas||{};tituloEscolhido=s.tituloEscolhido||null;proxMissaoIdx=s.proxMissaoIdx||3;proxDesafioIdx=s.proxDesafioIdx||3;if(s.ativasMissoes) ativasMissoes=s.ativasMissoes;if(s.ativasDesafios) ativasDesafios=s.ativasDesafios;renderSlots();atualizarTituloAvatar();novo();check();}catch(e){novo();}}
+function saveGame(){if(!currentUser) return;let old=JSON.parse(localStorage.getItem('save_'+currentUser)||'{}');let data={pass:old.pass||'1234',day,money,fame,level,dolar,inv,usado,totalEmp,totalLucro,jurosCount,negarCount,conquistasColetadas,tituloEscolhido,proxMissaoIdx,proxDesafioIdx,ativasMissoes,ativasDesafios};localStorage.setItem('save_'+currentUser,JSON.stringify(data));localStorage.setItem('currentUser',currentUser);}
 function logout(){if(currentUser) saveGame();localStorage.removeItem('currentUser');currentUser=null;document.getElementById('loginModal').style.display='flex';closeMenu();}
 
 function atualizarTituloAvatar(){
  let el=document.getElementById('tituloExclusivo');
+ let hud=document.getElementById('patrao');
+ hud.innerText=getTituloLevel(level);
  if(tituloEscolhido){
   el.innerText="🏆 "+tituloEscolhido;
   el.style.display='block';
  }else{
   el.style.display='none';
  }
- document.getElementById('patrao').innerText=getTituloLevel(level);
 }
 
 function novo(){
- if(bloqueado) return;
- bloqueado=true;
- document.getElementById('clienteBox').classList.add('trocando');
+ if(travado) return;
+ travado=true;
+ let box=document.getElementById('clienteBox');
+ box.classList.add('animOut');
  setTimeout(()=>{
   let ehPolicia=Math.random()<0.18;
-  let listaBase=ehPolicia?policiaisDisfarcados:personagensComuns;
-  let disp=listaBase.filter(p=>!usado[p.n]||usado[p.n]<4);
-  if(disp.length==0){usado={};disp=listaBase}
-  cur=disp[Math.floor(Math.random()*disp.length)];
+  let lista=ehPolicia?policiaisDisfarcados:personagensComuns;
+  let disp=lista.filter(p=>!usado[p.n]||usado[p.n]<5);
+  if(disp.length==0){usado={};disp=lista}
+  let novoPers;
+  do{ novoPers=disp[Math.floor(Math.random()*disp.length)]; }while(personagens.length>1 && usado._ultimo && novoPers.n===usado._ultimo);
+  cur=novoPers;
   usado[cur.n]=(usado[cur.n]||0)+1;
   usado._ultimo=cur.n;
   document.getElementById('clienteAvatar').innerText=cur.sig;
   document.getElementById('clienteAvatar').style.background=cur.cor;
   let corBorda=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
-  document.getElementById('clienteBox').style.borderColor=corBorda;
+  box.style.borderColor=corBorda;
   document.getElementById('nome').innerText=cur.n;
   document.getElementById('tag').innerText=cur.r;
   document.getElementById('tag').style.background=corBorda;
-  let fala=cur.interacoes[Math.floor(Math.random()*cur.interacoes.length)];
+  let fala=cur.falas[Math.floor(Math.random()*cur.falas.length)];
   document.getElementById('hist').innerText=fala;
   document.getElementById('bubble').innerText=cur.n+': "'+fala+'"';
   document.getElementById('pede').innerText='R$'+cur.p;
@@ -251,78 +271,76 @@ function novo(){
   document.getElementById('chance').innerText=cur.c+'%';
   let div=document.getElementById('choices');
   div.innerHTML='';
-  div.classList.remove('disabled');
-  // BOTÕES MELHORADOS COM LÓGICA
-  let btns=[
-   {t:`💵 EMPRESTAR R$${cur.p} → Recebe R$${volta}`,c:'amarelo',a:'pagar',sub:`Chance ${cur.c}%`},
-   {t:`❌ NEGAR ( -R$${valorNegar} + fama -)`,c:'branco',a:'negar',sub:`Evita calote mas perde fama`},
-   {t:`😈 COBRAR JUROS R$${volta+80} (risco +30%)`,c:'preto',a:'juros',sub:`Lucro maior mas chance menor`}
+  div.classList.remove('bloqueado');
+  let opcoes=[
+   {t:`💵 EMPRESTAR R$${cur.p}`,d:`Recebe R$${volta} | Chance ${cur.c}%`,c:'amarelo',a:'pagar'},
+   {t:`❌ NEGAR`,d:`Paga R$${valorNegar} mas evita calote`,c:'branco',a:'negar'},
+   {t:`😈 JUROS R$${volta+80}`,d:`Lucro +R$80 mas chance -30%`,c:'preto',a:'juros'}
   ];
-  btns.forEach(o=>{
+  opcoes.forEach(o=>{
    let b=document.createElement('button');
    b.className='btn '+o.c;
-   b.innerHTML=`${o.t}<br><small style="font-size:9px;opacity:0.8">${o.sub}</small>`;
+   b.innerHTML=`${o.t}<small>${o.d}</small>`;
    b.onclick=()=>jogar(o.a);
    div.appendChild(b);
   });
-  document.getElementById('clienteBox').classList.remove('trocando');
-  bloqueado=false;
- },300);
+  box.classList.remove('animOut');
+  box.classList.add('animIn');
+  setTimeout(()=>{box.classList.remove('animIn');travado=false;},300);
+ },280);
 }
 
-function getTotalChance(){let t=0;if(inv['bone']!==undefined) t+=Math.floor(10*raridades[inv['bone']].mult);if(inv['relogio']!==undefined) t+=Math.floor(12*raridades[inv['relogio']].mult);if(inv['pit']!==undefined) t+=Math.floor(18*raridades[inv['pit']].mult);if(buffsTemp.cafe>Date.now()) t+=25;return t;}
-function atualizarBuffsTemp(){let now=Date.now();let html="";if(buffsTemp.cafe>now){let s=Math.ceil((buffsTemp.cafe-now)/1000);html+=`<span class="buffAtivo">☕ ${s}s</span>`;}if(buffsTemp.energetico>now){let s=Math.ceil((buffsTemp.energetico-now)/1000);html+=`<span class="buffAtivo">⚡ ${s}s</span>`;}if(buffsTemp.contrato>now){let s=Math.ceil((buffsTemp.contrato-now)/1000);html+=`<span class="buffAtivo">📜 ${s}s</span>`;}document.getElementById('buffsTemporarios').innerHTML=html;}
-setInterval(atualizarBuffsTemp,1000);
+function getTotalChance(){let t=0;if(inv['bone']!==undefined) t+=Math.floor(10*raridades[inv['bone']].mult);if(inv['relogio']!==undefined) t+=Math.floor(12*raridades[inv['relogio']].mult);if(inv['pit']!==undefined) t+=Math.floor(18*raridades[inv['pit']].mult);return t;}
 function atualizarProgress(){ativasMissoes.forEach(m=>{if(m.tipo=="emp") m.prog=totalEmp;if(m.tipo=="lucro") m.prog=totalLucro;if(m.tipo=="fama") m.prog=fame;if(m.tipo=="seq") m.prog=seq;if(m.tipo=="juros") m.prog=jurosCount;});ativasDesafios.forEach(d=>{let v=0;if(d.tipo=="caixa") v=money;if(d.tipo=="totalEmp") v=totalEmp;if(d.tipo=="jurosTotal") v=jurosCount;if(d.tipo=="lucroTotal") v=totalLucro;d.prog=v;});missaoParaColetar=[];desafiosParaColetar=[];ativasMissoes.forEach(m=>{if(m.prog>=m.meta) missaoParaColetar.push(m);});ativasDesafios.forEach(d=>{if(d.prog>=d.meta) desafiosParaColetar.push(d);});renderColeta();}
-function renderColeta(){let area=document.getElementById('areaColeta');area.innerHTML='';missaoParaColetar.forEach(m=>{area.innerHTML+=`<button class="btn verde" onclick="coletarMissao(${m.id})">🎯 ${m.t}</button>`;});desafiosParaColetar.forEach(d=>{area.innerHTML+=`<button class="btn roxo" onclick="coletarDesafio(${d.id})">🏆 ${'★'.repeat(d.estrelas)} +${d.premioDolar}💲</button>`;});}
+function renderColeta(){let area=document.getElementById('areaColeta');area.innerHTML='';missaoParaColetar.forEach(m=>{area.innerHTML+=`<button class="btn verde" onclick="coletarMissao(${m.id})">🎯 ${m.t} +R$${m.premio}</button>`;});desafiosParaColetar.forEach(d=>{area.innerHTML+=`<button class="btn roxo" onclick="coletarDesafio(${d.id})">🏆 ${'★'.repeat(d.estrelas)} +${d.premioDolar}💲</button>`;});}
 function coletarMissao(id){let idx=ativasMissoes.findIndex(m=>m.id==id);if(idx==-1) return;let m=ativasMissoes[idx];money+=m.premio;ativasMissoes.splice(idx,1);if(proxMissaoIdx<todasMissoes.length){ativasMissoes.push(todasMissoes[proxMissaoIdx]);proxMissaoIdx++;}missaoParaColetar=missaoParaColetar.filter(x=>x.id!=id);renderColeta();check();saveGame();}
 function coletarDesafio(id){let idx=ativasDesafios.findIndex(d=>d.id==id);if(idx==-1) return;let d=ativasDesafios[idx];if(d.prog<d.meta) return;dolar+=d.premioDolar;ativasDesafios.splice(idx,1);if(proxDesafioIdx<todosDesafios.length){ativasDesafios.push(todosDesafios[proxDesafioIdx]);proxDesafioIdx++;}desafiosParaColetar=desafiosParaColetar.filter(x=>x.id!=id);renderColeta();check();saveGame();}
 
 function jogar(tipo){
- if(bloqueado) return;
- bloqueado=true;
- document.getElementById('choices').classList.add('disabled');
- if(tipo=='negar'){money-=valorNegar;negarCount++;valorNegar=Math.floor(25+(negarCount*8)+(money*0.02));fame-=0.5;if(fame<0)fame=0;seq=0;day++;log(`❌ Negou ${cur.n} -R$${valorNegar}`);atualizarProgress();check();saveGame();setTimeout(()=>{novo();},600);return;}
- if(cur.policia){usado._policia=(usado._policia||0)+1;let fianca=Math.floor(money*0.50);if(fianca<100) fianca=100;money-=fianca;log(`🚨 POLÍCIA! Fiança R$${fianca}`);fame-=0.5;seq=0;day++;atualizarProgress();check();saveGame();setTimeout(()=>{novo();},800);return;}
+ if(travado) return;
+ travado=true;
+ document.getElementById('choices').classList.add('bloqueado');
+ if(tipo=='negar'){money-=valorNegar;negarCount++;valorNegar=Math.floor(25+(negarCount*8)+(money*0.02));fame-=0.5;if(fame<0)fame=0;seq=0;day++;log(`❌ Negou ${cur.n}`);atualizarProgress();check();saveGame();setTimeout(()=>{novo();},500);return;}
+ if(cur.policia){usado._policia=(usado._policia||0)+1;let fianca=Math.floor(money*0.50);if(fianca<100) fianca=100;money-=fianca;log(`🚨 POLÍCIA! -R$${fianca}`);fame-=0.5;seq=0;day++;atualizarProgress();check();saveGame();setTimeout(()=>{novo();},600);return;}
  let ch=cur.c,pe=cur.p,de=cur.d;if(inv['cordao']!==undefined) de=Math.floor(de*(1+ (0.2*raridades[inv['cordao']].mult)));if(tipo=='pagar'){pe=cur.p*2;de=pe*2;ch-=8;}if(tipo=='juros'){de+=80;ch-=30;jurosCount++;}ch+=getTotalChance();if(inv['glock']!==undefined){let r=inv['glock'];if(r>=2){if(cur.r!='ALTO') ch=100;}}
  let pagou=Math.random()*100<ch;
  if(pagou){
-  let lucro=de-pe;if(buffsTemp.energetico>Date.now()) lucro=Math.floor(lucro*1.5);
-  money+=lucro;fame+=1;totalEmp++;totalLucro+=lucro;seq++;document.getElementById('bubble').innerText=`✅ ${cur.n} pagou R$${de}! Lucro R$${lucro}`;log(`✅ ${cur.n} pagou R$${de}`);atualizarProgress();day++;check();saveGame();setTimeout(()=>{novo();},700);
+  let lucro=de-pe;money+=lucro;fame+=1;totalEmp++;totalLucro+=lucro;seq++;document.getElementById('bubble').innerText=`✅ ${cur.n} pagou R$${de}!`;log(`✅ ${cur.n} pagou`);atualizarProgress();day++;check();saveGame();setTimeout(()=>{novo();},600);
  }else{
-  if(buffsTemp.contrato>Date.now()){buffsTemp.contrato=0;document.getElementById('bubble').innerText=`📜 CONTRATO salvou calote de ${cur.n}`;log(`📜 Contrato bloqueou calote`);seq++;day++;atualizarProgress();check();saveGame();setTimeout(()=>{novo();},700);return;}
-  fame-=0.5;if(fame<0)fame=0;seq=0;pendentePerda=pe;document.getElementById('adText').innerText=cur.n+` deu calote R$${pe} - "${cur.interacoes[Math.floor(Math.random()*cur.interacoes.length)]}"`;document.getElementById('adSave').style.display='flex';atualizarProgress();bloqueado=false;document.getElementById('choices').classList.remove('disabled');
+  fame-=0.5;if(fame<0)fame=0;seq=0;pendentePerda=pe;document.getElementById('adText').innerText=cur.n+` calote R$${pe}`;document.getElementById('adSave').style.display='flex';atualizarProgress();travado=false;document.getElementById('choices').classList.remove('bloqueado');
  }
 }
-function check(){level=Math.floor(fame/3)+1;if(level<1) level=1;document.getElementById('day').innerText=day;document.getElementById('lvl').innerText=level;document.getElementById('money').innerText='R$'+money;document.getElementById('dolar').innerText='💲'+dolar;document.getElementById('patrao').innerText=getTituloLevel(level);atualizarTituloAvatar();if(money<=0){document.getElementById('gameOver').style.display='flex';}}
-function closeAll(){document.querySelectorAll('.modal').forEach(m=>{if(m.id!=='loginModal'&&m.id!=='menuDrawer') m.style.display='none';});}
-function openShop(){let list=document.getElementById('shopList');list.innerHTML='';lojaItens.forEach(item=>{let idx=inv[item.id];let proxIdx=(idx===undefined)?0:idx+1;if(proxIdx>=raridades.length){list.innerHTML+=`<div class="card"><b>${item.icon} ${item.nome} - MAX</b></div>`;return;}let rar=raridades[proxIdx];list.innerHTML+=`<div class="card"><b>${item.icon} ${item.nome}</b> <span class="tagRar" style="background:${rar.cor}">${rar.nome}</span><br><small>${getBuffValor(item.id, proxIdx)}</small><br><button class="btn roxo" onclick="comprarItem('${item.id}',${proxIdx},${rar.preco})">COMPRAR ${rar.preco}💲</button></div>`;});let cons=document.getElementById('shopConsumiveis');cons.innerHTML='';consumiveis.forEach(c=>{let ativo=buffsTemp[c.buff]>Date.now();cons.innerHTML+=`<div class="card" style="${ativo?'border-color:#00E676;background:#E8F5E9':''}"><b>${c.icon} ${c.nome} ${ativo?'✅':''}</b><br><small>${c.desc}</small><br><button class="btn ${ativo?'verde':'amarelo'}" onclick="comprarConsumivel('${c.id}')">${ativo?'RENOVAR':'COMPRAR'} ${c.preco}💲</button></div>`;});document.getElementById('shopModal').style.display='flex';}
-function comprarItem(id,rIdx,preco){if(dolar>=preco){dolar-=preco;inv[id]=rIdx;renderSlots();check();saveGame();openShop();}else alert('Sem Dolinha');}
-function comprarConsumivel(id){let c=consumiveis.find(x=>x.id==id);if(dolar<c.preco){alert('Sem Dolinha');return;}dolar-=c.preco;buffsTemp[c.buff]=Date.now()+(c.duracao*1000);check();saveGame();openShop();}
-function openBanco(){document.getElementById('bancoModal').style.display='flex';}
-function openMissoes(){let html='';ativasMissoes.forEach(m=>{let pct=Math.min(100,Math.floor((m.prog/m.meta)*100));html+=`<div class="card"><b>${m.t}</b><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${m.prog}/${m.meta}</small>${m.prog>=m.meta?`<button class="btn verde" onclick="coletarMissao(${m.id})">COLETAR</button>`:''}</div>`;});document.getElementById('listaMissoes').innerHTML=html;document.getElementById('missoesModal').style.display='flex';}
-function openDesafios(){let html='';ativasDesafios.forEach(d=>{let pct=Math.min(100,Math.floor((d.prog/d.meta)*100));let cor=d.estrelas==1?'#9E9E9E':d.estrelas==2?'#4CAF50':d.estrelas==3?'#2196F3':d.estrelas==4?'#FF9800':'#FFD600';html+=`<div class="card" style="border-left:6px solid ${cor}"><div style="display:flex;justify-content:space-between"><b>${d.t}</b><span style="background:${cor};color:#fff;padding:2px 8px;border-radius:10px;font-size:10px">${d.dif} ${'★'.repeat(d.estrelas)}</span></div><div class="progress"><div class="bar" style="background:${cor};width:${pct}%"></div></div><small>${d.prog}/${d.meta} ${d.premioDolar}💲</small>${d.prog>=d.meta?`<button class="btn roxo" onclick="coletarDesafio(${d.id})">COLETAR</button>`:''}</div>`;});document.getElementById('listaDesafios').innerHTML=html;document.getElementById('desafiosModal').style.display='flex';}
+
+// TÍTULO DE LEVEL EM ORDEM CRESCENTE
 function openTitulos(){
- let html='<div style="background:#FFF9C4;border:2px dashed #FFD600;padding:8px;border-radius:8px;margin-bottom:8px;font-size:11px">👑 Títulos de LEVEL desbloqueados por level<br>🏆 Títulos de CONQUISTA desbloqueados por conquistas. Clique para usar em cima do avatar.</div>';
- html+=`<div class="card ${tituloEscolhido==null?'selected':''}" onclick="selecionarTitulo(null)"><b>🚫 SEM TÍTULO (só mostra level no HUD)</b><br><small>Usar só título de level: ${getTituloLevel(level)}</small></div>`;
- titulosLevel.forEach(t=>{
+ let html='<div style="background:#FFF9C4;border:2px dashed #FFD600;padding:8px;border-radius:8px;margin-bottom:8px;font-size:11px">👑 LEVEL: ordem crescente - quando conquista um novo, o anterior sai pra dar espaço. Sempre mostra o atual como principal.</div>';
+ let indiceAtual = 0;
+ for(let i=0;i<titulosLevel.length;i++){ if(level>=titulosLevel[i].l) indiceAtual=i; }
+ let inicio = Math.max(0, indiceAtual -1);
+ let fim = Math.min(titulosLevel.length, inicio + 4);
+ html+=`<div class="subTitulo">📈 TÍTULOS DE LEVEL (ordem crescente)</div>`;
+ for(let i=inicio;i<fim;i++){
+  let t=titulosLevel[i];
   let desbloq=level>=t.l;
-  html+=`<div class="card ${tituloEscolhido==t.n?'selected':''} ${!desbloq?'conquistaCard bloq':''}" ${desbloq?`onclick="selecionarTitulo('${t.n}')"` : ''}><b>${desbloq?'✅':'🔒'} LVL ${t.l} - ${t.n} ${tituloEscolhido==t.n?'⭐ USANDO':''}</b><br><small>${desbloq?'Clique para usar em cima do avatar':'Bloqueado - precisa LVL '+t.l}</small></div>`;
- });
+  let ehAtual=i===indiceAtual;
+  html+=`<div class="card ${tituloEscolhido==t.n?'selected':''} ${ehAtual?'selected':''} ${!desbloq?'conquistaCard bloq':''}" ${desbloq?`onclick="selecionarTitulo('${t.n}')"` : ''}>
+  <b>${desbloq?'✅':'🔒'} LVL ${t.l} - ${t.n} ${ehAtual?'⭐ ATUAL':''} ${tituloEscolhido==t.n?'👑 EM USO':''}</b><br>
+  <small>${desbloq? (ehAtual ? 'Seu título atual' : i < indiceAtual ? 'Já conquistado - saiu pra dar espaço' : 'Próximo') : 'Precisa LVL '+t.l}</small></div>`;
+ }
+ if(indiceAtual>1){
+  html+=`<small style="color:#666">+ ${indiceAtual-1} títulos anteriores removidos pra dar espaço (ordem crescente)</small>`;
+ }
  let titulosConquista=Object.keys(conquistasColetadas).map(id=>{let c=conquistas.find(x=>x.id==id);return c&&c.premioTitulo?c.premioTitulo:null;}).filter(Boolean);
+ html+=`<div class="subTitulo">🏆 TÍTULOS EXCLUSIVOS DE CONQUISTA</div>`;
+ html+=`<div class="card ${tituloEscolhido==null?'selected':''}" onclick="selecionarTitulo(null)"><b>🚫 NENHUM - Sem título em cima</b><br><small>HUD: ${getTituloLevel(level)}</small></div>`;
  titulosConquista.forEach(t=>{
-  html+=`<div class="card ${tituloEscolhido==t?'selected':''}" onclick="selecionarTitulo('${t}')"><b>🏆 ${t} ${tituloEscolhido==t?'⭐ USANDO':''}</b><br><small>Título exclusivo de conquista</small></div>`;
+  html+=`<div class="card ${tituloEscolhido==t?'selected':''}" onclick="selecionarTitulo('${t}')"><b>🏆 ${t} ${tituloEscolhido==t?'⭐ USANDO':''}</b><br><small>Exclusivo conquista</small></div>`;
  });
- if(titulosConquista.length==0) html+='<div class="card"><small>Nenhum título de conquista ainda. Complete conquistas.</small></div>';
+ if(titulosConquista.length==0) html+='<div class="card"><small>Nenhum título de conquista ainda.</small></div>';
  document.getElementById('listaTitulos').innerHTML=html;
  document.getElementById('titulosModal').style.display='flex';
 }
-function selecionarTitulo(nome){
- tituloEscolhido=nome;
- atualizarTituloAvatar();
- saveGame();
- openTitulos();
-}
+function selecionarTitulo(nome){tituloEscolhido=nome;atualizarTituloAvatar();saveGame();openTitulos();}
 function openPix(){document.getElementById('pixModal').style.display='flex';}
 function comprarDolar(q){dolar+=q;check();saveGame();closeAll();}
 function mostrarAnuncio(t,p){pendenteTipo=t;document.getElementById('adModal').style.display='flex';let tt=p;document.getElementById('btnClaim').style.display='none';document.getElementById('adTimer').innerText=tt+'s';let timer=setInterval(()=>{tt--;document.getElementById('adTimer').innerText=tt+'s';if(tt<=0){clearInterval(timer);document.getElementById('btnClaim').style.display='block';}},1000);}
@@ -334,6 +352,66 @@ function emprestimoBancoVideo(){pendenteBanco=300;pendenteTipo='gameoverBanco';d
 function emprestimoBancoDolar(){if(dolar>=10){dolar-=10;money=500;document.getElementById('gameOver').style.display='none';check();saveGame();novo();}}
 function restartFull(){day=1;money=500;fame=1;level=1;usado={};document.getElementById('gameOver').style.display='none';check();saveGame();novo();}
 function log(t){document.getElementById('log').innerHTML='> '+t+'<br>'+document.getElementById('log').innerHTML}
-(function init(){let u=localStorage.getItem('currentUser');if(u){currentUser=u;document.getElementById('loginUser').value=u;document.getElementById('loginModal').style.display='none';carregarSave();renderSlots();}else{document.getElementById('loginModal').style.display='flex';renderSlots();}})();
+function closeAll(){document.querySelectorAll('.modal').forEach(m=>{if(m.id!=='loginModal'&&m.id!=='menuDrawer'&&m.id!=='tutorialModal') m.style.display='none';});}
+
+// TUTORIAL ATÉ LVL 5
+let tutPasso=0;
+const tutPassos=[
+{icon:"👋", titulo:"BEM-VINDO AGIOTA!", texto:"Você é um agiota da quebrada. Empreste dinheiro e receba com juros. Mas cuidado com calote e polícia! Vamos aprender até LVL 5."},
+{icon:"💰", titulo:"CAIXA E CLIENTES", texto:"No topo: seu CAIXA. No centro: cliente com 25 falas diferentes. Cada um tem RISCO (BAIXO/MÉDIO/ALTO), CHANCE de pagar e valor que PEDE e VOLTA."},
+{icon:"🎯", titulo:"3 OPÇÕES DE EMPRESTAR", texto:"💵 EMPRESTAR: padrão. ❌ NEGAR: paga multa mas evita calote. 😈 JUROS: lucro maior mas chance menor de pagar. Escolha com sabedoria!"},
+{icon:"🛒", titulo:"LOJINHA E TÍTULOS", texto:"Com Dolinha 💲 compre itens que aumentam chance/lucro. Menu ☰ tem CONQUISTAS (10 sempre disponíveis) e TÍTULOS. Título de level sobe em ordem crescente - quando ganha um novo, o anterior sai."},
+{icon:"🏆", titulo:"MISSÕES E DESAFIOS", texto:"🎯 MISSÕES dão R$ e 🏆 DESAFIOS dão Dolinha por estrelas (1★=1💲 até 5★=5💲). Calote? Assista anúncio pra salvar ou aceite perder metade. Chegue até LVL 5 pra dominar o jogo!"},
+];
+function verificarTutorial(){
+ if(level>=5 || !currentUser) return;
+ if(localStorage.getItem('tutorialVisto_'+currentUser)) return;
+ if(level==1 && day==1 && tutPasso==0){ mostrarTutorial(); }
+ else if(level==2 && tutPasso==0){ tutPasso=1; mostrarTutorial(); }
+ else if(level==3 && tutPasso==1){ tutPasso=2; mostrarTutorial(); }
+ else if(level==4 && tutPasso==2){ tutPasso=3; mostrarTutorial(); }
+ else if(level==5 && tutPasso==3){ tutPasso=4; mostrarTutorial(); }
+ else if(level==1 && day==1){ mostrarTutorial(); }
+}
+function mostrarTutorial(){
+ if(tutPasso>=tutPassos.length) return;
+ let t=tutPassos[tutPasso];
+ document.getElementById('tutIcon').innerText=t.icon;
+ document.getElementById('tutTitulo').innerText=t.titulo;
+ document.getElementById('tutTexto').innerText=t.texto;
+ document.getElementById('tutPasso').innerText=tutPasso+1;
+ document.getElementById('tutorialModal').style.display='flex';
+}
+function proximoTutorial(){
+ tutPasso++;
+ if(tutPasso>=tutPassos.length){ fecharTutorial(); }
+ else{ mostrarTutorial(); }
+}
+function pularTutorial(){ fecharTutorial(); }
+function fecharTutorial(){
+ document.getElementById('tutorialModal').style.display='none';
+ if(currentUser) localStorage.setItem('tutorialVisto_'+currentUser,'1');
+}
+
+function openShop(){let list=document.getElementById('shopList');list.innerHTML='';lojaItens.forEach(item=>{let idx=inv[item.id];let proxIdx=(idx===undefined)?0:idx+1;if(proxIdx>=raridades.length){list.innerHTML+=`<div class="card"><b>${item.icon} ${item.nome} - MAX</b></div>`;return;}let rar=raridades[proxIdx];list.innerHTML+=`<div class="card"><b>${item.icon} ${item.nome}</b> <span class="tagRar" style="background:${rar.cor}">${rar.nome}</span><br><small>${getBuffValor(item.id, proxIdx)}</small><br><button class="btn roxo" onclick="comprarItem('${item.id}',${proxIdx},${rar.preco})">COMPRAR ${rar.preco}💲</button></div>`;});document.getElementById('shopModal').style.display='flex';}
+function comprarItem(id,rIdx,preco){if(dolar>=preco){dolar-=preco;inv[id]=rIdx;renderSlots();check();saveGame();openShop();}else alert('Sem Dolinha');}
+function openBanco(){document.getElementById('bancoModal').style.display='flex';}
+function openMissoes(){let html='';ativasMissoes.forEach(m=>{let pct=Math.min(100,Math.floor((m.prog/m.meta)*100));html+=`<div class="card"><b>${m.t}</b><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${m.prog}/${m.meta}</small>${m.prog>=m.meta?`<button class="btn verde" onclick="coletarMissao(${m.id})">COLETAR</button>`:''}</div>`;});document.getElementById('listaMissoes').innerHTML=html;document.getElementById('missoesModal').style.display='flex';}
+function openDesafios(){let html='';ativasDesafios.forEach(d=>{let pct=Math.min(100,Math.floor((d.prog/d.meta)*100));let cor=d.estrelas==1?'#9E9E9E':d.estrelas==2?'#4CAF50':d.estrelas==3?'#2196F3':d.estrelas==4?'#FF9800':'#FFD600';html+=`<div class="card" style="border-left:6px solid ${cor}"><div style="display:flex;justify-content:space-between"><b>${d.t}</b><span style="background:${cor};color:#fff;padding:2px 8px;border-radius:10px;font-size:10px">${d.dif} ${'★'.repeat(d.estrelas)}</span></div><div class="progress"><div class="bar" style="background:${cor};width:${pct}%"></div></div><small>${d.prog}/${d.meta} ${d.premioDolar}💲</small>${d.prog>=d.meta?`<button class="btn roxo" onclick="coletarDesafio(${d.id})">COLETAR</button>`:''}</div>`;});document.getElementById('listaDesafios').innerHTML=html;document.getElementById('desafiosModal').style.display='flex';}
+
+(function init(){
+ let u=localStorage.getItem('currentUser');
+ if(u){
+  currentUser=u;
+  document.getElementById('loginUser').value=u;
+  document.getElementById('loginModal').style.display='none';
+  carregarSave();
+  renderSlots();
+  setTimeout(()=>verificarTutorial(),800);
+ }else{
+  document.getElementById('loginModal').style.display='flex';
+  renderSlots();
+ }
+})();
 </script>
 </body></html>
