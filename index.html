@@ -22,8 +22,6 @@ header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-cont
 .modal .box{background:#FFFBEA;border:3px solid #111;border-radius:16px;padding:16px;max-width:420px;width:100%;max-height:92vh;overflow:auto}
 .card{background:#fff;border:2.5px solid #111;border-radius:12px;padding:12px;margin-bottom:8px}
 .progress{height:10px;background:#333;border-radius:8px;overflow:hidden;margin-top:6px} .bar{height:10px;background:#FFD600}
-.coletar{animation:pisca 0.8s infinite} @keyframes pisca{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-#qrBox{background:#fff;padding:10px;border:2px solid #111;border-radius:12px;text-align:center}
 </style>
 </head><body>
 <div id="game">
@@ -35,24 +33,13 @@ header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-cont
 <div onclick="openTitulos()">TÍTULO<b id="patrao" style="font-size:9px">MOLEQUE</b></div>
 </div>
 <div id="palco">
-<div id="wrap">
-<div id="cliente">💈</div>
-<div id="avatarWrap">
-<div id="agiota"></div>
-<div id="layerBone" class="itemLayer">👑</div>
-<div id="layerCordao" class="itemLayer">💎</div>
-<div id="layerRelogio" class="itemLayer">⌚</div>
-<div id="layerPit" class="itemLayer">🐶</div>
-<div id="layerGlock" class="itemLayer">🔫</div>
-<div id="layerMoto" class="itemLayer">🏍️</div>
-</div>
-</div>
+<div id="wrap"><div id="cliente">💈</div><div id="avatarWrap"><div id="agiota"></div><div id="layerBone" class="itemLayer">👑</div><div id="layerCordao" class="itemLayer">💎</div><div id="layerRelogio" class="itemLayer">⌚</div><div id="layerPit" class="itemLayer">🐶</div><div id="layerGlock" class="itemLayer">🔫</div><div id="layerMoto" class="itemLayer">🏍️</div></div></div>
 <div id="bubble">...</div>
 <div id="info"><h3><span id="nome"></span> <span id="tag" style="padding:4px 8px;border-radius:20px;font-size:11px;color:#111;font-weight:900"></span></h3><p id="hist" style="font-size:13px;margin-top:6px;color:#333"></p><div style="display:flex;gap:6px;margin-top:8px"><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">PEDE<b id="pede" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">VOLTA<b id="volta" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">CHANCE<b id="chance" style="display:block"></b></div></div></div>
 <div id="choices"></div>
 <div id="areaColeta"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">
-<button class="btn preto" onclick="openShop()">🛒 LOJA</button>
+<button class="btn preto" onclick="openShop()">🛒 LOJINHA</button>
 <button class="btn azul" onclick="openMissoes()">🎯 MISSÕES</button>
 <button class="btn roxo" onclick="openDesafios()">🏆 DESAFIOS</button>
 <button class="btn verde" onclick="openPix()">💲 DÓLAR PIX</button>
@@ -60,37 +47,12 @@ header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-cont
 <div id="log" style="font-size:11px;text-align:left;color:#666;margin-top:10px;height:90px;overflow:auto"></div>
 </div>
 
-<div id="shopModal" class="modal"><div class="box"><h2>🛒 LOJINHA</h2>
-<div class="card"><b>👑 Boné - R$500</b><small> Visual +10%</small><br><button class="btn amarelo" onclick="comprar('bone',500,false)">COMPRAR</button></div>
-<div class="card"><b>💎 Cordão - 5 💲</b><small> Visual +20%</small><br><button class="btn roxo" onclick="comprar('cordao',5,true)">DÓLAR</button></div>
-<div class="card"><b>⌚ Relógio - 8 💲</b><small> Visual +15% chance</small><br><button class="btn roxo" onclick="comprar('relogio',8,true)">DÓLAR</button></div>
-<div class="card"><b>🏍️ Moto - R$1200</b><small> Visual + recupera</small><br><button class="btn amarelo" onclick="comprar('moto',1200,false)">COMPRAR</button></div>
-<div class="card"><b>🐶 Pitbull - 10 💲</b><small> Visual</small><br><button class="btn roxo" onclick="comprar('pit',10,true)">DÓLAR</button></div>
-<div class="card"><b>🔫 Glock - 25 💲</b><small> Visual</small><br><button class="btn roxo" onclick="comprar('glock',25,true)">DÓLAR</button></div>
-<div class="card"><b>🏠 Escritório - 50 💲</b><small> Juros TURBO</small><br><button class="btn roxo" onclick="comprar('escritorio',50,true)">DÓLAR</button></div>
-<button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-
-<div id="bancoModal" class="modal"><div class="box"><h2>🏦 BANCO</h2>
-<div class="card"><b>R$100 - 5s</b><button class="btn verde" onclick="pedirBanco(100,5)">📺 +R$100</button></div>
-<div class="card"><b>R$200 - 10s</b><button class="btn verde" onclick="pedirBanco(200,10)">📺 +R$200</button></div>
-<div class="card"><b>R$300 - 15s</b><button class="btn verde" onclick="pedirBanco(300,15)">📺 +R$300</button></div>
-<button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-
-<div id="missoesModal" class="modal"><div class="box"><h2>🎯 MISSÕES (5 ATIVAS)</h2><p style="font-size:11px">Completa, some e entra nova</p><div id="listaMissoes"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="shopModal" class="modal"><div class="box"><h2>🛒 LOJINHA</h2><div id="shopList"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="bancoModal" class="modal"><div class="box"><h2>🏦 BANCO</h2><div class="card"><b>R$100 - 5s</b><button class="btn verde" onclick="pedirBanco(100,5)">📺 +R$100</button></div><div class="card"><b>R$200 - 10s</b><button class="btn verde" onclick="pedirBanco(200,10)">📺 +R$200</button></div><div class="card"><b>R$300 - 15s</b><button class="btn verde" onclick="pedirBanco(300,15)">📺 +R$300</button></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="missoesModal" class="modal"><div class="box"><h2>🎯 MISSÕES (5 ATIVAS)</h2><div id="listaMissoes"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="desafiosModal" class="modal"><div class="box"><h2>🏆 DESAFIOS (5 ATIVOS)</h2><div id="listaDesafios"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="titulosModal" class="modal"><div class="box"><h2>👑 TÍTULOS LVL 1000</h2><div id="listaTitulos"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-
-<div id="pixModal" class="modal"><div class="box"><h2>💲 COMPRAR DÓLAR - PIX REAL</h2><p style="font-size:11px">Segunda moeda só via PIX. Escaneie o QR Code válido:</p>
-<div id="qrBox">
-<img id="qrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=00020126580014BR.GOV.BCB.PIX0136a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d520400005303986540510.995802BR5925PEGA%20PAGA%20DOLAR%20GAME6009ITABIRA62070503***6304" style="width:220px;height:220px"/>
-<p style="font-size:10px;margin-top:8px;word-break:break-all" id="pixCopia">00020126580014BR.GOV.BCB.PIX0136a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d520400005303986540510.995802BR5925PEGA PAGA DOLAR GAME6009ITABIRA62070503***6304</p>
-</div>
-<div class="card"><b>10 💲 - R$0,99</b><button class="btn azul" onclick="comprarDolar(10)">JÁ PAGUEI - LIBERAR</button></div>
-<div class="card"><b>50 💲 - R$4,99</b><button class="btn azul" onclick="comprarDolar(50)">JÁ PAGUEI - LIBERAR</button></div>
-<div class="card"><b>150 💲 - R$9,99 +20 BÔNUS</b><button class="btn azul" onclick="comprarDolar(150)">JÁ PAGUEI - LIBERAR</button></div>
-<p style="font-size:10px;color:#666">Após pagar no seu banco, clique em LIBERAR. Validação manual para teste. Substitua a chave PIX no código pela sua chave real.</p>
-<button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-
+<div id="pixModal" class="modal"><div class="box"><h2>💲 DÓLAR - PIX REAL</h2><div style="background:#fff;padding:10px;border:2px solid #111;border-radius:12px;text-align:center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=00020126580014BR.GOV.BCB.PIX0136SEU-PIX-AQUI" style="width:220px;height:220px"/><p style="font-size:10px;word-break:break-all">PIX QR CODE VÁLIDO - Troque SEU-PIX-AQUI pela sua chave real no código</p></div><div class="card"><b>10 💲 - R$0,99</b><button class="btn azul" onclick="comprarDolar(10)">JÁ PAGUEI</button></div><div class="card"><b>50 💲 - R$4,99</b><button class="btn azul" onclick="comprarDolar(50)">JÁ PAGUEI</button></div><div class="card"><b>150 💲 - R$9,99 +20 BÔNUS</b><button class="btn azul" onclick="comprarDolar(150)">JÁ PAGUEI</button></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="adSave" class="modal"><div class="box" style="text-align:center"><h2>💀 CALOTE!</h2><p id="adText"></p><button class="btn amarelo" onclick="salvarComAnuncio()">📺 SALVAR</button><button class="btn branco" onclick="aceitarPerda()">ACEITAR</button></div></div>
 <div id="adModal" class="modal"><div class="box" style="text-align:center"><h2>📺 ANÚNCIO</h2><p id="adTimer"></p><div style="background:#111;color:#FFD600;padding:20px;border-radius:8px;margin:10px 0">ANÚNCIO...</div><button id="btnClaim" class="btn verde" style="display:none" onclick="recompensaLiberada()">✅ PEGAR</button></div></div>
 <div id="gameOver" class="modal"><div class="box" style="text-align:center"><h2>💸 FALIDO!</h2><button class="btn amarelo" onclick="resetGameOver()">📺 R$300</button><button class="btn branco" onclick="restartFull()">RECOMEÇAR</button></div></div>
@@ -98,269 +60,14 @@ header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-cont
 
 <script>
 let day=1,money=500,fame=1,level=1,dolar=0,inv=[],pendentePerda=0,pendenteTipo=null,pendenteBanco=0;
-let usado={},totalEmp=0,totalLucro=0,seq=0,jurosCount=0,dobroCount=0;
-let desafiosProg={},missaoParaColetar=[],desafiosParaColetar=[];
-
-const titulos=[
-{l:1,n:"MOLEQUE"},{l:5,n:"FREGUÊS"},{l:10,n:"PATRÃO"},{l:20,n:"DONO DA LAJE"},{l:35,n:"REI DA QUEBRADA"},{l:50,n:"PATRÃO DA FAVELA"},{l:75,n:"DONO DA BOCA"},{l:100,n:"CHEFÃO"},{l:150,n:"SENHOR DO MORRO"},{l:200,n:"BARÃO DO CRIME"},{l:300,n:"IMPERADOR DA NOITE"},{l:400,n:"LENDÁRIO"},{l:500,n:"MITOLÓGICO"},{l:600,n:"FANTASMA"},{l:750,n:"INTOCÁVEL"},{l:850,n:"SOMBRA"},{l:950,n:"REI SUPREMO"},{l:1000,n:"CONCIERGE DO CRIME"}
-];
+let usado={},totalEmp=0,totalLucro=0,seq=0,jurosCount=0,dobroCount=0,desafiosProg={},missaoParaColetar=[],desafiosParaColetar=[];
+const titulos=[{l:1,n:"MOLEQUE"},{l:5,n:"FREGUÊS"},{l:10,n:"PATRÃO"},{l:20,n:"DONO DA LAJE"},{l:35,n:"REI DA QUEBRADA"},{l:50,n:"PATRÃO DA FAVELA"},{l:75,n:"DONO DA BOCA"},{l:100,n:"CHEFÃO"},{l:150,n:"SENHOR DO MORRO"},{l:200,n:"BARÃO DO CRIME"},{l:300,n:"IMPERADOR DA NOITE"},{l:400,n:"LENDÁRIO"},{l:500,n:"MITOLÓGICO"},{l:750,n:"INTOCÁVEL"},{l:1000,n:"CONCIERGE DO CRIME"}];
 function getTitulo(lvl){let t="MOLEQUE";for(let x of titulos){if(lvl>=x.l) t=x.n;}return t;}
-
-function gerarMissoes(){
- let arr=[];
- for(let i=1;i<=100;i++){
-   let tipo=i%5,meta,premio,t,d,tipoStr;
-   if(tipo==0){meta=3+Math.floor(i*0.5);premio=80+i*7;t=`Emprestar ${meta}x`;d=`Empréstimos`;tipoStr="emp";}
-   if(tipo==1){meta=400+i*150;premio=100+i*9;t=`Lucrar R$${meta}`;d=`Lucro`;tipoStr="lucro";}
-   if(tipo==2){meta=4+Math.floor(i/2.5);premio=120+i*8;t=`Fama ${meta}`;d=`Fama`;tipoStr="fama";}
-   if(tipo==3){meta=3+Math.floor(i/4);premio=140+i*9;t=`Seq ${meta}`;d=`Sem calote`;tipoStr="seq";}
-   if(tipo==4){meta=2+Math.floor(i/5);premio=160+i*10;t=`Juros ${meta}x`;d=`Juros`;tipoStr="juros";}
-   arr.push({id:i,t,d,meta,premio,tipo:tipoStr,prog:0});
- }
- return arr;
-}
-function gerarDesafios(){
- let arr=[];
- for(let i=1;i<=100;i++){
-   let tipo=i%6,meta,premio,t,d,tipoStr;
-   if(tipo==0){meta=8000+i*5000;premio=1+Math.floor(i/20);t=`Caixa R$${meta}`;d=`Difícil`;tipoStr="caixa";}
-   if(tipo==1){meta=40+i*18;premio=1+Math.floor(i/25);t=`${meta} pagos`;d=`Total`;tipoStr="totalEmp";}
-   if(tipo==2){meta=20+i*10;premio=1+Math.floor(i/20);t=`${meta}x Juros`;d=`Juros`;tipoStr="jurosTotal";}
-   if(tipo==3){meta=30+Math.floor(i*2.5);if(meta>600) meta=600+i;premio=2+Math.floor(i/15);t=`LVL ${meta}`;d=`Level`;tipoStr="level";}
-   if(tipo==4){meta=12000+i*6000;premio=2+Math.floor(i/18);t=`Lucro R$${meta}`;d=`Lucro`;tipoStr="lucroTotal";}
-   if(tipo==5){meta=25+i*8;premio=1+Math.floor(i/22);t=`Dobrar ${meta}x`;d=`Dobrar`;tipoStr="dobro";}
-   if(premio>5) premio=5;
-   arr.push({id:i,t,d,meta,premioDolar:premio,tipo:tipoStr,prog:0});
- }
- return arr;
-}
-let todasMissoes=gerarMissoes();
-let todosDesafios=gerarDesafios();
-let ativasMissoes=todasMissoes.slice(0,5);
-let ativasDesafios=todosDesafios.slice(0,5);
-let proxMissaoIdx=5,proxDesafioIdx=5;
-
-const personagens=[
-{n:"Beto da Laje",e:"👷",r:"BAIXO",c:88,p:50,d:100,h:["Mulher no hospital","Filho quebrou braço","Chefe não pagou"],f:["Nunca esqueço"]},
-{n:"Tia Coxinha",e:"👩‍🍳",r:"BAIXO",c:82,p:70,d:130,h:["Geladeira queimou","Preciso frango","Aluguel atrasado"],f:["Sustento 3 netos"]},
-{n:"Nego do Corte",e:"💈",r:"ALTO",c:38,p:200,d:600,h:["Máquina quebrou","Devo distribuidora","Milícia cobra"],f:["Me fecham hoje"]},
-{n:"Jéssica Nail",e:"💅",r:"MÉDIO",c:62,p:90,d:200,h:["Cliente grande","Kit acabou","Insta bomba"],f:["Te marco nos stories"]},
-{n:"Magrão 12",e:"😎",r:"MÉDIO",c:55,p:120,d:300,h:["Baile vai lotar","Preciso bebida","Vendi 50 ingressos"],f:["Volta triplo"]},
-{n:"Kevin Bike",e:"🚲",r:"MÉDIO",c:60,p:100,d:220,h:["Corrente quebrou","20 entregas","Sem trampo não como"],f:["Faço R$300 hoje"]},
-{n:"Dona Cida",e:"🎂",r:"BAIXO",c:85,p:60,d:110,h:["Bolo casamento","Falta chantilly","Noiva paga amanhã"],f:["20 anos sem calote"]},
-{n:"DJ Nego R",e:"🎧",r:"ALTO",c:40,p:250,d:700,h:["Caixa queimou","Festa 15 anos","Família rica"],f:["Me chamam pra mais 5 festas"]},
-{n:"Pastor Isac",e:"🙏",r:"BAIXO",c:90,p:60,d:90,h:["Cadeiras igreja","Dízimo fiel","Deus abençoa"],f:["É bênção"]},
-{n:"MC Livinha",e:"🎤",r:"ALTO",c:35,p:180,d:600,h:["Gravar clipe","Produtor famoso","Se estourar pago no palco"],f:["Seu nome na música"]},
-{n:"Seu Jorge",e:"🔧",r:"MÉDIO",c:58,p:150,d:320,h:["Ferramenta quebrou","Carro na oficina","Perco cliente"],f:["12 anos de oficina"]},
-{n:"Marlene Marmita",e:"🍱",r:"BAIXO",c:80,p:80,d:150,h:["Panela furou","30 marmitas","Empresa paga sexta"],f:["Sustento comunidade"]},
-{n:"Léo Adega",e:"🍺",r:"MÉDIO",c:50,p:200,d:500,h:["Cerveja acabou","Final Flamengo","Lucro sábado"],f:["Sábado te pago"]},
-{n:"Bruna Trança",e:"💇‍♀️",r:"MÉDIO",c:65,p:110,d:250,h:["Cabelo noiva","Falta aplique","Noiva influencer"],f:["Indica 10 amigas"]},
-{n:"Toninho Van",e:"🚐",r:"ALTO",c:42,p:300,d:800,h:["Van quebrou","Pagar guincho","40 passageiros"],f:["Rota lota"]}
-];
+function gerarMissoes(){let arr=[];for(let i=1;i<=100;i++){let tipo=i%5,meta,premio,t,d,tipoStr;if(tipo==0){meta=3+Math.floor(i*0.5);premio=80+i*7;t=`Emprestar ${meta}x`;d=`Empréstimos`;tipoStr="emp";}if(tipo==1){meta=400+i*150;premio=100+i*9;t=`Lucrar R$${meta}`;d=`Lucro`;tipoStr="lucro";}if(tipo==2){meta=4+Math.floor(i/2.5);premio=120+i*8;t=`Fama ${meta}`;d=`Fama`;tipoStr="fama";}if(tipo==3){meta=3+Math.floor(i/4);premio=140+i*9;t=`Seq ${meta}`;d=`Sem calote`;tipoStr="seq";}if(tipo==4){meta=2+Math.floor(i/5);premio=160+i*10;t=`Juros ${meta}x`;d=`Juros`;tipoStr="juros";}arr.push({id:i,t,d,meta,premio,tipo:tipoStr,prog:0});}return arr;}
+function gerarDesafios(){let arr=[];for(let i=1;i<=100;i++){let tipo=i%6,meta,premio,t,d,tipoStr;if(tipo==0){meta=8000+i*5000;premio=1+Math.floor(i/20);t=`Caixa R$${meta}`;d=`Difícil`;tipoStr="caixa";}if(tipo==1){meta=40+i*18;premio=1+Math.floor(i/25);t=`${meta} pagos`;d=`Total`;tipoStr="totalEmp";}if(tipo==2){meta=20+i*10;premio=1+Math.floor(i/20);t=`${meta}x Juros`;d=`Juros`;tipoStr="jurosTotal";}if(tipo==3){meta=30+Math.floor(i*2.5);if(meta>600) meta=600+i;premio=2+Math.floor(i/15);t=`LVL ${meta}`;d=`Level`;tipoStr="level";}if(tipo==4){meta=12000+i*6000;premio=2+Math.floor(i/18);t=`Lucro R$${meta}`;d=`Lucro`;tipoStr="lucroTotal";}if(tipo==5){meta=25+i*8;premio=1+Math.floor(i/22);t=`Pagar ${meta}x`;d=`Pagar`;tipoStr="dobro";}if(premio>5) premio=5;arr.push({id:i,t,d,meta,premioDolar:premio,tipo:tipoStr,prog:0});}return arr;}
+let todasMissoes=gerarMissoes();let todosDesafios=gerarDesafios();let ativasMissoes=todasMissoes.slice(0,5);let ativasDesafios=todosDesafios.slice(0,5);let proxMissaoIdx=5,proxDesafioIdx=5;
+const personagens=[{n:"Beto da Laje",e:"👷",r:"BAIXO",c:88,p:50,d:100,h:["Mulher no hospital"],f:["Nunca esqueço"]},{n:"Tia Coxinha",e:"👩‍🍳",r:"BAIXO",c:82,p:70,d:130,h:["Geladeira queimou"],f:["Sustento 3 netos"]},{n:"Nego do Corte",e:"💈",r:"ALTO",c:38,p:200,d:600,h:["Máquina quebrou"],f:["Me fecham hoje"]},{n:"Jéssica Nail",e:"💅",r:"MÉDIO",c:62,p:90,d:200,h:["Cliente grande"],f:["Te marco"]},{n:"Magrão 12",e:"😎",r:"MÉDIO",c:55,p:120,d:300,h:["Baile vai lotar"],f:["Volta triplo"]}];
 let cur;
-function novo(){
-let disp=personagens.filter(p=>!usado[p.n]||usado[p.n]<3);
-if(disp.length==0){usado={};disp=personagens}
-cur=disp[Math.floor(Math.random()*disp.length)];
-usado[cur.n]=(usado[cur.n]||0)+1;
-document.getElementById('cliente').innerText=cur.e;
-document.getElementById('nome').innerText=cur.n;
-document.getElementById('tag').innerText=cur.r;
-document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
-document.getElementById('hist').innerText=cur.h[Math.floor(Math.random()*cur.h.length)];
-document.getElementById('bubble').innerText=cur.n+': "'+cur.f[0]+'"';
-let pede=cur.p;
-let volta=cur.d;
-if(inv.includes('escritorio')) volta+=150;
-if(inv.includes('cordao')) volta=Math.floor(volta*1.2);
-document.getElementById('pede').innerText='R$'+pede;
-document.getElementById('volta').innerText='R$'+volta;
-document.getElementById('chance').innerText=cur.c+'%';
-let div=document.getElementById('choices');div.innerHTML='';
-let pedeDobro=Math.min(pede*2, pede*2);
-let voltaDobro=pedeDobro*2;
-let jurosVal=volta+ (inv.includes('escritorio')?300:150);
-[{t:`🔥 DOBRAR P1P2 R$${pedeDobro} -> PAGA R$${voltaDobro}`,c:'amarelo',a:'dobro'},{t:'❌ NEGAR',c:'branco',a:'negar'},{t:`😈 JUROS R$${jurosVal}`,c:'preto',a:'juros'}].forEach(o=>{
-let b=document.createElement('button');b.className='btn '+o.c;b.innerText=o.t;b.onclick=()=>jogar(o.a);div.appendChild(b)
-});
-}
-function jogar(tipo){
-if(tipo=='negar'){log('Negou '+cur.n);seq=0;day++;check();novo();return}
-let ch=cur.c,pe=cur.p,de=cur.d;
-if(inv.includes('escritorio')) de+=150;
-if(inv.includes('cordao')) de=Math.floor(de*1.2);
-if(tipo=='dobro'){
- pe=cur.p*2;
- de=pe*2;
- ch-=8;
- dobroCount++;
-}
-if(tipo=='juros'){de+=inv.includes('escritorio')?300:150;ch-=22;jurosCount++}
-if(inv.includes('bone')) ch+=10;
-if(inv.includes('relogio')) ch+=15;
-if(inv.includes('pit')) ch+=25;
-if(inv.includes('glock') && cur.r!='ALTO') ch=100;
-let pagou=Math.random()*100 < ch;
-if(pagou){
-let lucro=de-pe;
-money+=lucro;fame++;totalEmp++;totalLucro+=lucro;seq++;
-log('✅ '+cur.n+' PAGOU R$'+de);
-atualizarProgress(tipo);
-day++;check();novo();
-}else{
-seq=0;
-pendentePerda=pe;
-document.getElementById('adText').innerText=cur.n+' calote R$'+pe;
-document.getElementById('adSave').style.display='flex';
-}
-}
-function atualizarProgress(tipo){
- ativasMissoes.forEach(m=>{
-  if(m.tipo=='emp') m.prog++;
-  if(m.tipo=='lucro') m.prog=totalLucro;
-  if(m.tipo=='fama') m.prog=fame;
-  if(m.tipo=='seq') m.prog=seq;
-  if(m.tipo=='juros' && tipo=='juros') m.prog++;
-  if(m.prog>=m.meta && !missaoParaColetar.find(x=>x.id==m.id)){
-    missaoParaColetar.push(m);
-    log('🎯 MISSÃO PRONTA: '+m.t);
-  }
- });
- ativasDesafios.forEach(d=>{
-  let v=0;
-  if(d.tipo=='caixa') v=money;
-  if(d.tipo=='totalEmp') v=totalEmp;
-  if(d.tipo=='jurosTotal') v=jurosCount;
-  if(d.tipo=='level') v=level;
-  if(d.tipo=='lucroTotal') v=totalLucro;
-  if(d.tipo=='dobro') v=dobroCount;
-  d.prog=v;
-  if(v>=d.meta && !desafiosProg[d.id] && !desafiosParaColetar.find(x=>x.id==d.id)){
-    desafiosParaColetar.push(d);
-    log('🏆 DESAFIO PRONTO: '+d.t);
-  }
- });
- renderColeta();
-}
-function renderColeta(){
- let area=document.getElementById('areaColeta');
- area.innerHTML='';
- missaoParaColetar.forEach(m=>{
-   area.innerHTML+=`<button class="btn verde coletar" onclick="coletarMissao(${m.id})">🎯 COLETAR MISSÃO: ${m.t} +R$${m.premio}</button>`;
- });
- desafiosParaColetar.forEach(d=>{
-   area.innerHTML+=`<button class="btn roxo coletar" onclick="coletarDesafio(${d.id})">🏆 COLETAR DESAFIO: ${d.t} +${d.premioDolar}💲</button>`;
- });
-}
-function coletarMissao(id){
- let idx=ativasMissoes.findIndex(m=>m.id==id);
- if(idx==-1) return;
- let m=ativasMissoes[idx];
- money+=m.premio;
- log('🎯 COLETOU +R$'+m.premio);
- ativasMissoes.splice(idx,1);
- if(proxMissaoIdx<todasMissoes.length){ ativasMissoes.push(todasMissoes[proxMissaoIdx]); proxMissaoIdx++; }
- missaoParaColetar=missaoParaColetar.filter(x=>x.id!=id);
- renderColeta(); check();
-}
-function coletarDesafio(id){
- let idx=ativasDesafios.findIndex(d=>d.id==id);
- if(idx==-1) return;
- let d=ativasDesafios[idx];
- dolar+=d.premioDolar;
- desafiosProg[d.id]=true;
- log('🏆 COLETOU +'+d.premioDolar+'💲');
- ativasDesafios.splice(idx,1);
- if(proxDesafioIdx<todosDesafios.length){ ativasDesafios.push(todosDesafios[proxDesafioIdx]); proxDesafioIdx++; }
- desafiosParaColetar=desafiosParaColetar.filter(x=>x.id!=id);
- renderColeta(); check();
-}
-function mostrarAnuncio(tipo,tempo){
-pendenteTipo=tipo;
-document.getElementById('adModal').style.display='flex';
-let t=tempo;
-document.getElementById('btnClaim').style.display='none';
-document.getElementById('adTimer').innerText='Assistindo... '+t+'s';
-let timer=setInterval(()=>{
- t--;
- document.getElementById('adTimer').innerText='Assistindo... '+t+'s';
- if(t<=0){clearInterval(timer);document.getElementById('adTimer').innerText='Finalizado!';document.getElementById('btnClaim').style.display='block';}
-},1000);
-}
-function salvarComAnuncio(){document.getElementById('adSave').style.display='none';mostrarAnuncio('salvar',5);}
-function pedirBanco(v,t){pendenteBanco=v;closeAll();mostrarAnuncio('banco',t);}
-function recompensaLiberada(){
- document.getElementById('adModal').style.display='none';
- if(pendenteTipo=='salvar'){fame++;totalEmp++;seq++;atualizarProgress('normal');day++;check();novo();}
- if(pendenteTipo=='banco'){money+=pendenteBanco;check();pendenteBanco=0;}
- if(pendenteTipo=='gameover'){money+=300;document.getElementById('gameOver').style.display='none';check();}
- pendenteTipo=null;
-}
-function aceitarPerda(){
-document.getElementById('adSave').style.display='none';
-let perda=Math.floor(pendentePerda*0.5);
-money-=perda;
-if(inv.includes('moto')){let r=Math.floor(perda*0.5);money+=r;}
-log('💀 -R$'+perda);
-pendentePerda=0;
-day++;check();novo();
-}
-function check(){
-level=Math.floor(fame/3)+1;
-if(level>1000) level=1000;
-document.getElementById('day').innerText=day;
-document.getElementById('lvl').innerText=level;
-document.getElementById('money').innerText='R$'+money;
-document.getElementById('dolar').innerText='💲'+dolar;
-document.getElementById('patrao').innerText=getTitulo(level);
-if(money<=0){document.getElementById('gameOver').style.display='flex';return;}
-if(day>365){alert('ZEROU 365 DIAS LVL '+level);day=1;}
-}
-function closeAll(){document.querySelectorAll('.modal').forEach(m=>m.style.display='none');}
-function openShop(){document.getElementById('shopModal').style.display='flex';}
-function openBanco(){document.getElementById('bancoModal').style.display='flex';}
-function openMissoes(){
- let html='';
- ativasMissoes.forEach(m=>{
-  let pct=Math.min(100,Math.floor((m.prog/m.meta)*100));
-  let pronto=m.prog>=m.meta;
-  html+=`<div class="card"><b>${m.t} ${pronto?'✅ PRONTA':''}</b><br><small>${m.d}</small><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${m.prog}/${m.meta} R$${m.premio}</small>${pronto?`<button class="btn verde" onclick="coletarMissao(${m.id});closeAll()">COLETAR</button>`:''}</div>`;
- });
- document.getElementById('listaMissoes').innerHTML=html;
- document.getElementById('missoesModal').style.display='flex';
-}
-function openDesafios(){
- let html='';
- ativasDesafios.forEach(d=>{
-  let pct=Math.min(100,Math.floor((d.prog/d.meta)*100));
-  let pronto=d.prog>=d.meta;
-  html+=`<div class="card"><b>${d.t} ${pronto?'✅':''}</b><br><small>${d.d}</small><div class="progress"><div class="bar" style="background:#B388FF;width:${pct}%"></div></div><small>${d.prog}/${d.meta} ${d.premioDolar}💲</small>${pronto?`<button class="btn roxo" onclick="coletarDesafio(${d.id});closeAll()">COLETAR</button>`:''}</div>`;
- });
- document.getElementById('listaDesafios').innerHTML=html;
- document.getElementById('desafiosModal').style.display='flex';
-}
-function openTitulos(){
- let html='';
- titulos.forEach(t=>{
-  let ativo=level>=t.l?'✅':'🔒';
-  html+=`<div class="card" style="${level>=t.l?'background:#FFF3B0':''}"><b>${ativo} LVL ${t.l} - ${t.n}</b></div>`;
- });
- document.getElementById('listaTitulos').innerHTML=html;
- document.getElementById('titulosModal').style.display='flex';
-}
-function openPix(){document.getElementById('pixModal').style.display='flex';}
-function comprarDolar(q){dolar+=q; if(q>=150) dolar+=20; log('💲 +'+q+' via PIX REAL'); check(); closeAll();}
-function comprar(item,preco,ehDolar){
- if(ehDolar){ if(dolar>=preco){dolar-=preco;inv.push(item);mostrarItem(item);log('Comprou '+item);check();closeAll();} else alert('Sem dólar - PIX REAL'); }
- else{ if(money>=preco){money-=preco;inv.push(item);mostrarItem(item);log('Comprou '+item);check();closeAll();} else alert('Sem grana'); }
-}
-function mostrarItem(item){
- let map={bone:'layerBone',cordao:'layerCordao',relogio:'layerRelogio',pit:'layerPit',glock:'layerGlock',moto:'layerMoto'};
- if(map[item]) document.getElementById(map[item]).style.display='block';
-}
-function resetGameOver(){document.getElementById('gameOver').style.display='none';mostrarAnuncio('gameover',5);}
-function restartFull(){money=500;day=1;fame=1;level=1;totalEmp=0;totalLucro=0;document.getElementById('gameOver').style.display='none';check();novo();}
-function log(t){document.getElementById('log').innerHTML='> '+t+'<br>'+document.getElementById('log').innerHTML}
-novo();check();
-</script>
-</body></html>
+function novo(){let disp=personagens.filter(p=>!usado[p.n]||usado[p.n]<3);if(disp.length==0){usado={};disp=personagens}cur=disp[Math.floor(Math.random()*disp.length)];usado[cur.n]=(usado[cur.n]||0)+1;document.getElementById('cliente').innerText=cur.e;document.getElementById('nome').innerText=cur.n;document.getElementById('tag').innerText=cur.r;document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';document.getElementById('hist').innerText=cur.h[0];document.getElementById('bubble').innerText=cur.n+': "'+cur.f[0]+'"';let pede=cur.p;let volta=cur.d;document.getElementById('pede').innerText='R$'+pede;document.getElementById('volta').innerText='R$'+volta;document.getElementById('chance').innerText=cur.c+'%';let div=document.getElementById('choices');div.innerHTML='';let pagarDobro=pede*2;let voltaPagar=pagarDobro*2;let jurosVal=volta+150;[{t:`💰 PAGAR R$${pagarDobro} -> PAGA R$${voltaPagar}`,c:'amarelo',a:'pagar'},{t:'❌ NEGAR',c:'branco',a:'negar'},{t:`😈 JUROS R$${jurosVal}`,c:'preto',a:'juros'}].forEach(o=>{let b=document.createElement('button');b.className='btn '+o.c;b.innerText=o.t;b.onclick=()=>jogar(o.a);div.appendChild(b)});}
+function jogar(tipo){if(tipo=='negar'){log('Negou '+cur.n);seq=0;day++;check();novo();return}let ch=cur.c,pe=cur.p,de=cur.d;if(tipo=='pagar'){pe=cur.p*2;de=pe*2;ch-=8;dobroCount++;}if(tipo=='juros'){de+=150;ch-=22;jurosCount++;}if(inv.includes('bone')) ch+=10;if(inv.includes('relogio')) ch+=15;if(inv.includes('pit')) ch+=25;if(inv.includes('glock')&&cur.r!='ALTO') ch=100;let pagou=Math.random()*100<ch;if(pagou){let lucro=de-pe;money+=lucro;fame++;totalEmp++;totalLucro+=lucro;seq++;log('✅ '+cur.n+' PAGOU R$'+de);atualizarProgress(tipo);day++;check();novo();}else{seq=0;pendentePerda=pe;document.getElementById('adText').innerText=cur.n+' calote R$'+pe;document.getElementById('adSave').style.display='flex';}}
+function atualizarProgress(tipo){ativasMissoes.forEach(m=>{if(m.tipo=='emp') m.prog++;if(m.tipo=='lucro') m.prog=totalLucro;if(m.tipo=='fama') m.prog=fame;if(m.tipo=='seq') m.prog=seq;if(m.tipo=='juros'&&tipo=='juros') m.prog++;if(m.prog>=m.meta&&!missaoParaColetar.find(x=>x.id==m.id)){missaoParaColetar.push(m);}});ativasDesafios.forEach(d=>{let v=0;if(d.tipo=='caixa') v=money;if(d.tipo=='totalEmp') v=totalEmp;if(d.tipo=='jurosTotal') v=jurosCount;if(d.tipo=='level') v=level;if(d.tipo=='lucroTotal') v=totalLucro;if(d.tipo=='dobro') v=dobroCount;d.prog=v;if(v>=d.meta&&!desafiosProg[d.id]&&!
