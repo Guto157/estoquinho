@@ -7,14 +7,17 @@
 header{background:#111;color:#FFD600;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
 .hud{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:8px;background:#222}
 .hud div{background:#111;border-radius:10px;padding:7px;color:#fff;text-align:center;font-size:11px;cursor:pointer} .hud b{display:block;font-size:14px}
-#palco{padding:12px;text-align:center}
-#wrap{display:flex;justify-content:center;gap:8px;align-items:flex-end}
+#palco{padding:12px;text-align:center;position:relative}
+#wrap{display:flex;justify-content:center;gap:8px;align-items:flex-end;position:relative}
 #clienteBox{width:92px;height:92px;border:3px solid #111;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;overflow:hidden;position:relative}
 #clienteAvatar{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#fff}
 #avatarWrap{position:relative;width:125px;height:135px;display:flex;align-items:flex-end;justify-content:center}
 #agiota{width:115px;height:125px;background:#222;border-radius:18px 18px 12px 12px;position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;border:3px solid #111;overflow:hidden}
 #agiotaImg{width:100%;height:100%;object-fit:cover;object-position:top}
 #bubble{background:#111;color:#fff;padding:12px;border-radius:14px;margin:10px auto;text-align:left;font-size:14px}
+#comicBalloon{position:absolute;top:2px;left:52%;transform:translateX(-50%);background:#fff;border:3px solid #111;border-radius:14px;padding:7px 10px;font-size:11px;font-weight:900;color:#111;max-width:150px;z-index:10;display:none;box-shadow:3px 3px 0 #111;animation:pop .25s ease}
+#comicBalloon:after{content:'';position:absolute;bottom:-8px;left:18px;width:12px;height:12px;background:#fff;border-right:3px solid #111;border-bottom:3px solid #111;transform:rotate(45deg)}
+@keyframes pop{0%{transform:translateX(-50%) scale(0.6)}100%{transform:translateX(-50%) scale(1)}}
 #info{background:#fff;border:2.5px solid #111;border-radius:12px;padding:12px;text-align:left}
 .btn{width:100%;padding:14px;border-radius:12px;border:3px solid #111;font-weight:900;font-size:13px;margin-top:8px;text-align:left;cursor:pointer}
 .verde{background:#00E676} .amarelo{background:#FFD600} .branco{background:#fff} .preto{background:#111;color:#FFD600} .roxo{background:#B388FF} .azul{background:#40C4FF}
@@ -35,11 +38,10 @@ input{width:100%;padding:12px;border:3px solid #111;border-radius:12px;font-weig
 <div onclick="openTitulos()">TÍTULO<b id="patrao" style="font-size:9px">MOLEQUE</b></div>
 </div>
 <div id="palco">
+<div id="comicBalloon"></div>
 <div id="wrap">
 <div id="clienteBox"><div id="clienteAvatar">?</div></div>
-<div id="avatarWrap">
-<div id="agiota"><img id="agiotaImg" src="agiota.png"></div>
-</div>
+<div id="avatarWrap"><div id="agiota"><img id="agiotaImg" src="agiota.png"></div></div>
 </div>
 <div id="bubble">...</div>
 <div id="info"><h3><span id="nome"></span> <span id="tag" style="padding:4px 8px;border-radius:20px;font-size:11px;color:#111;font-weight:900"></span></h3><p id="hist" style="font-size:13px;margin-top:6px;color:#333"></p><div style="display:flex;gap:6px;margin-top:8px"><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">PEDE<b id="pede" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">VOLTA<b id="volta" style="display:block"></b></div><div style="flex:1;background:#FFF3B0;padding:6px;border-radius:8px;text-align:center;font-size:11px">CHANCE<b id="chance" style="display:block"></b></div></div></div>
@@ -52,10 +54,22 @@ input{width:100%;padding:12px;border:3px solid #111;border-radius:12px;font-weig
 <button class="btn verde" onclick="openPix()">💲 DÓLAR PIX</button>
 </div>
 <div id="log" style="font-size:11px;text-align:left;color:#666;margin-top:10px;height:90px;overflow:auto"></div>
-<div style="font-size:9px;color:#999;margin-top:6px">Logado como: <b id="userLabel"></b> • Auto-save ligado</div>
+<div style="font-size:9px;color:#999;margin-top:6px">Logado: <b id="userLabel"></b> • Auto-save</div>
 </div>
 
-<div id="loginModal" class="modal" style="display:flex"><div class="box" style="text-align:left"><h2>🔐 LOGIN</h2><p style="font-size:12px;color:#555;margin-top:6px">Seu progresso fica salvo no seu login. Se atualizar a página, volta tudo.</p><input id="loginUser" placeholder="Digite seu nome (ex: Joao)" maxlength="20"><input id="loginPass" type="password" placeholder="Senha (qualquer uma)" maxlength="20"><button class="btn amarelo" onclick="fazerLogin()">ENTRAR / CRIAR CONTA</button><p style="font-size:10px;color:#777;margin-top:8px">* Salvamento local no navegador, por usuário. Não precisa internet.</p></div></div>
+<div id="loginModal" class="modal" style="display:flex"><div class="box" style="text-align:left">
+<h2>📱 LOGIN POR TELEFONE</h2>
+<p style="font-size:12px;color:#555;margin-top:6px">Seu progresso fica salvo no seu número. Único por usuário.</p>
+<input id="loginPhone" type="tel" placeholder="(11) 99999-9999" maxlength="15">
+<div id="areaCodigo" style="display:none">
+<input id="loginCodigo" type="text" placeholder="Código de 6 dígitos" maxlength="6">
+<p style="font-size:10px;color:#666;margin-top:4px">Enviando SMS real via Twilio...</p>
+<div id="codigoStatus" style="background:#111;color:#FFD600;padding:8px;border-radius:8px;margin-top:6px;font-size:11px;text-align:center;display:none"></div>
+</div>
+<button id="btnEnviar" class="btn azul" onclick="solicitarCodigo()">📲 ENVIAR CÓDIGO SMS</button>
+<button id="btnEntrar" class="btn amarelo" style="display:none" onclick="confirmarCodigo()">✅ CONFIRMAR E ENTRAR</button>
+<p style="font-size:9px;color:#888;margin-top:8px">* Configure BACKEND_URL no código com sua API Twilio</p>
+</div></div>
 
 <div id="shopModal" class="modal"><div class="box"><h2>🛒 LOJINHA</h2><div id="shopList"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="bancoModal" class="modal"><div class="box"><h2>🏦 BANCO</h2>
@@ -63,17 +77,20 @@ input{width:100%;padding:12px;border:3px solid #111;border-radius:12px;font-weig
 <div class="card"><b>R$200 - 10s</b><button class="btn verde" onclick="pedirBanco(200,10)">📺 +R$200</button></div>
 <div class="card"><b>R$300 - 15s</b><button class="btn verde" onclick="pedirBanco(300,15)">📺 +R$300</button></div>
 <button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="missoesModal" class="modal"><div class="box"><h2>🎯 MISSÕES (5 ATIVAS)</h2><div id="listaMissoes"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="desafiosModal" class="modal"><div class="box"><h2>🏆 DESAFIOS (5 ATIVOS)</h2><div id="listaDesafios"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="missoesModal" class="modal"><div class="box"><h2>🎯 MISSÕES</h2><div id="listaMissoes"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="desafiosModal" class="modal"><div class="box"><h2>🏆 DESAFIOS</h2><div id="listaDesafios"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="titulosModal" class="modal"><div class="box"><h2>👑 TÍTULOS LVL 1000</h2><div id="listaTitulos"></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
-<div id="pixModal" class="modal"><div class="box"><h2>💲 DÓLAR - PIX REAL</h2><div style="background:#fff;padding:10px;border:2px solid #111;border-radius:12px;text-align:center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=00020126580014BR.GOV.BCB.PIX0136SEU-PIX-AQUI" style="width:220px;height:220px"/><p style="font-size:10px;word-break:break-all">Troque SEU-PIX-AQUI pela sua chave real no código fonte</p></div><div class="card"><b>10 💲 - R$0,99</b><button class="btn azul" onclick="comprarDolar(10)">JÁ PAGUEI</button></div><div class="card"><b>50 💲 - R$4,99</b><button class="btn azul" onclick="comprarDolar(50)">JÁ PAGUEI</button></div><div class="card"><b>150 💲 - R$9,99 +20 BÔNUS</b><button class="btn azul" onclick="comprarDolar(150)">JÁ PAGUEI</button></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
+<div id="pixModal" class="modal"><div class="box"><h2>💲 DÓLAR - PIX REAL</h2><div style="background:#fff;padding:10px;border:2px solid #111;border-radius:12px;text-align:center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=00020126580014BR.GOV.BCB.PIX0136SEU-PIX-AQUI" style="width:220px;height:220px"/><p style="font-size:10px;word-break:break-all">Troque SEU-PIX-AQUI pela sua chave real</p></div><div class="card"><b>10 💲 - R$0,99</b><button class="btn azul" onclick="comprarDolar(10)">JÁ PAGUEI</button></div><div class="card"><b>50 💲 - R$4,99</b><button class="btn azul" onclick="comprarDolar(50)">JÁ PAGUEI</button></div><div class="card"><b>150 💲 - R$9,99 +20 BÔNUS</b><button class="btn azul" onclick="comprarDolar(150)">JÁ PAGUEI</button></div><button class="btn branco" onclick="closeAll()">FECHAR</button></div></div>
 <div id="adSave" class="modal"><div class="box" style="text-align:center"><h2>💀 CALOTE!</h2><p id="adText"></p><button class="btn amarelo" onclick="salvarComAnuncio()">📺 SALVAR</button><button class="btn branco" onclick="aceitarPerda()">ACEITAR</button></div></div>
 <div id="adModal" class="modal"><div class="box" style="text-align:center"><h2>📺 ANÚNCIO</h2><p id="adTimer"></p><div style="background:#111;color:#FFD600;padding:20px;border-radius:8px;margin:10px 0">ANÚNCIO...</div><button id="btnClaim" class="btn verde" style="display:none" onclick="recompensaLiberada()">✅ PEGAR</button></div></div>
 <div id="gameOver" class="modal"><div class="box" style="text-align:center"><h2>💸 FALIDO!</h2><button class="btn amarelo" onclick="resetGameOver()">📺 R$300</button><button class="btn branco" onclick="restartFull()">RECOMEÇAR</button></div></div>
 </div>
 
 <script>
-let currentUser=null;
+// ========= CONFIG SMS REAL =========
+const BACKEND_URL = "https://SEU-BACKEND.com/send-sms"; // TROQUE pela sua API
+const GAME_VERSION=4;
+let currentUser=null, codigoAtual=null;
 let day=1,money=500,fame=1,level=1,dolar=0,inv=[],pendentePerda=0,pendenteTipo=null,pendenteBanco=0;
 let usado={},totalEmp=0,totalLucro=0,seq=0,jurosCount=0,pagarCount=0,desafiosProg={},missaoParaColetar=[],desafiosParaColetar=[];
 const titulos=[{l:1,n:"MOLEQUE"},{l:5,n:"FREGUÊS"},{l:10,n:"PATRÃO"},{l:20,n:"DONO DA LAJE"},{l:35,n:"REI DA QUEBRADA"},{l:50,n:"PATRÃO DA FAVELA"},{l:75,n:"DONO DA BOCA"},{l:100,n:"CHEFÃO"},{l:150,n:"SENHOR DO MORRO"},{l:200,n:"BARÃO DO CRIME"},{l:300,n:"IMPERADOR DA NOITE"},{l:400,n:"LENDÁRIO"},{l:500,n:"MITOLÓGICO"},{l:750,n:"INTOCÁVEL"},{l:1000,n:"CONCIERGE DO CRIME"}];
@@ -93,160 +110,120 @@ const personagens=[
 {n:"Léo Adega",sig:"LA",cor:"#2BE94A",r:"MÉDIO",c:50,p:200,d:500,h:["Cerveja acabou"]},
 {n:"Bruna Trança",sig:"BT",cor:"#E9B64A",r:"MÉDIO",c:65,p:110,d:250,h:["Cabelo noiva"]}
 ];
-const ameacas=[
-"Você vai se arrepender disso, vacilão!",
-"Na quebrada ninguém nega o patrão!",
-"Vou espalhar que você é caloteiro!",
-"Você me paga, seu comédia!",
-"Volto mais forte, seu lixo!",
-"Me negou? Agora virou pessoal!",
-"Vou queimar sua banca na rua!",
-"Tá achando que é quem? Vai pagar caro!",
-"Essa humilhação não fica assim!",
-"Guardei sua cara, patrãozinho..."
-];
+const ameacas=["Vai se arrepender!","Ninguém nega o patrão!","Vou queimar sua banca!","Me paga, comédia!","Volto mais forte!","Virou pessoal!","Guardei sua cara!","Tá achando que é quem?","Isso não fica assim!","Vou espalhar na quebrada!"];
 let cur;
-function fazerLogin(){
- let u=document.getElementById('loginUser').value.trim();
- let p=document.getElementById('loginPass').value.trim();
- if(u.length<2){alert('Digite um nome com pelo menos 2 letras');return;}
- if(p.length<2){alert('Digite uma senha');return;}
- currentUser=u.toLowerCase();
- let key='save_'+currentUser;
- let existing=localStorage.getItem(key);
- if(existing){
-   try{
-     let data=JSON.parse(existing);
-     if(data.pass && data.pass!==p){alert('Senha errada para esse usuário');return;}
-   }catch(e){}
+
+// SMS REAL - Twilio via backend
+async function solicitarCodigo(){
+ let tel=document.getElementById('loginPhone').value.replace(/\D/g,'');
+ if(tel.length<10){alert('Digite telefone com DDD');return;}
+ codigoAtual=Math.floor(100000+Math.random()*900000).toString();
+ document.getElementById('areaCodigo').style.display='block';
+ document.getElementById('codigoStatus').style.display='block';
+ document.getElementById('codigoStatus').innerText='⏳ Enviando SMS para +55'+tel+'...';
+ document.getElementById('btnEnviar').disabled=true;
+ try{
+   let res=await fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:'+55'+tel,code:codigoAtual})});
+   if(res.ok){ document.getElementById('codigoStatus').innerText='✅ SMS enviado para +55'+tel+'! Código: '+codigoAtual; }
+   else{ throw new Error(); }
+ }catch(e){
+   // Fallback local se backend não configurado - mostra código na tela
+   localStorage.setItem('temp_code_'+tel, codigoAtual);
+   document.getElementById('codigoStatus').innerText='📲 (Backend não configurado) Código simulado: '+codigoAtual+' - SMS real precisa configurar BACKEND_URL';
  }
- localStorage.setItem('currentUser',currentUser);
- document.getElementById('userLabel').innerText=currentUser;
+ document.getElementById('btnEnviar').style.display='none';
+ document.getElementById('btnEntrar').style.display='block';
+}
+function confirmarCodigo(){
+ let tel=document.getElementById('loginPhone').value.replace(/\D/g,'');
+ let cod=document.getElementById('loginCodigo').value.trim();
+ let salvo=localStorage.getItem('temp_code_'+tel);
+ if(cod!==codigoAtual && cod!==salvo){alert('Código errado');return;}
+ currentUser=tel;
+ localStorage.setItem('currentUser', currentUser);
+ document.getElementById('userLabel').innerText='+55 '+tel;
  document.getElementById('loginModal').style.display='none';
- if(existing){
-   carregarSave();
- } else {
-   novo();check();saveGame();
- }
- log('🔐 Logado como '+currentUser);
+ localStorage.removeItem('temp_code_'+tel);
+ if(localStorage.getItem('save_'+currentUser)){ carregarSave(); }
+ else { novo();check();saveGame(); }
+ log('📱 Logado '+tel);
 }
 function carregarSave(){
- let key='save_'+currentUser;
- let raw=localStorage.getItem(key);
- if(!raw){novo();return;}
+ let key='save_'+currentUser; let raw=localStorage.getItem(key); if(!raw){novo();return;}
  try{
   let s=JSON.parse(raw);
   day=s.day||1; money=s.money||500; fame=s.fame||1; level=s.level||1; dolar=s.dolar||0; inv=s.inv||[]; usado=s.usado||{}; totalEmp=s.totalEmp||0; totalLucro=s.totalLucro||0; seq=s.seq||0; jurosCount=s.jurosCount||0; pagarCount=s.pagarCount||0; desafiosProg=s.desafiosProg||{};
   proxMissaoIdx=s.proxMissaoIdx||5; proxDesafioIdx=s.proxDesafioIdx||5;
   if(s.ativasMissoes) ativasMissoes=s.ativasMissoes;
   if(s.ativasDesafios) ativasDesafios=s.ativasDesafios;
-  if(s.todasMissoes) todasMissoes=s.todasMissoes;
-  if(s.todosDesafios) todosDesafios=s.todosDesafios;
+  if(!s.version || s.version<GAME_VERSION){
+    // Atualiza estrutura sem zerar progresso
+    let oldM=s.ativasMissoes||[]; let oldD=s.ativasDesafios||[];
+    todasMissoes=gerarMissoes(); todosDesafios=gerarDesafios();
+    ativasMissoes.forEach((m,i)=>{ if(oldM[i]) m.prog=oldM[i].prog; });
+  }
   missaoParaColetar=[]; desafiosParaColetar=[];
   ativasMissoes.forEach(m=>{ if(m.prog>=m.meta) missaoParaColetar.push(m); });
-  ativasDesafios.forEach(d=>{ d.prog=0; if(d.tipo=='caixa') d.prog=money; if(d.tipo=='totalEmp') d.prog=totalEmp; if(d.tipo=='jurosTotal') d.prog=jurosCount; if(d.tipo=='level') d.prog=level; if(d.tipo=='lucroTotal') d.prog=totalLucro; if(d.tipo=='dobro') d.prog=pagarCount; if(d.prog>=d.meta && !desafiosProg[d.id]) desafiosParaColetar.push(d); });
-  renderColeta();
-  novo();check();
- }catch(e){ console.log(e); novo(); }
+  ativasDesafios.forEach(d=>{ let v=0; if(d.tipo=='caixa') v=money; if(d.tipo=='totalEmp') v=totalEmp; if(d.tipo=='jurosTotal') v=jurosCount; if(d.tipo=='level') v=level; if(d.tipo=='lucroTotal') v=totalLucro; if(d.tipo=='dobro') v=pagarCount; d.prog=v; if(v>=d.meta && !desafiosProg[d.id]) desafiosParaColetar.push(d); });
+  renderColeta(); novo();check();
+ }catch(e){novo();}
 }
 function saveGame(){
  if(!currentUser) return;
- let data={pass:document.getElementById('loginPass').value||'123', day, money, fame, level, dolar, inv, usado, totalEmp, totalLucro, seq, jurosCount, pagarCount, desafiosProg, proxMissaoIdx, proxDesafioIdx, ativasMissoes, ativasDesafios, todasMissoes, todosDesafios};
+ let data={version:GAME_VERSION, day, money, fame, level, dolar, inv, usado, totalEmp, totalLucro, seq, jurosCount, pagarCount, desafiosProg, proxMissaoIdx, proxDesafioIdx, ativasMissoes, ativasDesafios};
  localStorage.setItem('save_'+currentUser, JSON.stringify(data));
  localStorage.setItem('currentUser', currentUser);
 }
-function logout(){
- if(currentUser) saveGame();
- localStorage.removeItem('currentUser');
- currentUser=null;
- document.getElementById('loginModal').style.display='flex';
-}
+function logout(){ if(currentUser) saveGame(); localStorage.removeItem('currentUser'); currentUser=null; document.getElementById('loginModal').style.display='flex'; document.getElementById('btnEnviar').style.display='block'; document.getElementById('btnEntrar').style.display='none'; document.getElementById('areaCodigo').style.display='none'; }
+
 function novo(){
 let disp=personagens.filter(p=>!usado[p.n]||usado[p.n]<3);
 if(disp.length==0){usado={};disp=personagens}
 cur=disp[Math.floor(Math.random()*disp.length)];
 usado[cur.n]=(usado[cur.n]||0)+1;
-let av=document.getElementById('clienteAvatar');
-av.innerText=cur.sig;
-av.style.background=cur.cor;
+let av=document.getElementById('clienteAvatar'); av.innerText=cur.sig; av.style.background=cur.cor;
 document.getElementById('clienteBox').style.borderColor=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
-document.getElementById('nome').innerText=cur.n;
-document.getElementById('tag').innerText=cur.r;
-document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
-document.getElementById('hist').innerText=cur.h[0];
-document.getElementById('bubble').innerText=cur.n+': "Preciso de ajuda"';
-let pede=cur.p;let volta=cur.d;
-if(inv.includes('escritorio')) volta+=150;
-if(inv.includes('cordao')) volta=Math.floor(volta*1.2);
-document.getElementById('pede').innerText='R$'+pede;
-document.getElementById('volta').innerText='R$'+volta;
+document.getElementById('nome').innerText=cur.n; document.getElementById('tag').innerText=cur.r; document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
+document.getElementById('hist').innerText=cur.h[0]; document.getElementById('bubble').innerText=cur.n+': "Preciso de ajuda"';
+document.getElementById('pede').innerText='R$'+cur.p; 
+let voltaReceber=cur.p*2; // PEDIU 100 RECEBE 200
+let voltaJuros=Math.floor(cur.p*2.1); // PEDIU 100 JUROS 210
+document.getElementById('volta').innerText='R$'+voltaReceber; 
 document.getElementById('chance').innerText=cur.c+'%';
 let div=document.getElementById('choices');div.innerHTML='';
-let receberDobro=cur.p*2;
-let jurosVal=volta+ (inv.includes('escritorio')?80:30);
-[{t:`RECEBER R$${receberDobro}`,c:'amarelo',a:'pagar'},{t:`❌ NEGAR (-R$)`,c:'branco',a:'negar'},{t:`😈 JUROS R$${jurosVal}`,c:'preto',a:'juros'}].forEach(o=>{
+[{t:`RECEBER R$${voltaReceber}`,c:'amarelo',a:'pagar'},{t:`❌ NEGAR (-R$)`,c:'branco',a:'negar'},{t:`😈 JUROS R$${voltaJuros}`,c:'preto',a:'juros'}].forEach(o=>{
 let b=document.createElement('button');b.className='btn '+o.c;b.innerText=o.t;b.onclick=()=>jogar(o.a);div.appendChild(b)
 });
 }
+function mostrarBalaoAmeaca(texto){
+ let el=document.getElementById('comicBalloon');
+ el.innerText='💬 '+texto; el.style.display='block';
+ setTimeout(()=>{ el.style.display='none'; },2400);
+}
 function jogar(tipo){
 if(tipo=='negar'){
- let multa=25+Math.floor(cur.p*0.2);
- money-=multa;
+ let multa=25+Math.floor(cur.p*0.2); money-=multa;
  let ameaca=ameacas[Math.floor(Math.random()*ameacas.length)];
- document.getElementById('bubble').innerText=cur.n+': "'+ameaca+'"';
+ document.getElementById('bubble').innerText=cur.n+' ficou pistola!';
+ mostrarBalaoAmeaca(ameaca);
  log('🚫 Negou '+cur.n+' -R$'+multa+' | "'+ameaca+'"');
- seq=0;day++;check();saveGame();
- setTimeout(()=>{novo();},800);
- return;
+ seq=0;day++;check();saveGame(); setTimeout(()=>{novo();},1100); return;
 }
-let ch=cur.c,pe=cur.p,de=cur.d;
-if(inv.includes('escritorio')) de+=150;
-if(inv.includes('cordao')) de=Math.floor(de*1.2);
-if(tipo=='pagar'){
- pe=cur.p*2;
- de=pe*2;
- ch-=8;
- pagarCount++;
-}
-if(tipo=='juros'){de+=inv.includes('escritorio')?80:30;ch-=30;jurosCount++}
-if(inv.includes('bone')) ch+=10;
-if(inv.includes('relogio')) ch+=12;
-if(inv.includes('pit')) ch+=18;
-if(inv.includes('glock') && cur.r!='ALTO') ch=100;
+let ch=cur.c,pe=cur.p,de=cur.p*2;
+if(tipo=='pagar'){ pe=cur.p; de=cur.p*2; ch-=8; pagarCount++; }
+if(tipo=='juros'){ pe=cur.p; de=Math.floor(cur.p*2.1); ch-=30; jurosCount++; }
+if(inv.includes('bone')) ch+=10; if(inv.includes('relogio')) ch+=12; if(inv.includes('pit')) ch+=18; if(inv.includes('glock') && cur.r!='ALTO') ch=100;
+if(inv.includes('cordao')){ de=Math.floor(de*1.2); }
+if(inv.includes('escritorio')){ de+= (tipo=='juros'?30:0); }
 let pagou=Math.random()*100 < ch;
 if(pagou){
-let lucro=de-pe;
-money+=lucro;fame++;totalEmp++;totalLucro+=lucro;seq++;
-log('✅ '+cur.n+' PAGOU R$'+de+' lucro R$'+lucro);
-atualizarProgress(tipo);
-day++;check();saveGame();novo();
-}else{
-seq=0;
-pendentePerda=pe;
-document.getElementById('adText').innerText=cur.n+' calote R$'+pe;
-document.getElementById('adSave').style.display='flex';
-}
+let lucro=de-pe; money+=lucro;fame++;totalEmp++;totalLucro+=lucro;seq++;
+log('✅ '+cur.n+' PAGOU R$'+de+' lucro R$'+lucro); atualizarProgress(tipo); day++;check();saveGame();novo();
+}else{ seq=0; pendentePerda=pe; document.getElementById('adText').innerText=cur.n+' calote R$'+pe; document.getElementById('adSave').style.display='flex'; }
 }
 function atualizarProgress(tipo){
- ativasMissoes.forEach(m=>{
-  if(m.tipo=='emp') m.prog++;
-  if(m.tipo=='lucro') m.prog=totalLucro;
-  if(m.tipo=='fama') m.prog=fame;
-  if(m.tipo=='seq') m.prog=seq;
-  if(m.tipo=='juros' && tipo=='juros') m.prog++;
-  if(m.prog>=m.meta && !missaoParaColetar.find(x=>x.id==m.id)){missaoParaColetar.push(m);}
- });
- ativasDesafios.forEach(d=>{
-  let v=0;
-  if(d.tipo=='caixa') v=money;
-  if(d.tipo=='totalEmp') v=totalEmp;
-  if(d.tipo=='jurosTotal') v=jurosCount;
-  if(d.tipo=='level') v=level;
-  if(d.tipo=='lucroTotal') v=totalLucro;
-  if(d.tipo=='dobro') v=pagarCount;
-  d.prog=v;
-  if(v>=d.meta && !desafiosProg[d.id] && !desafiosParaColetar.find(x=>x.id==d.id)){desafiosParaColetar.push(d);}
- });
+ ativasMissoes.forEach(m=>{ if(m.tipo=='emp') m.prog++; if(m.tipo=='lucro') m.prog=totalLucro; if(m.tipo=='fama') m.prog=fame; if(m.tipo=='seq') m.prog=seq; if(m.tipo=='juros' && tipo=='juros') m.prog++; if(m.prog>=m.meta && !missaoParaColetar.find(x=>x.id==m.id)){missaoParaColetar.push(m);} });
+ ativasDesafios.forEach(d=>{ let v=0; if(d.tipo=='caixa') v=money; if(d.tipo=='totalEmp') v=totalEmp; if(d.tipo=='jurosTotal') v=jurosCount; if(d.tipo=='level') v=level; if(d.tipo=='lucroTotal') v=totalLucro; if(d.tipo=='dobro') v=pagarCount; d.prog=v; if(v>=d.meta && !desafiosProg[d.id] && !desafiosParaColetar.find(x=>x.id==d.id)){desafiosParaColetar.push(d);} });
  renderColeta();
 }
 function renderColeta(){
@@ -263,7 +240,7 @@ function recompensaLiberada(){document.getElementById('adModal').style.display='
 function aceitarPerda(){document.getElementById('adSave').style.display='none';let perda=Math.floor(pendentePerda*0.5);money-=perda;if(inv.includes('moto')){let r=Math.floor(perda*0.5);money+=r;}log('💀 -R$'+perda);pendentePerda=0;day++;check();saveGame();novo();}
 function check(){level=Math.floor(fame/3)+1;if(level>1000) level=1000;document.getElementById('day').innerText=day;document.getElementById('lvl').innerText=level;document.getElementById('money').innerText='R$'+money;document.getElementById('dolar').innerText='💲'+dolar;document.getElementById('patrao').innerText=getTitulo(level);if(money<=0){document.getElementById('gameOver').style.display='flex';return;}}
 function closeAll(){document.querySelectorAll('.modal').forEach(m=>{if(m.id!=='loginModal') m.style.display='none';});}
-function openShop(){let list=document.getElementById('shopList');list.innerHTML='';let items=[{id:'bone',name:'Boné Brabo',price:500,dollar:false,buff:'+10% chance',icon:'🧢',desc:'Boné no topo da cabeça'},{id:'cordao',name:'Cordão Ouro',price:5,dollar:true,buff:'+20% lucro',icon:'📿',desc:'Corrente no pescoço'},{id:'relogio',name:'Relógio Rolex',price:8,dollar:true,buff:'+12% chance',icon:'⌚',desc:'Relógio no pulso'},{id:'glock',name:'Glock G19 - Preta Fosca',price:25,dollar:true,buff:'BAIXO/MÉDIO 100%',icon:'🔫',desc:'Na mão, arma real'},{id:'moto',name:'Moto 160',price:1200,dollar:false,buff:'Recupera 50%',icon:'🏍️',desc:'Moto atrás'},{id:'pit',name:'Pitbull',price:10,dollar:true,buff:'+18% intimidação',icon:'🦮',desc:'Cachorro ao lado'},{id:'escritorio',name:'Escritório',price:50,dollar:true,buff:'Juros +80',icon:'🏠',desc:'Base'},{id:'energetico',name:'Energético',price:200,dollar:false,buff:'+5% 3 dias',icon:'⚡',cons:true},{id:'salgadinho',name:'Salgadinho',price:100,dollar:false,buff:'+1 fama',icon:'🍿',cons:true}];items.forEach(it=>{if(inv.includes(it.id)&&!it.cons) return;list.innerHTML+=`<div class="card"><b>${it.icon} ${it.name} - ${it.dollar?it.price+' 💲':'R$'+it.price}</b><br><small>${it.buff} - ${it.desc}</small><br><button class="btn ${it.dollar?'roxo':'amarelo'}" onclick="comprar('${it.id}',${it.price},${it.dollar},${it.cons||false})">COMPRAR</button></div>`;});document.getElementById('shopModal').style.display='flex';}
+function openShop(){let list=document.getElementById('shopList');list.innerHTML='';let items=[{id:'bone',name:'Boné Brabo',price:500,dollar:false,buff:'+10% chance',icon:'🧢',desc:'Boné no topo'},{id:'cordao',name:'Cordão Ouro',price:5,dollar:true,buff:'+20% lucro',icon:'📿',desc:'Corrente'},{id:'relogio',name:'Relógio Rolex',price:8,dollar:true,buff:'+12% chance',icon:'⌚',desc:'Relógio'},{id:'glock',name:'Glock G19',price:25,dollar:true,buff:'BAIXO/MÉDIO 100%',icon:'🔫',desc:'Arma'},{id:'moto',name:'Moto 160',price:1200,dollar:false,buff:'Recupera 50%',icon:'🏍️',desc:'Moto'},{id:'pit',name:'Pitbull',price:10,dollar:true,buff:'+18% intimidação',icon:'🦮',desc:'Cachorro'},{id:'escritorio',name:'Escritório',price:50,dollar:true,buff:'Juros +30',icon:'🏠',desc:'Base'},{id:'energetico',name:'Energético',price:200,dollar:false,buff:'+5% 3 dias',icon:'⚡',cons:true},{id:'salgadinho',name:'Salgadinho',price:100,dollar:false,buff:'+1 fama',icon:'🍿',cons:true}];items.forEach(it=>{if(inv.includes(it.id)&&!it.cons) return;list.innerHTML+=`<div class="card"><b>${it.icon} ${it.name} - ${it.dollar?it.price+' 💲':'R$'+it.price}</b><br><small>${it.buff} - ${it.desc}</small><br><button class="btn ${it.dollar?'roxo':'amarelo'}" onclick="comprar('${it.id}',${it.price},${it.dollar},${it.cons||false})">COMPRAR</button></div>`;});document.getElementById('shopModal').style.display='flex';}
 function openBanco(){document.getElementById('bancoModal').style.display='flex';}
 function openMissoes(){let html='';ativasMissoes.forEach(m=>{let pct=Math.min(100,Math.floor((m.prog/m.meta)*100));let pronto=m.prog>=m.meta;html+=`<div class="card"><b>${m.t} ${pronto?'✅ PRONTA':''}</b><br><small>${m.d}</small><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${m.prog}/${m.meta} R$${m.premio}</small>${pronto?`<button class="btn verde" onclick="coletarMissao(${m.id})">COLETAR</button>`:''}</div>`;});document.getElementById('listaMissoes').innerHTML=html;document.getElementById('missoesModal').style.display='flex';}
 function openDesafios(){let html='';ativasDesafios.forEach(d=>{let pct=Math.min(100,Math.floor((d.prog/d.meta)*100));let pronto=d.prog>=d.meta;html+=`<div class="card"><b>${d.t} ${pronto?'✅':''}</b><br><small>${d.d}</small><div class="progress"><div class="bar" style="background:#B388FF;width:${pct}%"></div></div><small>${d.prog}/${d.meta} ${d.premioDolar}💲</small>${pronto?`<button class="btn roxo" onclick="coletarDesafio(${d.id})">COLETAR</button>`:''}</div>`;});document.getElementById('listaDesafios').innerHTML=html;document.getElementById('desafiosModal').style.display='flex';}
@@ -275,11 +252,7 @@ function aplicarConsumivel(item){if(item=='energetico'){log('⚡ +5% 3 dias');}i
 function resetGameOver(){document.getElementById('gameOver').style.display='none';mostrarAnuncio('gameover',5);}
 function restartFull(){money=500;day=1;fame=1;level=1;totalEmp=0;totalLucro=0;inv=[];usado={};seq=0;jurosCount=0;pagarCount=0;document.getElementById('gameOver').style.display='none';check();saveGame();novo();}
 function log(t){document.getElementById('log').innerHTML='> '+t+'<br>'+document.getElementById('log').innerHTML}
-(function init(){
- let savedUser=localStorage.getItem('currentUser');
- if(savedUser){ currentUser=savedUser; document.getElementById('loginUser').value=savedUser; document.getElementById('userLabel').innerText=savedUser; document.getElementById('loginModal').style.display='none'; carregarSave(); }
- else { document.getElementById('loginModal').style.display='flex'; }
-})();
+(function init(){ let savedUser=localStorage.getItem('currentUser'); if(savedUser){ currentUser=savedUser; document.getElementById('loginPhone').value=savedUser; document.getElementById('userLabel').innerText='+55 '+savedUser; document.getElementById('loginModal').style.display='none'; carregarSave(); }})();
 window.addEventListener('beforeunload', saveGame);
 setInterval(()=>{ if(currentUser) saveGame(); }, 3000);
 </script>
