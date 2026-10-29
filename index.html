@@ -76,6 +76,7 @@ input{width:100%;padding:12px;border:3px solid #111;border-radius:12px;font-weig
 let currentUser=null;
 let day=1,money=500,fame=1,level=1,dolar=0,inv=[],pendentePerda=0,pendenteTipo=null,pendenteBanco=0;
 let usado={},totalEmp=0,totalLucro=0,seq=0,jurosCount=0,pagarCount=0,desafiosProg={},missaoParaColetar=[],desafiosParaColetar=[];
+let jurosStreak=0;
 const titulos=[{l:1,n:"MOLEQUE"},{l:5,n:"FREGUÊS"},{l:10,n:"PATRÃO"},{l:20,n:"DONO DA LAJE"},{l:35,n:"REI DA QUEBRADA"},{l:50,n:"PATRÃO DA FAVELA"},{l:75,n:"DONO DA BOCA"},{l:100,n:"CHEFÃO"},{l:150,n:"SENHOR DO MORRO"},{l:200,n:"BARÃO DO CRIME"},{l:300,n:"IMPERADOR DA NOITE"},{l:400,n:"LENDÁRIO"},{l:500,n:"MITOLÓGICO"},{l:750,n:"INTOCÁVEL"},{l:1000,n:"CONCIERGE DO CRIME"}];
 function getTitulo(lvl){let t="MOLEQUE";for(let x of titulos){if(lvl>=x.l) t=x.n;}return t;}
 function gerarMissoes(){let arr=[];for(let i=1;i<=100;i++){let tipo=i%5,meta,premio,t,d,tipoStr;if(tipo==0){meta=6+Math.floor(i*0.9);premio=35+Math.floor(i*2.5);t=`Emprestar ${meta}x`;d=`Empréstimos`;tipoStr="emp";}if(tipo==1){meta=900+i*280;premio=40+Math.floor(i*3);t=`Lucrar R$${meta}`;d=`Lucro`;tipoStr="lucro";}if(tipo==2){meta=8+Math.floor(i/1.6);premio=45+Math.floor(i*2.8);t=`Fama ${meta}`;d=`Fama`;tipoStr="fama";}if(tipo==3){meta=6+Math.floor(i/2);premio=50+Math.floor(i*3);t=`Seq ${meta}`;d=`Sem calote`;tipoStr="seq";}if(tipo==4){meta=5+Math.floor(i/2.5);premio=55+Math.floor(i*3.2);t=`Juros ${meta}x`;d=`Juros`;tipoStr="juros";}arr.push({id:i,t,d,meta,premio,tipo:tipoStr,prog:0});}return arr;}
@@ -91,7 +92,9 @@ const personagens=[
 {n:"Dona Cida",sig:"DC",cor:"#8A4A2B",r:"BAIXO",c:85,p:60,d:110,h:["Bolo casamento"]},
 {n:"DJ Nego R",sig:"DJ",cor:"#7A4AE9",r:"ALTO",c:40,p:250,d:700,h:["Caixa queimou"]},
 {n:"Léo Adega",sig:"LA",cor:"#2BE94A",r:"MÉDIO",c:50,p:200,d:500,h:["Cerveja acabou"]},
-{n:"Bruna Trança",sig:"BT",cor:"#E9B64A",r:"MÉDIO",c:65,p:110,d:250,h:["Cabelo noiva"]}
+{n:"Bruna Trança",sig:"BT",cor:"#E9B64A",r:"MÉDIO",c:65,p:110,d:250,h:["Cabelo noiva"]},
+{n:"Polícia Civil",sig:"🚓",cor:"#0055FF",r:"POLÍCIA",c:95,p:500,d:1000,h:["Investigação na área"],policia:true},
+{n:"PM Disfarçado",sig:"👮",cor:"#0033AA",r:"POLÍCIA",c:90,p:400,d:900,h:["Operação secreta"],policia:true}
 ];
 const ameacas=[
 "Você vai se arrepender disso, vacilão!",
@@ -169,12 +172,17 @@ usado[cur.n]=(usado[cur.n]||0)+1;
 let av=document.getElementById('clienteAvatar');
 av.innerText=cur.sig;
 av.style.background=cur.cor;
-document.getElementById('clienteBox').style.borderColor=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
+let corBorda = cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':cur.r=='POLÍCIA'?'#0055FF':'#FF5252';
+document.getElementById('clienteBox').style.borderColor=corBorda;
 document.getElementById('nome').innerText=cur.n;
 document.getElementById('tag').innerText=cur.r;
-document.getElementById('tag').style.background=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
+document.getElementById('tag').style.background=corBorda;
 document.getElementById('hist').innerText=cur.h[0];
-document.getElementById('bubble').innerText=cur.n+': "Preciso de ajuda"';
+if(cur.policia){
+ document.getElementById('bubble').innerText="👮 "+cur.n+": 'Preciso de um empréstimo rápido...' (Suspeito)";
+}else{
+ document.getElementById('bubble').innerText=cur.n+': "Preciso de ajuda"';
+}
 let pede=cur.p;let volta=cur.d;
 if(inv.includes('escritorio')) volta+=150;
 if(inv.includes('cordao')) volta=Math.floor(volta*1.2);
@@ -184,19 +192,32 @@ document.getElementById('chance').innerText=cur.c+'%';
 let div=document.getElementById('choices');div.innerHTML='';
 let receberDobro=cur.p*2;
 let jurosVal=volta+ (inv.includes('escritorio')?80:30);
-[{t:`RECEBER R$${receberDobro}`,c:'amarelo',a:'pagar'},{t:`❌ NEGAR (-R$)`,c:'branco',a:'negar'},{t:`😈 JUROS R$${jurosVal}`,c:'preto',a:'juros'}].forEach(o=>{
+let multa10 = Math.floor(money * 0.10);
+if(multa10 < 25) multa10 = 25;
+[{t:`RECEBER R$${receberDobro}`,c:'amarelo',a:'pagar'},{t:`❌ NEGAR (-R$${multa10})`,c:'branco',a:'negar'},{t:`😈 JUROS R$${jurosVal} ${jurosStreak>0?'('+jurosStreak+'x)':''}`,c:'preto',a:'juros'}].forEach(o=>{
 let b=document.createElement('button');b.className='btn '+o.c;b.innerText=o.t;b.onclick=()=>jogar(o.a);div.appendChild(b)
 });
 }
 function jogar(tipo){
 if(tipo=='negar'){
- let multa=25+Math.floor(cur.p*0.2);
+ let multa = Math.floor(money * 0.10);
+ if(multa < 25) multa = 25;
  money-=multa;
  let ameaca=ameacas[Math.floor(Math.random()*ameacas.length)];
  document.getElementById('bubble').innerText=cur.n+': "'+ameaca+'"';
- log('🚫 Negou '+cur.n+' -R$'+multa+' | "'+ameaca+'"');
- seq=0;day++;check();saveGame();
+ log('🚫 Negou '+cur.n+' -R$'+multa+' (10%) | "'+ameaca+'"');
+ seq=0;jurosStreak=0;day++;check();saveGame();
  setTimeout(()=>{novo();},800);
+ return;
+}
+if(cur.policia){
+ let fianca = Math.floor(money * 0.50);
+ if(fianca < 100) fianca = 100;
+ money-=fianca;
+ document.getElementById('bubble').innerText="🚨 POLÍCIA! Você caiu em flagrante! Fiança R$"+fianca;
+ log('🚨 PRESO! Emprestou pra polícia - Fiança R$'+fianca+' (50%)');
+ seq=0;jurosStreak=0;day++;check();saveGame();
+ setTimeout(()=>{novo();},1500);
  return;
 }
 let ch=cur.c,pe=cur.p,de=cur.d;
@@ -207,23 +228,37 @@ if(tipo=='pagar'){
  de=pe*2;
  ch-=8;
  pagarCount++;
+ jurosStreak=0;
 }
-if(tipo=='juros'){de+=inv.includes('escritorio')?80:30;ch-=30;jurosCount++}
+if(tipo=='juros'){
+ de+=inv.includes('escritorio')?80:30;
+ ch-=30 + (jurosStreak * 18);
+ jurosCount++;
+ jurosStreak++;
+ if(jurosStreak >= 3){
+   ch = Math.min(ch, 25);
+ }
+ if(jurosStreak >= 4){
+   ch = Math.min(ch, 10);
+ }
+}else{
+ if(tipo!='juros') jurosStreak=0;
+}
 if(inv.includes('bone')) ch+=10;
 if(inv.includes('relogio')) ch+=12;
 if(inv.includes('pit')) ch+=18;
-if(inv.includes('glock') && cur.r!='ALTO') ch=100;
+if(inv.includes('glock') && cur.r!='ALTO' && !cur.policia) ch=100;
 let pagou=Math.random()*100 < ch;
 if(pagou){
 let lucro=de-pe;
 money+=lucro;fame++;totalEmp++;totalLucro+=lucro;seq++;
-log('✅ '+cur.n+' PAGOU R$'+de+' lucro R$'+lucro);
+log('✅ '+cur.n+' PAGOU R$'+de+' lucro R$'+lucro + (tipo=='juros'?' (Juros '+jurosStreak+'x)':''));
 atualizarProgress(tipo);
 day++;check();saveGame();novo();
 }else{
 seq=0;
 pendentePerda=pe;
-document.getElementById('adText').innerText=cur.n+' calote R$'+pe;
+document.getElementById('adText').innerText=cur.n+' calote R$'+pe + (tipo=='juros'?' - Juros abusivo quebrou!':'');
 document.getElementById('adSave').style.display='flex';
 }
 }
@@ -273,7 +308,7 @@ function comprarDolar(q){dolar+=q; if(q>=150) dolar+=20; log('💲 +'+q+' via PI
 function comprar(item,preco,ehDolar,cons){if(ehDolar){ if(dolar>=preco){dolar-=preco;if(!cons) inv.push(item);else aplicarConsumivel(item);log('Comprou '+item);check();saveGame();closeAll();} else alert('Sem dólar - PIX REAL'); }else{ if(money>=preco){money-=preco;if(!cons) inv.push(item);else aplicarConsumivel(item);log('Comprou '+item);check();saveGame();closeAll();} else alert('Sem grana'); }}
 function aplicarConsumivel(item){if(item=='energetico'){log('⚡ +5% 3 dias');}if(item=='salgadinho'){fame++;}}
 function resetGameOver(){document.getElementById('gameOver').style.display='none';mostrarAnuncio('gameover',5);}
-function restartFull(){money=500;day=1;fame=1;level=1;totalEmp=0;totalLucro=0;inv=[];usado={};seq=0;jurosCount=0;pagarCount=0;document.getElementById('gameOver').style.display='none';check();saveGame();novo();}
+function restartFull(){money=500;day=1;fame=1;level=1;totalEmp=0;totalLucro=0;inv=[];usado={};seq=0;jurosCount=0;pagarCount=0;jurosStreak=0;document.getElementById('gameOver').style.display='none';check();saveGame();novo();}
 function log(t){document.getElementById('log').innerHTML='> '+t+'<br>'+document.getElementById('log').innerHTML}
 (function init(){
  let savedUser=localStorage.getItem('currentUser');
