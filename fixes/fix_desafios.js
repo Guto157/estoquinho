@@ -1,26 +1,81 @@
+// fixes/fix_desafios.js - CORREÇÃO CONTAGEM + BARRA 12/100
 (function(){
-  setInterval(()=>{
-    document.querySelectorAll('div').forEach(card=>{
-      if(!card.style.border) return;
-      let t = card.innerText;
-      if(!(t.includes('LVL') || t.includes('Pagar') || t.includes('Juntar'))) return;
-      let m = t.match(/(\d+)\/(\d+)\s*(\d+)%/);
-      if(!m || card.dataset.ok) return;
+  console.log("FIX DESAFIOS CARREGADO");
+
+  function esperarJogo(cb){
+    if(window.totalEmp !== undefined && document.body){
+      cb();
+    } else {
+      setTimeout(()=>esperarJogo(cb), 300);
+    }
+  }
+
+  esperarJogo(()=>{
+    
+    window.totalEmp = window.totalEmp || 0;
+    window.totalLucro = window.totalLucro || 0;
+
+    const originalCheck = window.check;
+    window.check = function(){
+      if(originalCheck) originalCheck.apply(this, arguments);
+      atualizarBarraDesafios();
+    }
+
+    window.atualizarBarraDesafios = function(){
+      let lista = window.desafios || window.listaDesafios || window.DESAFIOS || [];
       
-      let atual = m[1], meta = m[2], pct = m[3];
-      let nome = t.split('\n')[0].replace('undefined','').trim();
-      
-      card.style.background='#fff';
-      card.style.border='2px solid #111';
-      card.style.borderRadius='14px';
-      card.style.padding='12px';
-      card.innerHTML = `
-        <div style="font-weight:900">${nome}</div>
-        <div style="font-size:12px;color:#666;margin:4px 0">🎯 ${nome.includes('LVL') ? 'Alcançar nível '+meta : nome.includes('Pagar') ? 'Realizar '+meta+' pagamentos' : 'Juntar R$'+meta}</div>
-        <div style="height:8px;background:#222;border-radius:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:#FFD600"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-top:4px"><span>${atual}/${meta}</span><span>${pct}%</span></div>
-      `;
-      card.dataset.ok=1;
-    });
-  },600);
+      const container = document.getElementById('desafiosTab') || document.getElementById('listaDesafios') || document.querySelector('.desafios-container');
+      if(!container) return;
+
+      if(lista.length > 0){
+        lista.forEach(d => {
+          if(d.id && d.id.includes('emp')) d.atual = window.totalEmp;
+          if(d.id && d.id.includes('lucro')) d.atual = window.totalLucro;
+          if(d.id && d.id.includes('juros')) d.atual = window.jurosCount || 0;
+          if(d.id && d.id.includes('dia')) d.atual = window.day || 1;
+        });
+        if(window.salvarDesafios) window.salvarDesafios();
+      }
+
+      const cards = container.querySelectorAll(':scope > div, .desafio-card, .card-desafio');
+      cards.forEach(card=>{
+        let texto = card.innerText;
+        let atual = 0, meta = 100;
+        
+        if(card.dataset.atual) atual = parseInt(card.dataset.atual);
+        if(card.dataset.meta) meta = parseInt(card.dataset.meta);
+        
+        if(!card.dataset.meta){
+          atual = window.totalEmp;
+          if(texto.includes('10') && !texto.includes('100')) meta = 10;
+          if(texto.includes('100')) meta = 100;
+          if(texto.includes('1000')) meta = 1000;
+        }
+
+        let barra = card.querySelector('.barra-progress-fix');
+        if(!barra){
+          barra = document.createElement('div');
+          barra.className = 'barra-progress-fix';
+          barra.style.cssText = 'margin-bottom:8px';
+          card.prepend(barra);
+        }
+
+        let pct = Math.min(100, Math.floor((atual/meta)*100));
+        barra.innerHTML = `
+          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#fff;margin-bottom:3px">
+            <span>PROGRESSO</span>
+            <span style="color:#FFD600">${atual}/${meta}</span>
+          </div>
+          <div style="width:100%;height:10px;background:#000;border-radius:10px;overflow:hidden;border:1px solid #222">
+            <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#FFD600,#FFA000);transition:width 0.4s"></div>
+          </div>
+        `;
+      });
+    }
+
+    setInterval(atualizarBarraDesafios, 1000);
+    setTimeout(atualizarBarraDesafios, 800);
+    
+    console.log("FIX DESAFIOS APLICADO");
+  });
 })();
