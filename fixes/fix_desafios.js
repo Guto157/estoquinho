@@ -1,96 +1,95 @@
-// fixes/fix_desafios.js - DESAFIOS COM BARRA 12/100
-console.log("FIX DESAFIOS CARREGADO");
+// fixes/fix_desafios.js - CORREÇÃO CONTAGEM + BARRA 12/100
+(function(){
+  console.log("FIX DESAFIOS CARREGADO");
 
-window.desafios = [
-  { id: 'emp10', nome: 'Agiota Iniciante', desc: 'Faça 10 empréstimos', meta: 10, atual: 0, premio: 200 },
-  { id: 'emp100', nome: 'Agiota Profissional', desc: 'Faça 100 empréstimos', meta: 100, atual: 0, premio: 2000 },
-  { id: 'lucro5k', nome: 'Primeiro Lucro', desc: 'Lucre R$ 5.000', meta: 5000, atual: 0, premio: 500 },
-  { id: 'lucro50k', nome: 'Patrão', desc: 'Lucre R$ 50.000', meta: 50000, atual: 0, premio: 5000 },
-  { id: 'juros10', nome: 'Juros é Vida', desc: 'Use juros 10x', meta: 10, atual: 0, premio: 300 },
-  { id: 'seq5', nome: 'Sequência Quente', desc: '5 pagamentos seguidos', meta: 5, atual: 0, premio: 400 },
-  { id: 'day30', nome: 'Sobrevivente', desc: 'Chegue no dia 30', meta: 30, atual: 0, premio: 1000 }
-];
-
-window.carregarDesafios = function(){
-  let salvo = localStorage.getItem('desafios_'+currentUser);
-  if(salvo){
-    try{
-      let data = JSON.parse(salvo);
-      data.forEach(s=>{
-        let d = window.desafios.find(x=>x.id===s.id);
-        if(d) d.atual = s.atual;
-      });
-    }catch(e){}
-  }
-}
-
-window.salvarDesafios = function(){
-  localStorage.setItem('desafios_'+currentUser, JSON.stringify(window.desafios.map(d=>({id:d.id, atual:d.atual}))));
-}
-
-window.renderDesafios = function(){
-  let container = document.getElementById('desafiosContainer');
-  if(!container){
-    // cria o container se não existir
-    container = document.createElement('div');
-    container.id = 'desafiosContainer';
-    container.style.cssText = 'padding:10px;display:flex;flex-direction:column;gap:10px';
-    let parent = document.getElementById('desafiosTab') || document.body;
-    parent.appendChild(container);
-  }
-  container.innerHTML = '';
-  window.desafios.forEach(d=>{
-    let pct = Math.min(100, Math.floor((d.atual/d.meta)*100));
-    let completo = d.atual >= d.meta;
-    let div = document.createElement('div');
-    div.style.cssText = 'background:#1a1a1a;border:1px solid '+(completo?'#00E676':'#333')+';border-radius:10px;padding:10px';
-    div.innerHTML = `
-      <div style="display:flex;justify-content:space-between;font-weight:900;font-size:13px">
-        <span>${completo?'✅ ':''}${d.nome}</span>
-        <span style="color:${completo?'#00E676':'#FFD600'}">${d.atual}/${d.meta}</span>
-      </div>
-      <div style="font-size:11px;color:#888;margin:3px 0">${d.desc} - Prêmio R$${d.premio}</div>
-      <div style="background:#000;height:10px;border-radius:10px;overflow:hidden">
-        <div style="width:${pct}%;height:100%;background:${completo?'#00E676':'#FFD600'};transition:width 0.5s"></div>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-window.atualizarDesafios = function(){
-  // atualiza os valores com base no jogo
-  window.desafios.forEach(d=>{
-    if(d.id.startsWith('emp')) d.atual = totalEmp || 0;
-    if(d.id==='emp10') d.atual = Math.min(d.meta, totalEmp||0);
-    if(d.id==='emp100') d.atual = Math.min(d.meta, totalEmp||0);
-    if(d.id.startsWith('lucro')) d.atual = Math.min(d.meta, totalLucro||0);
-    if(d.id==='juros10') d.atual = Math.min(d.meta, jurosCount||0);
-    if(d.id==='seq5') d.atual = Math.min(d.meta, seq||0);
-    if(d.id==='day30') d.atual = Math.min(d.meta, day||1);
-  });
-
-  // verifica se completou
-  window.desafios.forEach(d=>{
-    if(d.atual >= d.meta && !d.entregue){
-      d.entregue = true;
-      money += d.premio;
-      fb(d.premio,'g');
-      log(`🏆 Desafio completo: ${d.nome} +R$${d.premio}`);
-      alert(`🏆 DESAFIO COMPLETO!\n${d.nome}\n+ R$${d.premio}`);
+  function esperarJogo(cb){
+    if(window.totalEmp !== undefined && document.body){
+      cb();
+    } else {
+      setTimeout(()=>esperarJogo(cb), 300);
     }
+  }
+
+  esperarJogo(()=>{
+    
+    // 1. CORREÇÃO DA CONTAGEM - Garante que os contadores existem
+    window.totalEmp = window.totalEmp || 0;
+    window.totalLucro = window.totalLucro || 0;
+
+    // Hook no check/jogar pra sempre atualizar os desafios
+    const originalCheck = window.check;
+    window.check = function(){
+      if(originalCheck) originalCheck.apply(this, arguments);
+      atualizarBarraDesafios();
+    }
+
+    // 2. FUNÇÃO QUE INJETA A BARRA 12/100
+    window.atualizarBarraDesafios = function(){
+      // Tenta achar a lista de desafios do index (varia o nome)
+      let lista = window.desafios || window.listaDesafios || window.DESAFIOS || [];
+      
+      // Se não achou lista global, tenta ler pelos cards na tela
+      const container = document.getElementById('desafiosTab') || document.getElementById('listaDesafios') || document.querySelector('.desafios-container');
+      if(!container) return;
+
+      // Se a lista existe no JS, atualiza ela
+      if(lista.length > 0){
+        lista.forEach(d => {
+          if(d.id && d.id.includes('emp')) d.atual = window.totalEmp;
+          if(d.id && d.id.includes('lucro')) d.atual = window.totalLucro;
+          if(d.id && d.id.includes('juros')) d.atual = window.jurosCount || 0;
+          if(d.id && d.id.includes('dia')) d.atual = window.day || 1;
+        });
+        // Salva se tiver função de salvar
+        if(window.salvarDesafios) window.salvarDesafios();
+      }
+
+      // Injeta a barra visual em cada card
+      const cards = container.querySelectorAll(':scope > div, .desafio-card, .card-desafio');
+      cards.forEach(card=>{
+        // Pega valores do card
+        let texto = card.innerText;
+        let metaMatch = texto.match(/(\d+)\/(\d+)/); // se já tem 12/100 não duplica
+        
+        let atual = 0, meta = 100;
+        // Tenta pegar dos atributos data-
+        if(card.dataset.atual) atual = parseInt(card.dataset.atual);
+        if(card.dataset.meta) meta = parseInt(card.dataset.meta);
+        
+        // Se não tem, usa o totalEmp como padrão
+        if(!card.dataset.meta){
+          atual = window.totalEmp;
+          // tenta descobrir meta pelo título
+          if(texto.includes('10') && !texto.includes('100')) meta = 10;
+          if(texto.includes('100')) meta = 100;
+          if(texto.includes('1000')) meta = 1000;
+        }
+
+        let barra = card.querySelector('.barra-progress-fix');
+        if(!barra){
+          barra = document.createElement('div');
+          barra.className = 'barra-progress-fix';
+          barra.style.cssText = 'margin-bottom:8px';
+          card.prepend(barra);
+        }
+
+        let pct = Math.min(100, Math.floor((atual/meta)*100));
+        barra.innerHTML = `
+          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#fff;margin-bottom:3px">
+            <span>PROGRESSO</span>
+            <span style="color:#FFD600">${atual}/${meta}</span>
+          </div>
+          <div style="width:100%;height:10px;background:#000;border-radius:10px;overflow:hidden;border:1px solid #222">
+            <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#FFD600,#FFA000);transition:width 0.4s"></div>
+          </div>
+        `;
+      });
+    }
+
+    // Roda a cada 1s pra garantir que contabiliza
+    setInterval(atualizarBarraDesafios, 1000);
+    setTimeout(atualizarBarraDesafios, 800);
+    
+    console.log("FIX DESAFIOS APLICADO");
   });
-
-  salvarDesafios();
-  renderDesafios();
-}
-
-// Hook para contar automaticamente quando empresta
-let _oldCheck = window.check;
-window.check = function(){
-  if(_oldCheck) _oldCheck();
-  atualizarDesafios();
-}
-
-carregarDesafios();
-setTimeout(()=>{renderDesafios(); atualizarDesafios();}, 500);
+})();
