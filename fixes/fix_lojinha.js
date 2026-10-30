@@ -11,36 +11,50 @@ console.log("FIX LOJINHA CARREGADO");
   if(window.fixLojinhaAtivo) return;
   window.fixLojinhaAtivo = true;
 
+  function usuarioAtual(){
+    if(typeof currentUser !== "undefined" && currentUser){
+      return currentUser;
+    }
+
+    return window.currentUser || null;
+  }
+
   function chaveInventario(){
-    if(!window.currentUser) return null;
-    return "lojinha_permanente_" + currentUser;
+    let usuario = usuarioAtual();
+
+    if(!usuario) return null;
+
+    return "lojinha_permanente_" + usuario;
   }
 
   function obterInventarioSalvo(){
     let chave = chaveInventario();
+
     if(!chave) return {};
 
     try{
       return JSON.parse(localStorage.getItem(chave) || "{}");
     }catch(e){
-      console.error("Erro ao ler inventário da lojinha:",e);
+      console.error("Erro ao ler inventário:",e);
       return {};
     }
   }
 
   function salvarInventario(){
     let chave = chaveInventario();
+
     if(!chave) return;
 
     try{
       localStorage.setItem(chave,JSON.stringify(inv || {}));
+      console.log("Inventário da lojinha salvo:",inv);
     }catch(e){
-      console.error("Erro ao salvar inventário da lojinha:",e);
+      console.error("Erro ao salvar inventário:",e);
     }
   }
 
   function recuperarInventario(){
-    if(!window.currentUser) return;
+    if(!usuarioAtual()) return;
 
     let salvo = obterInventarioSalvo();
 
@@ -140,7 +154,7 @@ console.log("FIX LOJINHA CARREGADO");
     }
   };
 
-  if(window.currentUser){
+  if(usuarioAtual()){
     recuperarInventario();
   }
 
