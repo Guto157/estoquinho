@@ -158,14 +158,14 @@ function openMissoes(){let html='';ativasMissoes.forEach(m=>{let pct=Math.min(10
 function openDesafios(){let html='';ativasDesafios.forEach(d=>{let pct=Math.min(100,Math.floor((d.prog/d.meta)*100));let cor=d.estrelas==1?'#9E9E9E':d.estrelas==2?'#4CAF50':d.estrelas==3?'#2196F3':d.estrelas==4?'#FF9800':'#FFD600';html+=`<div class="card" style="border-left:6px solid ${cor}"><div style="display:flex;justify-content:space-between"><b>${d.t} ${d.prog>=d.meta?'💲':''}</b><span style="background:${cor};color:#fff;padding:2px 8px;border-radius:10px;font-size:10px">${d.dif} ${'★'.repeat(d.estrelas)}</span></div><div class="progress"><div class="bar" style="background:${cor};width:${pct}%"></div></div><small>${d.prog}/${d.meta} ${pct}% ${d.premioDolar}💲</small>${d.prog>=d.meta?`<button class="btn roxo" onclick="coletarDesafio(${d.id})">COLETAR 💲</button>`:''}</div>`;});document.getElementById('listaDesafios').innerHTML=html;document.getElementById('desafiosModal').style.display='flex';}
 (function init(){let u=localStorage.getItem('currentUser');if(u){currentUser=u;document.getElementById('loginUser').value=u;document.getElementById('loginModal').style.display='none';document.getElementById('menuUser').innerText=u;carregarSave();renderSlots();setTimeout(()=>{verificarTutorial(false);},800);}else{document.getElementById('loginModal').style.display='flex';renderSlots();}})();
 </script>
-<!-- CARREGADOR DE ATUALIZAÇÕES - NUNCA MAIS MEXA NO INDEX - SÓ NO atualizacao.js -->
+<!-- CARREGADOR DE ATUALIZAÇÕES - CONGELADO - NUNCA MEXER -->
 <script>
 (function(){
   let v = Date.now();
   let s = document.createElement('script');
   s.src = 'atualizacao.js?v=' + v;
   s.onload = () => console.log("PATCH carregado");
-  s.onerror = () => console.log("Sem patch ou offline - jogo base ok");
+  s.onerror = () => console.log("Sem patch - base ok");
   document.body.appendChild(s);
 })();
 </script>
