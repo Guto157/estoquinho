@@ -1,9 +1,11 @@
-// fixes/fix_home.js - VERSÃO FINAL CORRIGIDA
-console.log("FIX HOME - UNIFICADO FINAL");
+// fixes/fix_home.js - TAXA NEGAR CUMULATIVA
+console.log("FIX NEGAR CUMULATIVO");
 
 if(!window._fixHomeAplicado){
   window._fixHomeAplicado = true;
-  window.taxaNegar = 5;
+  
+  window.taxaNegarAtual = 0; // o que vai descontar agora
+  window.incrementoNegar = 5; // quanto soma na próxima
 
   window._novoOriginal = window.novo;
   window._emprestarOriginal = window.emprestar;
@@ -11,49 +13,64 @@ if(!window._fixHomeAplicado){
   window.novo = function(){
     cur = null;
     window._novoOriginal();
+    // limite de caixa
     if(cur && cur.pedeAtual > money){
       cur.pedeAtual = Math.max(10, Math.floor(money * 0.8));
-      cur.voltaAtual = Math.floor(cur.pedeAtual * 2 * (1 + (window.getTotalLucroBonus ? getTotalLucroBonus() : 0)/100));
-      let elPede = document.getElementById('pede');
-      let elVolta = document.getElementById('volta');
-      if(elPede) elPede.innerText = 'R$' + cur.pedeAtual;
-      if(elVolta) elVolta.innerText = 'R$' + cur.voltaAtual;
+      cur.voltaAtual = Math.floor(cur.pedeAtual * 2);
+      document.getElementById('pede').innerText = 'R$' + cur.pedeAtual;
+      document.getElementById('volta').innerText = 'R$' + cur.voltaAtual;
     }
-    let btnNegar = document.querySelector("#choices button:nth-child(2)");
-    if(btnNegar){
-      btnNegar.innerHTML = `❌ NEGAR<small>Paga R$${window.taxaNegar}</small>`;
+    let btn = document.querySelector("#choices button:nth-child(2)");
+    if(btn){
+      btn.innerHTML = window.taxaNegarAtual === 0 ? `❌ NEGAR<small>Grátis</small>` : `❌ NEGAR<small>Paga R$${window.taxaNegarAtual}</small>`;
     }
   }
 
   window.negar = function(){
-    money = Number(money) - Number(window.taxaNegar);
-    window.taxaNegar = Math.min(50, window.taxaNegar + 5);
+    // desconta
+    money = Number(money) - Number(window.taxaNegarAtual);
+    
+    // prepara próxima taxa: soma incremento
+    window.taxaNegarAtual += window.incrementoNegar;
+    window.incrementoNegar += 5;
+    
+    // trava em 100 pra não exagerar
+    if(window.taxaNegarAtual > 100) window.taxaNegarAtual = 100;
+    
     if(money <= 0){ falencia(); return; }
+    
     if(window.save) save();
     if(window.addXp) addXp(1);
     document.getElementById('money').innerText = 'R$' + money;
+    
     window._novoOriginal();
-    // reaplica limite
     if(cur && cur.pedeAtual > money){
       cur.pedeAtual = Math.max(10, Math.floor(money * 0.8));
       document.getElementById('pede').innerText = 'R$' + cur.pedeAtual;
     }
-    let btnNegar = document.querySelector("#choices button:nth-child(2)");
-    if(btnNegar){
-      btnNegar.innerHTML = `❌ NEGAR<small>Paga R$${window.taxaNegar}</small>`;
+    let btn = document.querySelector("#choices button:nth-child(2)");
+    if(btn){
+      btn.innerHTML = `❌ NEGAR<small>Paga R$${window.taxaNegarAtual}</small>`;
     }
   }
 
   window.emprestar = function(tipo){
-    window.taxaNegar = 5;
+    // se emprestou, a taxa vai abaixando 5 por 5
+    if(window.taxaNegarAtual > 0){
+      window.taxaNegarAtual = Math.max(0, window.taxaNegarAtual - 5);
+      window.incrementoNegar = Math.max(5, window.incrementoNegar - 5);
+    }
+    if(window.taxaNegarAtual === 0) window.incrementoNegar = 5;
+    
     window._emprestarOriginal(tipo);
   }
 
   window.falencia = function(){
     money = 100;
-    window.taxaNegar = 5;
+    window.taxaNegarAtual = 0;
+    window.incrementoNegar = 5;
     localStorage.removeItem('save');
-    alert("💸 FALÊNCIA! Recomeçando com R$100");
+    alert("💸 FALÊNCIA! Resetado");
     location.reload();
   }
 
