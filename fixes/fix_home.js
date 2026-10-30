@@ -1,21 +1,27 @@
-// fixes/fix_home.js - TAXA NEGAR CUMULATIVA
-console.log("FIX NEGAR CUMULATIVO");
+// fixes/fix_home.js - CORRIGIDO DESCONTO
+console.log("FIX NEGAR FINAL");
 
 if(!window._fixHomeAplicado){
   window._fixHomeAplicado = true;
   
-  window.taxaNegarAtual = 0; // o que vai descontar agora
-  window.incrementoNegar = 5; // quanto soma na próxima
+  window.taxaNegarAtual = 0;
+  window.incrementoNegar = 5;
+  window.vezesNegou = 0;
 
   window._novoOriginal = window.novo;
   window._emprestarOriginal = window.emprestar;
 
+  function getMoneyNum(){
+    let m = money;
+    if(typeof m === 'string') m = m.replace('R$','').replace(/\D/g,'');
+    return Number(m) || 500;
+  }
+
   window.novo = function(){
     cur = null;
     window._novoOriginal();
-    // limite de caixa
-    if(cur && cur.pedeAtual > money){
-      cur.pedeAtual = Math.max(10, Math.floor(money * 0.8));
+    if(cur && cur.pedeAtual > getMoneyNum()){
+      cur.pedeAtual = Math.max(10, Math.floor(getMoneyNum() * 0.8));
       cur.voltaAtual = Math.floor(cur.pedeAtual * 2);
       document.getElementById('pede').innerText = 'R$' + cur.pedeAtual;
       document.getElementById('volta').innerText = 'R$' + cur.voltaAtual;
@@ -27,27 +33,34 @@ if(!window._fixHomeAplicado){
   }
 
   window.negar = function(){
-    // desconta
-    money = Number(money) - Number(window.taxaNegarAtual);
+    money = getMoneyNum();
+    let desconto = Number(window.taxaNegarAtual);
     
-    // prepara próxima taxa: soma incremento
-    window.taxaNegarAtual += window.incrementoNegar;
-    window.incrementoNegar += 5;
+    console.log(`NEGAR #${window.vezesNegou+1} - Caixa: ${money} - Desconto: ${desconto}`);
+
+    if(window.vezesNegou > 0){ // primeira vez não desconta
+      money -= desconto;
+    }
+
+    window.vezesNegou++;
     
-    // trava em 100 pra não exagerar
+    // calcula próxima
+    if(window.vezesNegou === 1){
+      window.taxaNegarAtual = 5;
+      window.incrementoNegar = 10;
+    } else {
+      window.taxaNegarAtual += window.incrementoNegar;
+      window.incrementoNegar += 5;
+    }
     if(window.taxaNegarAtual > 100) window.taxaNegarAtual = 100;
-    
+
     if(money <= 0){ falencia(); return; }
     
+    document.getElementById('money').innerText = 'R$' + money;
     if(window.save) save();
     if(window.addXp) addXp(1);
-    document.getElementById('money').innerText = 'R$' + money;
     
     window._novoOriginal();
-    if(cur && cur.pedeAtual > money){
-      cur.pedeAtual = Math.max(10, Math.floor(money * 0.8));
-      document.getElementById('pede').innerText = 'R$' + cur.pedeAtual;
-    }
     let btn = document.querySelector("#choices button:nth-child(2)");
     if(btn){
       btn.innerHTML = `❌ NEGAR<small>Paga R$${window.taxaNegarAtual}</small>`;
@@ -55,13 +68,15 @@ if(!window._fixHomeAplicado){
   }
 
   window.emprestar = function(tipo){
-    // se emprestou, a taxa vai abaixando 5 por 5
+    // abaixa 5 por 5
     if(window.taxaNegarAtual > 0){
       window.taxaNegarAtual = Math.max(0, window.taxaNegarAtual - 5);
       window.incrementoNegar = Math.max(5, window.incrementoNegar - 5);
+      if(window.taxaNegarAtual === 0){
+        window.vezesNegou = 0;
+        window.incrementoNegar = 5;
+      }
     }
-    if(window.taxaNegarAtual === 0) window.incrementoNegar = 5;
-    
     window._emprestarOriginal(tipo);
   }
 
@@ -69,6 +84,7 @@ if(!window._fixHomeAplicado){
     money = 100;
     window.taxaNegarAtual = 0;
     window.incrementoNegar = 5;
+    window.vezesNegou = 0;
     localStorage.removeItem('save');
     alert("💸 FALÊNCIA! Resetado");
     location.reload();
