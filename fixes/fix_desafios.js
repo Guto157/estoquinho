@@ -1,93 +1,105 @@
-// fixes/fix_desafios.js - DESBUGAR DESAFIOS TRAVADOS PÓS-FALÊNCIA
+// fixes/fix_desafios.js - LÓGICA FINAL DESAFIOS
 (function(){
-  console.log("FIX DESAFIOS TRAVADO");
+  console.log("FIX DESAFIOS LOGICA");
 
-  function fixar(){
-    const modal = document.querySelector('[class*="DESAFIOS"]')?.parentElement || document.body;
-    const cards = document.querySelectorAll('div[style*="border"]'); // pega os cards do print
+  function getDesafios(){
+    return window.desafios || window.listaDesafios || window.DESAFIOS || null;
+  }
 
-    // Procura os cards de desafio pelo texto
-    document.querySelectorAll('*').forEach(el=>{
-      if(!el.innerText) return;
-      if(el.innerText.includes('LVL') || el.innerText.includes('Pagar') || el.innerText.includes('Juntar R$')){
-        let card = el.closest('div[style*="border"]') || el.parentElement?.parentElement;
-        if(!card || card.dataset.fixed) return;
+  function atualizarContadorGeral(){
+    let lista = getDesafios();
+    if(!lista) return;
+    
+    let concluidos = lista.filter(d => d.feito || d.concluido || d.atual >= d.meta).length;
+    let total = lista.length;
 
-        // 1. CONSERTA O undefined -> FÁCIL ★
-        let selo = card.querySelector('*');
-        if(card.innerText.includes('undefined')){
-          card.innerHTML = card.innerHTML.replace(/undefined/g, 'FÁCIL ★');
-        }
+    // Procura o titulo DESAFIOS DO MORRO
+    let titulo = document.evaluate("//*[contains(text(),'DESAFIOS DO MORRO')]", document, null, 9, null).singleNodeValue;
+    if(titulo){
+      let header = titulo.parentElement;
+      let contador = document.getElementById('contadorGeralDesafios');
+      if(!contador){
+        contador = document.createElement('div');
+        contador.id = 'contadorGeralDesafios';
+        contador.style.cssText = 'font-size:14px;font-weight:900;color:#000;background:#FFD600;padding:2px 10px;border-radius:10px;margin-left:10px;display:inline-block';
+        titulo.appendChild(contador);
+        titulo.style.display = 'flex';
+        titulo.style.alignItems = 'center';
+        titulo.style.flexWrap = 'wrap';
+      }
+      contador.innerText = `${concluidos}/${total}`;
+    }
+  }
 
-        // 2. PEGA O PROGRESSO REAL DE BAIXO ex: 607/15200 3%
-        let match = card.innerText.match(/(\d+)\/(\d+)\s*(\d+)?%/);
-        if(match){
-          let atual = parseInt(match[1]);
-          let meta = parseInt(match[2]);
-          let pct = match[3] ? parseInt(match[3]) : Math.floor((atual/meta)*100);
+  function loop(){
+    let lista = getDesafios();
+    if(!lista) return;
 
-          // 3. ATUALIZA O PROGRESSO DE CIMA 0/100 -> pct/100
-          let progressoTop = card.querySelector('div');
-          let labels = card.querySelectorAll('div');
-          labels.forEach(l=>{
-            if(l.innerText === 'PROGRESSO'){
-              let valEl = l.nextElementSibling || l.parentElement.querySelector('span');
-              // acha o 0/100 do lado do PROGRESSO
-              let texto = l.parentElement.innerHTML;
-              if(texto.includes('0/100')){
-                l.parentElement.innerHTML = l.parentElement.innerHTML.replace(/0\/100/g, `${pct}/100`);
-              }
-              // atualiza a barra preta de cima
-              let barra = l.nextElementSibling;
-              if(barra && barra.tagName === 'DIV'){
-                barra.innerHTML = `<div style="width:${pct}%;height:8px;background:#FFD600;border-radius:10px"></div>`;
-                barra.style.background = '#222';
-                barra.style.height = '8px';
-                barra.style.borderRadius = '10px';
-                barra.style.overflow = 'hidden';
-              }
+    // 1. Se concluiu, esconde
+    lista.forEach((d,i)=>{
+      if((d.atual >= d.meta || d.feito) && !d._sumiu){
+        d._sumiu = true; // marca pra não contar 2x
+        // tenta achar o card na tela pra sumir
+        setTimeout(()=>{
+          let cards = document.querySelectorAll('div');
+          cards.forEach(c=>{
+            if(c.innerText.includes(d.nome || d.titulo || '') && c.innerText.includes(`${d.atual}/${d.meta}`)){
+              c.style.display = 'none';
             }
           });
-        }
-        card.dataset.fixed = '1';
+        },200);
+      }
+    });
+
+    atualizarContadorGeral();
+
+    // 2. Conserta undefined -> FÁCIL
+    document.querySelectorAll('*').forEach(el=>{
+      if(el.innerText === 'undefined'){
+        el.innerText = 'FÁCIL ★';
+        el.style.background = '#aaa';
       }
     });
   }
 
-  // 4. FUNÇÃO PRA DESBRAVAR OS TRAVADOS - limpa save bugado
-  window.resetarDesafiosTravados = function(){
-    // Limpa só os desafios bugados do localStorage
-    for(let k in localStorage){
-      if(k.toLowerCase().includes('desafio')){
-        let val = localStorage.getItem(k);
-        if(val && val.includes('undefined')){
-          localStorage.removeItem(k);
+  // 3. SE FALIR, RESETA TUDO
+  function resetarTudoSeFalir(){
+    // Hook na função de falir se existir
+    let funcs = ['falir','gameOver','perdeu','quebrou','faliu'];
+    funcs.forEach(nome=>{
+      if(window[nome]){
+        let old = window[nome];
+        window[nome] = function(){
+          console.log("FALIU - RESETANDO DESAFIOS");
+          let lista = getDesafios();
+          if(lista){
+            lista.forEach(d=>{ d.atual = 0; d.feito = false; d.concluido = false; d._sumiu = false; });
+            if(window.salvarDesafios) window.salvarDesafios();
+            localStorage.removeItem('desafios');
+            localStorage.removeItem('desafiosDoMorro');
+          }
+          return old.apply(this, arguments);
         }
       }
-    }
-    // Se tiver array global, destrava
-    if(window.desafios){
-      window.desafios.forEach(d=>{
-        if(d.atual === 0 && d.feito) d.feito = false;
-        if(d.dificuldade === undefined) d.dificuldade = 'FÁCIL';
-      });
-    }
-    location.reload();
+    });
+
+    // Segurança: se dinheiro for < -5000 considera falência
+    setInterval(()=>{
+      if(window.money !== undefined && window.money < -100){
+        // só reseta uma vez
+        if(!window._jaFaliu){
+          window._jaFaliu = true;
+          let lista = getDesafios();
+          if(lista){
+            lista.forEach(d=>{ d.atual = 0; d.feito = false; });
+          }
+          setTimeout(()=>{ window._jaFaliu = false; }, 5000);
+        }
+      }
+    },1000);
   }
 
-  setInterval(fixar, 800);
-
-  // Adiciona botão discreto pra resetar se ainda ficar travado
-  setTimeout(()=>{
-    let btnFechar = document.querySelector('button') || document.body;
-    if(!document.getElementById('btnResetTravado')){
-      let b = document.createElement('div');
-      b.id = 'btnResetTravado';
-      b.innerText = '↻ Destravar LVL/Pagar';
-      b.style.cssText = 'font-size:10px;text-align:center;margin-top:6px;color:#888;text-decoration:underline;cursor:pointer';
-      b.onclick = window.resetarDesafiosTravados;
-      let fechar = Array.from(document.querySelectorAll('*')).find(e=>e.innerText==='FECHAR');
-      if(fechar) fechar.parentElement.before(b);
-    }
-  },1500);
+  resetarTudoSeFalir();
+  setInterval(loop, 1000);
+  setTimeout(loop, 500);
 })();
