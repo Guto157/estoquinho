@@ -1,10 +1,10 @@
-// fixes/fix_home.js - FINAL CALOTE TELA
-console.log("FIX HOME - CALOTE VALOR TELA");
+// fixes/fix_home.js - FINAL CORRIGIDO CELULAR
+console.log("FIX HOME - CALOTE EXATO TELA");
 
 function fb(v,t){
  var m=document.getElementById('money');
  if(!m)return;var e=document.createElement('div');
- e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:8px 14px;border-radius:10px;background:#111;border:2px solid;transition:all 1.5s;box-shadow:0 4px 15px rgba(0,0,0,0.5)';
+ e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:8px 14px;border-radius:10px;background:#111;border:2px solid;transition:all 1.5s';
  e.innerText=t=='g'?'+R$'+v:'-R$'+v;
  e.style.color=t=='g'?'#00E676':'#FF5252';e.style.borderColor=e.style.color;
  document.body.appendChild(e);
@@ -13,6 +13,7 @@ function fb(v,t){
  if(m){m.style.color=e.style.color;setTimeout(function(){m.style.color=''},800)}
 }
 window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;
+
 window.novo=function(){
  let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
  let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
@@ -48,12 +49,13 @@ window.novo=function(){
  let div=document.getElementById('choices');div.innerHTML='';
  let tn=window.taxaNegarAtual===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
  let ops=[
-  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc,d:'Lucro R$'+(vc-pc),c:'amarelo',a:'emprestar'},
+  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc,c:'amarelo',a:'emprestar'},
   {t:tn,d:'Evita calote',c:'branco',a:'negar'},
-  {t:'😈 JUROS R$'+vcJuros,d:'Recebe R$'+vcJuros,d:'Lucro R$'+(vcJuros-pc),c:'preto',a:'juros'}
+  {t:'😈 JUROS R$'+vcJuros,d:'Recebe R$'+vcJuros,c:'preto',a:'juros'}
  ];
  ops.forEach(o=>{let b=document.createElement('button');b.className='btn '+o.c;b.innerHTML=o.t+'<small>'+o.d+'</small>';b.onclick=()=>{jogar(o.a)};div.appendChild(b)});
 }
+
 window.jogar=function(tipo){
  if(!cur){novo();return}
  if(tipo=='negar'){
@@ -76,8 +78,8 @@ window.jogar=function(tipo){
   money-=fi;fb(fi,'c');
   log('🚨 POLÍCIA! -R$'+fi);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;
  }
- let peTela=parseInt(document.getElementById('pede').innerText.replace(/[^0-9]/g,''))||cur.pedeAtual;
- let peBase=peTela;
+ let peTela=parseInt(document.getElementById('pede').innerText.replace(/[^0-9]/g,''));
+ let peBase=isNaN(peTela)?cur.pedeAtual:peTela;
  let deBase=cur.voltaAtual;
  let deJuros=cur.voltaJurosAtual;
  let ch=cur.chanceAtual;
@@ -93,20 +95,22 @@ window.jogar=function(tipo){
   money+=lucro;
   fb(de,'g');
   fame+=1;totalEmp++;totalLucro+=lucro;seq++;
-  document.getElementById('bubble').innerText='✅ '+cur.n+' pagou R$'+de+'! Lucro R$'+lucro;
-  log('✅ '+cur.n+' pagou R$'+de+' lucro R$'+lucro+' ['+ch.toFixed(0)+'%]');day++;check();novo();
+  document.getElementById('bubble').innerText='✅ Pagou R$'+de;
+  log('✅ '+cur.n+' pagou R$'+de);day++;check();novo();
  }else{
-  money-=peBase;fb(peBase,'c');
+  // CALOTE = EXATO QUE PEDIU
+  money = money - peBase;
+  fb(peBase,'c');
   fame=Math.max(0,fame-0.5);seq=0;
-  log('💀 '+cur.n+' calote -R$'+peBase+' ['+ch.toFixed(0)+'%]');
-  document.getElementById('bubble').innerText='💀 '+cur.n+' calote -R$'+peBase+'!';
+  log('💀 Calote -R$'+peBase);
+  document.getElementById('bubble').innerText='💀 Calote -R$'+peBase+'!';
   day++;check();novo();
  }
 }
 window.falencia=function(){
  money=100;window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;valorNegar=25;
  localStorage.removeItem('save_'+currentUser);
- alert("💸 FALÊNCIA! Resetado R$100 - Negar volta Grátis");location.reload();
+ alert("💸 FALÊNCIA! Resetado R$100");location.reload();
 }
 window.restartFull=function(){
  day=1;money=500;fame=1;level=1;usado={};
