@@ -1,68 +1,78 @@
-// fixes/fix_desafios.js - FINAL SEM ALERTA
+// fixes/fix_desafios.js - DESAFIOS NO MODELO DAS MISSÕES
 (function(){
-  console.log("FIX DESAFIOS FINAL");
+  console.log("FIX DESAFIOS = MISSÕES");
 
-  function aplicar(){
-    // 1. CONSERTA TODO undefined -> FÁCIL ★
-    document.querySelectorAll('*').forEach(el=>{
-      if(el.childNodes.length === 1 && el.innerText === 'undefined'){
-        // só os selos amarelos
-        if(el.parentElement && el.parentElement.innerHTML.includes('Pagar') || el.parentElement.innerHTML.includes('LVL')){
-          el.innerText = 'FÁCIL ★';
-          el.style.background = '#aaa';
-          el.style.color = '#fff';
-        } else {
-          el.innerText = 'FÁCIL ★';
-        }
-      }
-    });
+  function transformar(){
+    // Acha o modal de desafios
+    let titulo = document.evaluate("//*[contains(text(),'DESAFIOS DO MORRO')]", document, null, 9, null).singleNodeValue;
+    if(!titulo) return;
+    let modal = titulo.closest('div[style*="background"]') || titulo.parentElement.parentElement;
+    if(!modal || modal.dataset.missoesStyle) return;
 
-    // 2. CONTADOR 0/100 NO TOPO
-    let titulo = Array.from(document.querySelectorAll('*')).find(e=>e.innerText && e.innerText.includes('DESAFIOS DO MORRO'));
-    if(titulo && !document.getElementById('contadorGeral')){
-      let total = document.querySelectorAll('[class*="FECHAR"]').length ? 5 : document.querySelectorAll('div').length; 
-      // pega total real de cards
-      let cards = Array.from(document.querySelectorAll('div')).filter(d=>d.innerText.includes('/68') || d.innerText.includes('/115') || d.innerText.includes('Juntar'));
-      let concluidos = cards.filter(c=> c.innerText.includes('100%')).length;
-      
-      let span = document.createElement('span');
-      span.id = 'contadorGeral';
-      span.style.cssText = 'background:#FFD600;color:#000;font-size:13px;padding:2px 10px;border-radius:10px;margin-left:10px;font-weight:900';
-      span.innerText = `${concluidos}/${cards.length || 5} Concluídos`;
-      titulo.appendChild(span);
-      titulo.style.display = 'flex';
-      titulo.style.alignItems = 'center';
-      titulo.style.flexWrap = 'wrap';
+    // Acha todos os cards de desafio (os com LVL, Pagar, Juntar)
+    let cards = Array.from(modal.querySelectorAll('div')).filter(d => 
+      d.style.border && (d.innerText.includes('LVL') || d.innerText.includes('Pagar') || d.innerText.includes('Juntar'))
+    );
+
+    if(cards.length === 0) return;
+
+    // 1. CRIA A BARRA PRETA NO TOPO IGUAL MISSÕES 33/50
+    if(!document.getElementById('barraDesafiosTop')){
+      let barra = document.createElement('div');
+      barra.id = 'barraDesafiosTop';
+      barra.style.cssText = 'background:#111;color:#FFD600;font-weight:900;text-align:center;padding:8px;border-radius:12px;margin:8px 0;font-size:14px';
+      let total = cards.length;
+      let concluidos = cards.filter(c=>c.innerText.includes('100%')).length;
+      barra.innerHTML = `🏆 ${concluidos}/${total} DESAFIOS`;
+      titulo.parentElement.insertBefore(barra, titulo.nextSibling);
     }
 
-    // 3. SE CONCLUIU, SOME DA LISTA
-    document.querySelectorAll('div').forEach(card=>{
-      if(card.innerText.includes('100% 1 $') || card.innerText.includes('100% 2 $')){
-        if(card.style.border && card.innerText.includes('/')){
-          card.style.display = 'none';
-        }
-      }
+    // 2. TRANSFORMA CADA CARD NO MODELO MISSÕES
+    cards.forEach(card=>{
+      if(card.dataset.transformado) return;
+      let texto = card.innerText;
+
+      // Extrai dados: 0/68 0% 1 $
+      let m = texto.match(/(\d+)\/(\d+)\s*(\d+)%\s*(\d+)\s*\$/);
+      if(!m) return;
+      let atual = m[1];
+      let meta = m[2];
+      let pct = m[3];
+      let premio = m[4];
+
+      // Título
+      let tituloCard = texto.split('\n')[0].replace('undefined','').replace('TESTE OK ★','').trim();
+      // Remove o título da lista pra pegar só
+      if(tituloCard.includes('LVL')) tituloCard = tituloCard;
+      if(tituloCard.includes('Pagar')) tituloCard = tituloCard;
+      if(tituloCard.includes('Juntar')) tituloCard = tituloCard;
+
+      // Descrição diferente por tipo, mas mesmo estilo da missão
+      let desc = '';
+      if(tituloCard.includes('LVL')) desc = `Alcançar o nível ${meta}`;
+      else if(tituloCard.includes('Pagar')) desc = `Realizar ${meta} pagamentos`;
+      else if(tituloCard.includes('Juntar')) desc = `Juntar R$${meta}`;
+      else desc = `Completar ${meta}`;
+
+      // NOVO VISUAL IGUAL MISSÕES
+      card.style.cssText = 'background:#fff;border:2px solid #111;border-radius:14px;padding:12px;margin-bottom:10px';
+      card.innerHTML = `
+        <div style="font-weight:900;font-size:15px;color:#111;margin-bottom:4px">${tituloCard}</div>
+        <div style="font-size:12px;color:#555;display:flex;align-items:center;gap:4px;margin-bottom:8px">
+          <span>🎯</span> ${desc}
+        </div>
+        <div style="width:100%;height:10px;background:#333;border-radius:10px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:#FFD600"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-top:4px;color:#111">
+          <span>${atual}/${meta}</span><span>${pct}%</span>
+        </div>
+      `;
+      card.dataset.transformado = '1';
     });
+
+    modal.dataset.missoesStyle = '1';
   }
 
-  // 4. SE FALIR, RESETA DESAFIOS
-  window.resetarDesafiosAoFalir = function(){
-    localStorage.removeItem('desafios');
-    localStorage.removeItem('desafiosDoMorro');
-    localStorage.removeItem('desafiosProgresso');
-    console.log("DESAFIOS RESETADOS PÓS-FALÊNCIA");
-  };
-
-  // Hooka na falência se existir
-  ['falir','gameOver','perdeu','faliu','quebrar'].forEach(nome=>{
-    if(window[nome]){
-      let original = window[nome];
-      window[nome] = function(){
-        window.resetarDesafiosAoFalir();
-        return original.apply(this, arguments);
-      }
-    }
-  });
-
-  setInterval(aplicar, 800);
+  setInterval(transformar, 800);
 })();
