@@ -1,12 +1,11 @@
-// fixes/fix_home.js - CAIXINHA VALOR INTEGRAL 2s
-console.log("FIX HOME - INTEGRAL 2s");
+// fixes/fix_home.js - FINAL CALOTE TELA
+console.log("FIX HOME - CALOTE VALOR TELA");
 
 function fb(v,t){
  var m=document.getElementById('money');
  if(!m)return;var e=document.createElement('div');
  e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:8px 14px;border-radius:10px;background:#111;border:2px solid;transition:all 1.5s;box-shadow:0 4px 15px rgba(0,0,0,0.5)';
- e.innerText=(t=='g'?'+R$':'+R$')+v; // sempre positivo, cor define
- if(t=='c'){e.innerText='-R$'+v}
+ e.innerText=t=='g'?'+R$'+v:'-R$'+v;
  e.style.color=t=='g'?'#00E676':'#FF5252';e.style.borderColor=e.style.color;
  document.body.appendChild(e);
  setTimeout(function(){e.style.transform='translateY(-70px)';e.style.opacity='0'},1200);
@@ -49,9 +48,9 @@ window.novo=function(){
  let div=document.getElementById('choices');div.innerHTML='';
  let tn=window.taxaNegarAtual===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
  let ops=[
-  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc+' | Lucro R$'+(vc-pc),c:'amarelo',a:'emprestar'},
+  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc,d:'Lucro R$'+(vc-pc),c:'amarelo',a:'emprestar'},
   {t:tn,d:'Evita calote',c:'branco',a:'negar'},
-  {t:'😈 JUROS R$'+vcJuros,d:'Recebe R$'+vcJuros+' | Lucro R$'+(vcJuros-pc),c:'preto',a:'juros'}
+  {t:'😈 JUROS R$'+vcJuros,d:'Recebe R$'+vcJuros,d:'Lucro R$'+(vcJuros-pc),c:'preto',a:'juros'}
  ];
  ops.forEach(o=>{let b=document.createElement('button');b.className='btn '+o.c;b.innerHTML=o.t+'<small>'+o.d+'</small>';b.onclick=()=>{jogar(o.a)};div.appendChild(b)});
 }
@@ -77,7 +76,8 @@ window.jogar=function(tipo){
   money-=fi;fb(fi,'c');
   log('🚨 POLÍCIA! -R$'+fi);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;
  }
- let peBase=cur.pedeAtual;
+ let peTela=parseInt(document.getElementById('pede').innerText.replace(/[^0-9]/g,''))||cur.pedeAtual;
+ let peBase=peTela;
  let deBase=cur.voltaAtual;
  let deJuros=cur.voltaJurosAtual;
  let ch=cur.chanceAtual;
