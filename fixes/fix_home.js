@@ -1,5 +1,5 @@
-// fixes/fix_home.js - FINAL LATERAL SEM CAIXA CALOTE
-console.log("FIX HOME - LATERAL");
+// fixes/fix_home.js - FINAL CALOTE VALOR PEDIDO
+console.log("FIX HOME - CALOTE VALOR PEDIDO");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -74,10 +74,11 @@ window.jogar=function(tipo){
   money-=fi;fb(fi,'c');
   log('🚨 POLÍCIA! -R$'+fi);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;
  }
+ let peBase=cur.pedeAtual;
  let ch=cur.chanceAtual!=null?cur.chanceAtual:cur.c;
- let pe=cur.pedeAtual!=null?cur.pedeAtual:cur.p;
+ let pe=peBase;
  let de=cur.voltaAtual!=null?cur.voltaAtual:cur.d;
- if(tipo=='pagar'){pe=pe*2;de=pe*2;ch-=8}
+ if(tipo=='pagar'){pe=peBase*2;de=pe*2;ch-=8}
  if(tipo=='juros'){de+=80;ch-=30;jurosCount++}
  ch+=getTotalChanceBonus();
  if(cur.r=='ALTO'){ch+=getGlockBonusVsAlto()}
@@ -90,10 +91,10 @@ window.jogar=function(tipo){
   document.getElementById('bubble').innerText='✅ '+cur.n+' pagou R$'+de+'! ('+ch.toFixed(0)+'%)';
   log('✅ '+cur.n+' pagou R$'+de+' ['+ch.toFixed(0)+'%]');day++;check();novo();
  }else{
-  money-=pe;fb(pe,'c');
+  money-=peBase;fb(peBase,'c');
   fame=Math.max(0,fame-0.5);seq=0;
-  log('💀 '+cur.n+' calote -R$'+pe+' ['+ch.toFixed(0)+'%]');
-  document.getElementById('bubble').innerText='💀 '+cur.n+' calote R$'+pe+'!';
+  log('💀 '+cur.n+' calote -R$'+peBase+' ['+ch.toFixed(0)+'%]');
+  document.getElementById('bubble').innerText='💀 '+cur.n+' calote R$'+peBase+'!';
   day++;check();novo();
  }
 }
