@@ -1,5 +1,5 @@
-// fixes/fix_home.js - FINAL COM TRAVA ANTI-DUPLO CORRIGIDO
-console.log("FIX HOME - TRAVA CALOTE CORRIGIDO");
+// fixes/fix_home.js - FINAL CORRIGIDO TRAVA + CALOTE EXATO
+console.log("FIX HOME - CALOTE EXATO");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -18,7 +18,6 @@ window.novo=function(){
  window.travado=false;
  let chDiv = document.getElementById('choices');
  if(chDiv){ chDiv.style.pointerEvents='auto'; }
-
  let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
  let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
  if(d.length==0){usado={};d=l}
@@ -86,8 +85,7 @@ window.jogar=function(tipo){
   money-=fi;fb(fi,'c');
   log('🚨 POLÍCIA! -R$'+fi);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;
  }
- let peTela=parseInt(document.getElementById('pede').innerText.replace(/[^0-9]/g,''));
- let peBase=isNaN(peTela)?cur.pedeAtual:peTela;
+ let peBase = cur.pedeAtual;
  let de=cur.voltaAtual;
  if(tipo=='juros'){de=cur.voltaJurosAtual;cur.chanceAtual-=30;jurosCount++}
  let ch=cur.chanceAtual+getTotalChanceBonus();
@@ -98,9 +96,9 @@ window.jogar=function(tipo){
  if(pagou){
   let lucro=de-peBase;
   money+=lucro;
-  fb(de,'g');
+  fb(lucro,'g');
   fame+=1;totalEmp++;totalLucro+=lucro;seq++;
-  document.getElementById('bubble').innerText='✅ Pagou R$'+de;
+  document.getElementById('bubble').innerText='✅ Pagou R$'+de+' (lucro R$'+lucro+')';
   log('✅ '+cur.n+' pagou R$'+de+' lucro R$'+lucro);day++;check();novo();
  }else{
   money-=peBase;
@@ -112,7 +110,7 @@ window.jogar=function(tipo){
  }
 }
 window.falencia=function(){
- money=100;window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;valorNegar=25;window.travado=false;
+ money=100;window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;window.travado=false;
  let chDiv = document.getElementById('choices');
  if(chDiv){ chDiv.style.pointerEvents='auto'; }
  localStorage.removeItem('save_'+currentUser);
@@ -120,7 +118,7 @@ window.falencia=function(){
 }
 window.restartFull=function(){
  day=1;money=500;fame=1;level=1;usado={};window.travado=false;
- window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;valorNegar=25;
+ window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;
  let chDiv = document.getElementById('choices');
  if(chDiv){ chDiv.style.pointerEvents='auto'; }
  document.getElementById('gameOver').style.display='none';check();novo();
