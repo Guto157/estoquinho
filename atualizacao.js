@@ -4,24 +4,25 @@
 // Funcoes: novo(), jogar(tipo), check(), saveGame(), renderSlots(), gerarMissoes(), openMissoes(), coletarMissao(), atualizarProgress(), atualizarNotificacoes()
 // =========================================
 
-// --- CORREÇÃO: VALOR PEDIDO NUNCA MAIOR QUE CAIXA ---
-(function(){
-  let _cur = window.cur;
-  Object.defineProperty(window,'cur',{
-    get(){return _cur},
-    set(v){
-      if(v && v.pede){
-        let caixa = window.money||0;
-        if(caixa>0 && v.pede>caixa){
-          let np = Math.floor(caixa*0.8);
-          if(np<10) np = Math.min(10, caixa);
-          v.pede = v.valor = np;
+// =========================================
+// BLOCO DE ATUALIZAÇÕES E CORREÇÕES (v1.1)
+// =========================================
+
+// Correção do Bug: Impedir cliente de pedir valor acima do Caixa (money)
+const originalGerarMissoes = gerarMissoes;
+gerarMissoes = function() {
+    // Executa a função original do seu mapa
+    originalGerarMissoes();
+    
+    // Trava de segurança: se o valor do cliente atual (cur) pedir mais do que o Caixa (money)
+    if (cur && cur.valor > money) {
+        cur.valor = Math.floor(money * 0.85); // Limita o pedido a 85% do caixa atual
+        if (cur.valor < 10) cur.valor = 10;   // Garante um valor mínimo de R$10
+        
+        // Atualiza o texto do balão (bubble) com o valor corrigido
+        const bubble = document.getElementById('bubble');
+        if (bubble) {
+            bubble.innerText = `Me empresta R$${cur.valor}?`;
         }
-        v.volta = Math.floor(v.pede*2);
-        v.juros = Math.floor(v.pede*2.1);
-      }
-      _cur = v;
-    },
-    configurable:true
-  });
-})();
+    }
+};
