@@ -1,81 +1,75 @@
-// fixes/fix_desafios.js - CORREÇÃO CONTAGEM + BARRA 12/100
+// fixes/fix_desafios.js - REFEITO DO ZERO
 (function(){
-  console.log("FIX DESAFIOS CARREGADO");
+  const NOVOS = [
+    { t: 'LVL 68', meta: 68, tipo: 'lvl', dif: 'FÁCIL ★', premio: '1 $' },
+    { t: 'Pagar 115x', meta: 115, tipo: 'pagar', dif: 'FÁCIL ★', premio: '1 $' },
+    { t: 'Juntar R$15200', meta: 15200, tipo: 'juntar', dif: 'FÁCIL ★', premio: '1 $' },
+    { t: 'Juntar R$16400', meta: 16400, tipo: 'juntar', dif: 'FÁCIL ★', premio: '1 $' },
+    { t: '8. Tarifa Noturna - Juntar R$17600', meta: 17600, tipo: 'juntar', dif: 'FÁCIL ★', premio: '1 $' }
+  ];
 
-  function esperarJogo(cb){
-    if(window.totalEmp !== undefined && document.body){
-      cb();
-    } else {
-      setTimeout(()=>esperarJogo(cb), 300);
-    }
+  function getCaixa(){
+    let el = document.body.innerText.match(/CAIXA\s*R\$(\d+)/);
+    return el ? parseInt(el[1]) : (window.totalMoney || 392);
+  }
+  function getLvl(){
+    return window.level || window.lvl || 4;
+  }
+  function getPagos(){
+    return window.pagamentos || window.totalPagar || 0;
   }
 
-  esperarJogo(()=>{
-    
-    window.totalEmp = window.totalEmp || 0;
-    window.totalLucro = window.totalLucro || 0;
+  function render(){
+    // Acha o modal do print
+    let titulo = [...document.querySelectorAll('div')].find(d => d.innerText && d.innerText.includes('DESAFIOS DO MORRO'));
+    if(!titulo) return;
+    let modal = titulo.parentElement;
 
-    const originalCheck = window.check;
-    window.check = function(){
-      if(originalCheck) originalCheck.apply(this, arguments);
-      atualizarBarraDesafios();
+    // Acha todos os cards brancos dentro do modal
+    let cards = [...modal.children].filter(c => c !== titulo && c.innerText && (c.innerText.includes('/') || c.innerText.includes('LVL') || c.innerText.includes('Juntar') || c.innerText.includes('Pagar')));
+    
+    // Se não achou como filhos, procura dentro
+    if(cards.length < 3){
+      cards = [...modal.querySelectorAll('div')].filter(c => c.style && c.style.borderRadius && c.innerText.includes('/'));
     }
 
-    window.atualizarBarraDesafios = function(){
-      let lista = window.desafios || window.listaDesafios || window.DESAFIOS || [];
-      
-      const container = document.getElementById('desafiosTab') || document.getElementById('listaDesafios') || document.querySelector('.desafios-container');
-      if(!container) return;
+    // Apaga os antigos
+    cards.forEach(c => c.remove());
 
-      if(lista.length > 0){
-        lista.forEach(d => {
-          if(d.id && d.id.includes('emp')) d.atual = window.totalEmp;
-          if(d.id && d.id.includes('lucro')) d.atual = window.totalLucro;
-          if(d.id && d.id.includes('juros')) d.atual = window.jurosCount || 0;
-          if(d.id && d.id.includes('dia')) d.atual = window.day || 1;
-        });
-        if(window.salvarDesafios) window.salvarDesafios();
-      }
+    let caixa = getCaixa();
+    let lvl = getLvl();
+    let pagos = getPagos();
 
-      const cards = container.querySelectorAll(':scope > div, .desafio-card, .card-desafio');
-      cards.forEach(card=>{
-        let texto = card.innerText;
-        let atual = 0, meta = 100;
-        
-        if(card.dataset.atual) atual = parseInt(card.dataset.atual);
-        if(card.dataset.meta) meta = parseInt(card.dataset.meta);
-        
-        if(!card.dataset.meta){
-          atual = window.totalEmp;
-          if(texto.includes('10') && !texto.includes('100')) meta = 10;
-          if(texto.includes('100')) meta = 100;
-          if(texto.includes('1000')) meta = 1000;
-        }
+    NOVOS.forEach(d => {
+      let atual = 0;
+      if(d.tipo === 'juntar') atual = caixa;
+      if(d.tipo === 'lvl') atual = lvl;
+      if(d.tipo === 'pagar') atual = pagos;
+      let pct = Math.min(100, Math.floor((atual/d.meta)*100));
 
-        let barra = card.querySelector('.barra-progress-fix');
-        if(!barra){
-          barra = document.createElement('div');
-          barra.className = 'barra-progress-fix';
-          barra.style.cssText = 'margin-bottom:8px';
-          card.prepend(barra);
-        }
+      let div = document.createElement('div');
+      div.style.cssText = 'background:#fff;border:2px solid #111;border-radius:14px;padding:10px 12px;margin:8px 0;';
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:900;font-size:15px;color:#111">${d.t}</span>
+          <span style="background:#BDBDBD;color:#444;font-size:11px;font-weight:900;padding:4px 10px;border-radius:12px">${d.dif}</span>
+        </div>
+        <div style="height:8px;background:#222;border-radius:8px;overflow:hidden;margin:8px 0 4px 0">
+          <div style="width:${pct}%;height:100%;background:#222"></div>
+        </div>
+        <div style="font-size:13px;color:#111">${atual}/${d.meta} ${pct}% <span style="color:#1B8A2A;font-weight:900">${d.premio}</span></div>
+      `;
+      // insere antes do botão FECHAR
+      let fechar = [...modal.children].find(c => c.innerText === 'FECHAR');
+      if(fechar) modal.insertBefore(div, fechar);
+      else modal.appendChild(div);
+    });
+  }
 
-        let pct = Math.min(100, Math.floor((atual/meta)*100));
-        barra.innerHTML = `
-          <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#fff;margin-bottom:3px">
-            <span>PROGRESSO</span>
-            <span style="color:#FFD600">${atual}/${meta}</span>
-          </div>
-          <div style="width:100%;height:10px;background:#000;border-radius:10px;overflow:hidden;border:1px solid #222">
-            <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#FFD600,#FFA000);transition:width 0.4s"></div>
-          </div>
-        `;
-      });
-    }
+  // Roda sempre que abrir o modal
+  setInterval(render, 800);
 
-    setInterval(atualizarBarraDesafios, 1000);
-    setTimeout(atualizarBarraDesafios, 800);
-    
-    console.log("FIX DESAFIOS APLICADO");
-  });
+  // Se existir lista global, substitui também
+  if(window.desafios) window.desafios = NOVOS;
+  if(window.listaDesafios) window.listaDesafios = NOVOS;
 })();
