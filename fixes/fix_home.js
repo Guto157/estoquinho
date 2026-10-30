@@ -1,15 +1,17 @@
-// fixes/fix_home.js - FINAL CALOTE = VALOR PEDIDO
-console.log("FIX HOME - FINAL CALOTE FIX");
+// fixes/fix_home.js - CAIXINHA VALOR INTEGRAL 2s
+console.log("FIX HOME - INTEGRAL 2s");
 
 function fb(v,t){
  var m=document.getElementById('money');
  if(!m)return;var e=document.createElement('div');
- e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:6px 12px;border-radius:10px;background:#111;border:2px solid;transition:all 1s';
- e.innerText=(t=='g'?'+R$':'-R$')+v;e.style.color=t=='g'?'#00E676':'#FF5252';e.style.borderColor=e.style.color;
+ e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:8px 14px;border-radius:10px;background:#111;border:2px solid;transition:all 1.5s;box-shadow:0 4px 15px rgba(0,0,0,0.5)';
+ e.innerText=(t=='g'?'+R$':'+R$')+v; // sempre positivo, cor define
+ if(t=='c'){e.innerText='-R$'+v}
+ e.style.color=t=='g'?'#00E676':'#FF5252';e.style.borderColor=e.style.color;
  document.body.appendChild(e);
- setTimeout(function(){e.style.transform='translateX(80px)';e.style.opacity='0'},60);
- setTimeout(function(){e.remove()},1000);
- if(m){m.style.color=e.style.color;setTimeout(function(){m.style.color=''},500)}
+ setTimeout(function(){e.style.transform='translateY(-70px)';e.style.opacity='0'},1200);
+ setTimeout(function(){e.remove()},2200);
+ if(m){m.style.color=e.style.color;setTimeout(function(){m.style.color=''},800)}
 }
 window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;
 window.novo=function(){
@@ -37,18 +39,19 @@ window.novo=function(){
  if(pc>max)pc=max;if(pc<15)pc=15;
  let bl=getTotalLucroBonus();
  let vc=Math.floor(pc*2*(1+bl/100));
+ let vcJuros=Math.floor(pc*2*1.1*(1+bl/100));
  let df=Math.floor(level*0.7+day*0.15);
  let cc=Math.max(5,cur.c-df);
- cur.pedeAtual=pc;cur.voltaAtual=vc;cur.chanceAtual=cc;
+ cur.pedeAtual=pc;cur.voltaAtual=vc;cur.voltaJurosAtual=vcJuros;cur.chanceAtual=cc;
  document.getElementById('pede').innerText='R$'+pc;
  document.getElementById('volta').innerText='R$'+vc;
  document.getElementById('chance').innerText=cc+'%';
  let div=document.getElementById('choices');div.innerHTML='';
  let tn=window.taxaNegarAtual===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
  let ops=[
-  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc+' | Chance '+cc+'%',c:'amarelo',a:'emprestar'},
+  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc+' | Lucro R$'+(vc-pc),c:'amarelo',a:'emprestar'},
   {t:tn,d:'Evita calote',c:'branco',a:'negar'},
-  {t:'😈 JUROS R$'+(vc+80),d:'Lucro +80 mas chance -30%',c:'preto',a:'juros'}
+  {t:'😈 JUROS R$'+vcJuros,d:'Recebe R$'+vcJuros+' | Lucro R$'+(vcJuros-pc),c:'preto',a:'juros'}
  ];
  ops.forEach(o=>{let b=document.createElement('button');b.className='btn '+o.c;b.innerHTML=o.t+'<small>'+o.d+'</small>';b.onclick=()=>{jogar(o.a)};div.appendChild(b)});
 }
@@ -76,24 +79,27 @@ window.jogar=function(tipo){
  }
  let peBase=cur.pedeAtual;
  let deBase=cur.voltaAtual;
+ let deJuros=cur.voltaJurosAtual;
  let ch=cur.chanceAtual;
  let de=deBase;
- if(tipo=='juros'){de=deBase+80;ch-=30;jurosCount++}
+ if(tipo=='juros'){de=deJuros;ch-=30;jurosCount++}
  ch+=getTotalChanceBonus();
  if(cur.r=='ALTO'){ch+=getGlockBonusVsAlto()}
  if(tipo=='juros'){if(ch>78)ch=78}else{if(ch>92)ch=92}
  if(ch<5)ch=5;
  let pagou=Math.random()*100<ch;
  if(pagou){
-  let lucro=de-peBase;money+=lucro;fb(lucro,'g');
+  let lucro=de-peBase;
+  money+=lucro;
+  fb(de,'g');
   fame+=1;totalEmp++;totalLucro+=lucro;seq++;
-  document.getElementById('bubble').innerText='✅ '+cur.n+' pagou R$'+de+'! ('+ch.toFixed(0)+'%)';
+  document.getElementById('bubble').innerText='✅ '+cur.n+' pagou R$'+de+'! Lucro R$'+lucro;
   log('✅ '+cur.n+' pagou R$'+de+' lucro R$'+lucro+' ['+ch.toFixed(0)+'%]');day++;check();novo();
  }else{
   money-=peBase;fb(peBase,'c');
   fame=Math.max(0,fame-0.5);seq=0;
   log('💀 '+cur.n+' calote -R$'+peBase+' ['+ch.toFixed(0)+'%]');
-  document.getElementById('bubble').innerText='💀 '+cur.n+' calote R$'+peBase+'!';
+  document.getElementById('bubble').innerText='💀 '+cur.n+' calote -R$'+peBase+'!';
   day++;check();novo();
  }
 }
