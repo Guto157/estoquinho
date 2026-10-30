@@ -2,9 +2,9 @@
 // MAPA ORIGINAL - PEGA 1 PAGA 2 v1.0
 // Variaveis: money, dolar, day, level, fame, inv, usado, totalEmp, totalLucro, seq, jurosCount, negarCount, cur, ativasMissoes, todasMissoes, proxMissaoIdx
 // Funcoes: novo(), jogar(tipo), check(), saveGame(), renderSlots(), gerarMissoes(), openMissoes(), coletarMissao(), atualizarProgress(), atualizarNotificacoes()
-// ATUALIZACAO V12 - 29/10 21:39 - ADICIONA OBJETIVO NAS MISSÕES
+// ATUALIZACAO V13 - 29/10 21:45 - OBJETIVO + FIX VALORES POR LEVEL
 // =========================================
-console.log("V12 COM OBJETIVO");
+console.log("V13 VALORES POR LEVEL");
 
 const NOMES=["","Teste de Fogo","Calote da Tia","Na Marra","Corrente","Juros Boteco","Ronda Madrugadão","Cofre Seco","Nome Pesado","Fluxo Cobrança","Taxa Atrasadinho","Giro Madrugada","Troco Birosca","Quem Não Paga Explica","Fila Devedor","Multa Otário","Giro Campinho","Chapa Quente na Laje","Lucro Suado","Calote da Tia do Zé","Voz no Baile","Sequência Braba","Rastreio Brabo no Beco","Juros Padrinho","Grana da Festa","Moral Comunidade","Cobrança Sem Pena","Corre do Agiota","Plantão 24h","Troco do Role","Respeito Dono","Fila Quilométrica","Juros Esquina"];
 
@@ -45,3 +45,58 @@ window.openMissoes=function(){
 window.closeMissoes=function(){document.getElementById('missoesModal').style.display='none';};
 
 garanteMissoes();
+
+// --- FIX VALORES POR LEVEL - NÃO ALTERA CALCULOS ---
+(function(){
+ function calcBasePorLevel(){
+   let lvl = (typeof level !== 'undefined' ? level : (window.level||1));
+   if(lvl<1) lvl=1;
+   // Level 1 = ~30-45 | Level 10 = ~150-180 | Level 20 = ~270-310
+   let baseMin = 20 + (lvl * 12);
+   let baseVar = 10 + (lvl * 3);
+   return baseMin + Math.floor(Math.random()*baseVar);
+ }
+ function aplicarFix(){
+   if(!window.cur) return;
+   let base = calcBasePorLevel();
+   // Mantem os calculos originais, so trava o valor base
+   if(typeof window.cur.valor !== 'undefined') window.cur.valor = base;
+   if(typeof window.cur.pede !== 'undefined') window.cur.pede = base;
+   if(typeof window.cur.v !== 'undefined') window.cur.v = base;
+   // Juros proporcional ao base - mantem a logica de 180% a 230%
+   let jurosMult = 1.8 + Math.random()*0.5;
+   if(typeof window.cur.juros !== 'undefined') window.cur.juros = Math.floor(base * jurosMult);
+   if(typeof window.cur.valorJuros !== 'undefined') window.cur.valorJuros = Math.floor(base * jurosMult);
+   // Atualiza UI se ja renderizou
+   try{ if(typeof renderSlots==='function') renderSlots(); }catch(e){}
+ }
+ // Envolve o novo() original
+ if(typeof window.novo === 'function'){
+   let originalNovo = window.novo;
+   window.novo = function(){
+     let r = originalNovo.apply(this, arguments);
+     aplicarFix();
+     return r;
+   };
+   console.log("FIX aplicado no novo()");
+   aplicarFix();
+ } else {
+   // Se o novo() ainda nao carregou, tenta a cada 500ms
+   let tries=0;
+   let iv=setInterval(()=>{
+     tries++;
+     if(typeof window.novo==='function'){
+       clearInterval(iv);
+       let originalNovo = window.novo;
+       window.novo = function(){
+         let r = originalNovo.apply(this, arguments);
+         aplicarFix();
+         return r;
+       };
+       aplicarFix();
+       console.log("FIX aplicado com delay");
+     }
+     if(tries>20) clearInterval(iv);
+   },500);
+ }
+})();
