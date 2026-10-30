@@ -1,47 +1,49 @@
 // =========================================
-// MAPA ORIGINAL - PEGA 1 PAGA 2 v1.0
-// Variaveis: money, dolar, day, level, fame, inv, usado, totalEmp, totalLucro, seq, jurosCount, negarCount, cur, ativasMissoes, todasMissoes, proxMissaoIdx
-// Funcoes: novo(), jogar(tipo), check(), saveGame(), renderSlots(), gerarMissoes(), openMissoes(), coletarMissao(), atualizarProgress(), atualizarNotificacoes()
-// ATUALIZACAO: Nomes das missões V4 - FIX CACHE + FECHAR
+// MAPA - PEGA 1 PAGA 2 v1.0
+// Vars: money,dolar,day,level,fame,inv,usado,totalEmp,totalLucro,seq,jurosCount,cur,ativasMissoes,todasMissoes
+// Funcs: novo(), jogar(tipo), check(), saveGame(), renderSlots(), gerarMissoes(), openMissoes(), closeMissoes(), coletarMissao()
+// FIX V5: Mostra nome novo mesmo com cache velho - FORÇA DISPLAY
 // =========================================
-console.log("ATUALIZACAO V4 CARREGADA");
+console.log("V5 FORCANDO NOMES NOVOS");
 
-function gerarMissoesNovas(){
-const nomes=[
-"Teste de Fogo na Laje","O Calote da Tia do Zé","Respeito é na Marra","Corrente de Pagamento","Juros do Boteco",
-"Ronda do Madrugadão","O Cofre Tá Seco","Nome Pesado no Morro","Fluxo de Cobrança","Taxa do Atrasadinho",
-"Giro da Madrugada","O Troco da Birosca","Quem Não Paga Se Explica","Fila de Devedor","Multa de Otário",
-"Giro no Campinho","Lucro Suado da Laje","Voz no Baile Funk","Sequência Braba","Juros do Padrinho",
-"Rastreando Caloteiros","Grana da Festa","Moral na Comunidade","Cobrança Sem Pena","Corre do Agiota",
-"Plantão 24h","Troco do Role","Respeito do Dono","Fila Quilométrica","Juros da Esquina",
-"Patrulha da Laje","Cofre Cheio","Nome no Muro","Rajadão de Grana","Tarifa de Calote",
-"Giro na Feira","Lucro do Fluxo","Moral na Boca","Pix na Hora","Juros da Madrugada",
-"Ronda no Beco","Grana do Baile","Voz no Paredão","Linha de Cobrança","Juros do Caloteiro",
-"Corre do Patrão","Caixa Lotado","Lenda da Laje","Combo Final","Último Juros"
-];
-let arr=[];
-for(let i=1;i<=50;i++){
-let tipo=i%5,meta,premio,tipoStr,nome=nomes[i-1];
-if(tipo==0){meta=6+Math.floor(i*0.9);premio=35+Math.floor(i*2.5);tipoStr="emp";arr.push({id:i,t:`${i}. ${nome} - Emprestar ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}
-if(tipo==1){meta=900+i*280;premio=40+Math.floor(i*3);tipoStr="lucro";arr.push({id:i,t:`${i}. ${nome} - Lucrar R$${meta}`,meta,premio,prog:0,tipo:tipoStr});}
-if(tipo==2){meta=8+Math.floor(i/1.6);premio=45+Math.floor(i*2.8);tipoStr="fama";arr.push({id:i,t:`${i}. ${nome} - Fama ${meta}`,meta,premio,prog:0,tipo:tipoStr});}
-if(tipo==3){meta=6+Math.floor(i/2);premio=50+Math.floor(i*3);tipoStr="seq";arr.push({id:i,t:`${i}. ${nome} - Sequência ${meta} pagamentos`,meta,premio,prog:0,tipo:tipoStr});}
-if(tipo==4){meta=5+Math.floor(i/2.5);premio=55+Math.floor(i*3.2);tipoStr="juros";arr.push({id:i,t:`${i}. ${nome} - Cobrar Juros ${meta}x`,meta,premio,prog:0,tipo:tipoStr});}
+const NOMES_NOVOS = {
+15:"15. Teste de Fogo na Laje - Sequência 13",
+17:"17. O Calote da Tia do Zé - Sequência 14",
+20:"20. Rastreando Caloteiros - Sequência 16",
+22:"22. Grana da Festa - Sequência 17",
+25:"25. Corre do Agiota - Sequência 18",
+6:"6. Nome Pesado no Morro", 7:"7. Fluxo de Cobrança", 8:"8. Taxa do Atrasadinho", 9:"9. Giro da Madrugada", 10:"10. O Troco da Birosca",
+11:"11. Quem Não Paga Se Explica",12:"12. Fila de Devedor",13:"13. Multa de Otário",14:"14. Giro no Campinho",
+16:"16. Lucro Suado da Laje",18:"18. Voz no Baile Funk",19:"19. Sequência Braba",21:"21. Juros do Padrinho",
+23:"23. Moral na Comunidade",24:"24. Cobrança Sem Pena",26:"26. Plantão 24h",27:"27. Troco do Role",
+28:"28. Respeito do Dono",29:"29. Fila Quilométrica",30:"30. Juros da Esquina"
+};
+// completa até 50
+for(let i=1;i<=50;i++) if(!NOMES_NOVOS[i]) NOMES_NOVOS[i]= i+". Missão da Laje "+i;
+
+// Sobrescreve só a exibição, não o save
+window.openMissoes = function(){
+  let html='';
+  (window.ativasMissoes||[]).forEach(m=>{
+    let pct=Math.min(100,Math.floor((m.prog/m.meta)*100));
+    let nomeBonito = NOMES_NOVOS[m.id] || m.t || ("Missão "+m.id);
+    // se for seq, mantém o numero da meta
+    if(m.t && m.t.toLowerCase().includes("seq")) nomeBonito = nomeBonito.split(" - ")[0] + ` - Sequência ${m.meta}`;
+    html+=`<div class="card"><b>${nomeBonito} ${m.prog>=m.meta?'💲':''}</b><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${m.prog}/${m.meta} ${pct}%</small>${m.prog>=m.meta?`<button class="btn verde" onclick="coletarMissao(${m.id})">COLETAR 💲</button>`:''}</div>`;
+  });
+  document.getElementById('listaMissoes').innerHTML=html;
+  document.getElementById('missoesModal').style.display='flex';
+};
+
+window.closeMissoes = function(){
+  document.getElementById('missoesModal').style.display='none';
 }
-return arr;
-}
 
-window.gerarMissoes = gerarMissoesNovas;
-window.todasMissoes = gerarMissoesNovas();
-
-const intervalo = setInterval(()=>{
-  if(window.ativasMissoes && window.ativasMissoes.length>0){
-    window.ativasMissoes.forEach(m=>{
-      let n = window.todasMissoes.find(x=>x.id===m.id);
-      if(n) m.t = n.t;
-    });
-    console.log("NOMES CORRIGIDOS", window.ativasMissoes);
+// Também tenta corrigir o save pra próxima vez
+setTimeout(()=>{
+  try{
+    (window.ativasMissoes||[]).forEach(m=>{ if(NOMES_NOVOS[m.id]) m.t = NOMES_NOVOS[m.id]; });
     if(typeof saveGame==='function') saveGame();
-    clearInterval(intervalo);
-  }
-}, 500);
+    console.log("SAVE CORRIGIDO");
+  }catch(e){}
+}, 1000);
