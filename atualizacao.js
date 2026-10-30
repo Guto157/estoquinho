@@ -2,101 +2,33 @@
 // MAPA ORIGINAL - PEGA 1 PAGA 2 v1.0
 // Variaveis: money, dolar, day, level, fame, inv, usado, totalEmp, totalLucro, seq, jurosCount, negarCount, cur, ativasMissoes, todasMissoes, proxMissaoIdx
 // Funcoes: novo(), jogar(tipo), check(), saveGame(), renderSlots(), gerarMissoes(), openMissoes(), coletarMissao(), atualizarProgress(), atualizarNotificacoes()
-// ATUALIZACAO V13 - 29/10 21:45 - OBJETIVO + FIX VALORES POR LEVEL
+// ATUALIZACAO V15 - 29/10 21:52 - TRAVA PEDIDO NO CAIXA
 // =========================================
-console.log("V13 VALORES POR LEVEL");
+console.log("V15 TRAVA CAIXA");
 
-const NOMES=["","Teste de Fogo","Calote da Tia","Na Marra","Corrente","Juros Boteco","Ronda Madrugadão","Cofre Seco","Nome Pesado","Fluxo Cobrança","Taxa Atrasadinho","Giro Madrugada","Troco Birosca","Quem Não Paga Explica","Fila Devedor","Multa Otário","Giro Campinho","Chapa Quente na Laje","Lucro Suado","Calote da Tia do Zé","Voz no Baile","Sequência Braba","Rastreio Brabo no Beco","Juros Padrinho","Grana da Festa","Moral Comunidade","Cobrança Sem Pena","Corre do Agiota","Plantão 24h","Troco do Role","Respeito Dono","Fila Quilométrica","Juros Esquina"];
-
-window.gerarMissoes=function(){
- let arr=[];
- for(let i=1;i<=50;i++){
-  let tipo=i%5,meta,premio,tipoStr,nome=NOMES[i]||"Missão "+i;
-  let titulo=`${i}. ${nome}`;
-  let obj="";
-  if(tipo==0){meta=6+Math.floor(i*0.9);premio=35+Math.floor(i*2.5);tipoStr="emp";obj=`Objetivo: Faça ${meta} empréstimos / vendas no total.`;arr.push({id:i,t:titulo,meta,premio,prog:0,tipo:tipoStr,obj});}
-  if(tipo==1){meta=900+i*280;premio=40+Math.floor(i*3);tipoStr="lucro";obj=`Objetivo: Acumule R$ ${meta} de lucro total.`;arr.push({id:i,t:titulo,meta,premio,prog:0,tipo:tipoStr,obj});}
-  if(tipo==2){meta=8+Math.floor(i/1.6);premio=45+Math.floor(i*2.8);tipoStr="fama";obj=`Objetivo: Alcance ${meta} de fama negando clientes / na marra.`;arr.push({id:i,t:titulo,meta,premio,prog:0,tipo:tipoStr,obj});}
-  if(tipo==3){meta=6+Math.floor(i/2);premio=50+Math.floor(i*3);tipoStr="seq";obj=`Objetivo: Faça uma sequência de ${meta} vendas seguidas sem quebrar.`;arr.push({id:i,t:titulo,meta,premio,prog:0,tipo:tipoStr,obj});}
-  if(tipo==4){meta=5+Math.floor(i/2.5);premio=55+Math.floor(i*3.2);tipoStr="juros";obj=`Objetivo: Cobre juros ${meta} vezes no boteco.`;arr.push({id:i,t:titulo,meta,premio,prog:0,tipo:tipoStr,obj});}
- }
- return arr;
-};
-
-function garanteMissoes(){
- if(!window.ativasMissoes || window.ativasMissoes.length===0){
-  let todas=window.gerarMissoes();
-  window.todasMissoes=todas;
-  window.ativasMissoes=todas.slice(0,5);
-  try{if(typeof saveGame==='function')saveGame();}catch(e){}
- }
-}
-
-window.openMissoes=function(){
- garanteMissoes();
- let html='';
- (window.ativasMissoes||[]).forEach(m=>{
-  let pct=Math.min(100,Math.floor((m.prog/m.meta*100)));
-  html+=`<div class="card"><b>${m.t} ${m.prog>=m.meta?'💲':''}</b><small style="display:block;opacity:0.8;margin:4px 0">${m.obj||''}</small><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${m.prog}/${m.meta} ${pct}%</small>${m.prog>=m.meta?`<button class="btn verde" onclick="coletarMissao(${m.id})">COLETAR 💲</button>`:''}</div>`;
- });
- document.getElementById('listaMissoes').innerHTML=html||'<div class="card">Sem missões - recarregue</div>';
- document.getElementById('missoesModal').style.display='flex';
-};
-window.closeMissoes=function(){document.getElementById('missoesModal').style.display='none';};
-
-garanteMissoes();
-
-// --- FIX VALORES POR LEVEL - NÃO ALTERA CALCULOS ---
+// --- FIX: CLIENTE NÃO PODE PEDIR MAIS QUE O CAIXA ---
 (function(){
- function calcBasePorLevel(){
-   let lvl = (typeof level !== 'undefined' ? level : (window.level||1));
-   if(lvl<1) lvl=1;
-   // Level 1 = ~30-45 | Level 10 = ~150-180 | Level 20 = ~270-310
-   let baseMin = 20 + (lvl * 12);
-   let baseVar = 10 + (lvl * 3);
-   return baseMin + Math.floor(Math.random()*baseVar);
- }
+ function getCaixa(){ return Math.max(10, (typeof money!=='undefined'?money:(window.money||500))); }
+ function getLevel(){ return Math.max(1, (typeof level!=='undefined'?level:(window.level||1))); }
  function aplicarFix(){
    if(!window.cur) return;
-   let base = calcBasePorLevel();
-   // Mantem os calculos originais, so trava o valor base
-   if(typeof window.cur.valor !== 'undefined') window.cur.valor = base;
-   if(typeof window.cur.pede !== 'undefined') window.cur.pede = base;
-   if(typeof window.cur.v !== 'undefined') window.cur.v = base;
-   // Juros proporcional ao base - mantem a logica de 180% a 230%
-   let jurosMult = 1.8 + Math.random()*0.5;
-   if(typeof window.cur.juros !== 'undefined') window.cur.juros = Math.floor(base * jurosMult);
-   if(typeof window.cur.valorJuros !== 'undefined') window.cur.valorJuros = Math.floor(base * jurosMult);
-   // Atualiza UI se ja renderizou
-   try{ if(typeof renderSlots==='function') renderSlots(); }catch(e){}
+   let caixa = getCaixa();
+   let maxPede = Math.floor(caixa * 0.8);
+   let pedeAtual = window.cur.pede || window.cur.valor || 0;
+   if(pedeAtual > maxPede || pedeAtual > caixa){
+     let base = Math.min(20 + getLevel()*12 + Math.floor(Math.random()*15), maxPede);
+     let ratioVolta = (window.cur.volta||pedeAtual*2.1) / (pedeAtual||1);
+     let ratioJuros = (window.cur.juros||pedeAtual*2.25) / (pedeAtual||1);
+     window.cur.pede = window.cur.valor = window.cur.v = base;
+     window.cur.volta = Math.floor(base * ratioVolta);
+     window.cur.juros = Math.floor(base * ratioJuros);
+     try{renderSlots();}catch(e){}
+   }
  }
- // Envolve o novo() original
- if(typeof window.novo === 'function'){
-   let originalNovo = window.novo;
-   window.novo = function(){
-     let r = originalNovo.apply(this, arguments);
-     aplicarFix();
-     return r;
-   };
-   console.log("FIX aplicado no novo()");
-   aplicarFix();
+ let orig = window.novo;
+ if(typeof orig==='function'){
+   window.novo = function(){ let r=orig.apply(this,arguments); aplicarFix(); return r; };
  } else {
-   // Se o novo() ainda nao carregou, tenta a cada 500ms
-   let tries=0;
-   let iv=setInterval(()=>{
-     tries++;
-     if(typeof window.novo==='function'){
-       clearInterval(iv);
-       let originalNovo = window.novo;
-       window.novo = function(){
-         let r = originalNovo.apply(this, arguments);
-         aplicarFix();
-         return r;
-       };
-       aplicarFix();
-       console.log("FIX aplicado com delay");
-     }
-     if(tries>20) clearInterval(iv);
-   },500);
+   let iv=setInterval(()=>{ if(typeof window.novo==='function'){ clearInterval(iv); let o=window.novo; window.novo=function(){ let r=o.apply(this,arguments); aplicarFix(); return r; }; } },300);
  }
 })();
