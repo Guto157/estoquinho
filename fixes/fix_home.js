@@ -1,13 +1,13 @@
-// fixes/fix_home.js - FINAL COM FEEDBACK
-console.log("FIX HOME - FINAL");
+// fixes/fix_home.js - FINAL LATERAL SEM CAIXA CALOTE
+console.log("FIX HOME - LATERAL");
 
 function fb(v,t){
- var b=document.getElementById('clienteBox'),m=document.getElementById('money');
- if(!b)return;var e=document.createElement('div');
- e.style.cssText='position:absolute;left:50%;top:30%;transform:translateX(-50%);font-weight:900;font-size:30px;z-index:9999;text-shadow:0 2px 0 #000;transition:all 1s';
- e.innerText=(t=='g'?'+R$':'-R$')+v;e.style.color=t=='g'?'#00E676':'#FF5252';
- b.style.position='relative';b.appendChild(e);
- setTimeout(function(){e.style.transform='translateX(-50%) translateY(-60px)';e.style.opacity='0'},50);
+ var m=document.getElementById('money');
+ if(!m)return;var e=document.createElement('div');
+ e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:6px 12px;border-radius:10px;background:#111;border:2px solid;transition:all 1s';
+ e.innerText=(t=='g'?'+R$':'-R$')+v;e.style.color=t=='g'?'#00E676':'#FF5252';e.style.borderColor=e.style.color;
+ document.body.appendChild(e);
+ setTimeout(function(){e.style.transform='translateX(80px)';e.style.opacity='0'},60);
  setTimeout(function(){e.remove()},1000);
  if(m){m.style.color=e.style.color;setTimeout(function(){m.style.color=''},500)}
 }
@@ -90,11 +90,11 @@ window.jogar=function(tipo){
   document.getElementById('bubble').innerText='✅ '+cur.n+' pagou R$'+de+'! ('+ch.toFixed(0)+'%)';
   log('✅ '+cur.n+' pagou R$'+de+' ['+ch.toFixed(0)+'%]');day++;check();novo();
  }else{
-  fame=Math.max(0,fame-0.5);seq=0;pendentePerda=pe;
-  let rec=getRecuperacaoBonus();
-  if(rec>0)document.getElementById('adText').innerText=cur.n+' calote R$'+pe+' - Moto recupera '+rec+'%';
-  else document.getElementById('adText').innerText=cur.n+' calote R$'+pe+' - chance era '+ch.toFixed(0)+'%';
-  document.getElementById('adSave').style.display='flex';check();
+  money-=pe;fb(pe,'c');
+  fame=Math.max(0,fame-0.5);seq=0;
+  log('💀 '+cur.n+' calote -R$'+pe+' ['+ch.toFixed(0)+'%]');
+  document.getElementById('bubble').innerText='💀 '+cur.n+' calote R$'+pe+'!';
+  day++;check();novo();
  }
 }
 window.falencia=function(){
