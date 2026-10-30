@@ -2,9 +2,9 @@
 // MAPA ORIGINAL - PEGA 1 PAGA 2 v1.0
 // Variaveis: money, dolar, day, level, fame, inv, usado, totalEmp, totalLucro, seq, jurosCount, negarCount, cur, ativasMissoes, todasMissoes, proxMissaoIdx
 // Funcoes: novo(), jogar(tipo), check(), saveGame(), renderSlots(), gerarMissoes(), openMissoes(), coletarMissao(), atualizarProgress(), atualizarNotificacoes()
-// ATUALIZACAO ATUAL: Nomes das missões - V3 com cache buster
+// ATUALIZACAO: Nomes das missões V4 - FIX CACHE + FECHAR
 // =========================================
-console.log("CARREGANDO ATUALIZACAO V3 - COM MAPA");
+console.log("ATUALIZACAO V4 CARREGADA");
 
 function gerarMissoesNovas(){
 const nomes=[
@@ -32,25 +32,16 @@ return arr;
 }
 
 window.gerarMissoes = gerarMissoesNovas;
-let todas = gerarMissoesNovas();
-window.todasMissoes = todas;
+window.todasMissoes = gerarMissoesNovas();
 
-setTimeout(()=>{
-  if(window.ativasMissoes){
+const intervalo = setInterval(()=>{
+  if(window.ativasMissoes && window.ativasMissoes.length>0){
     window.ativasMissoes.forEach(m=>{
-      let n = todas.find(x=>x.id===m.id);
+      let n = window.todasMissoes.find(x=>x.id===m.id);
       if(n) m.t = n.t;
     });
-    console.log("NOMES NOVOS APLICADOS:", window.ativasMissoes.map(x=>x.t));
+    console.log("NOMES CORRIGIDOS", window.ativasMissoes);
     if(typeof saveGame==='function') saveGame();
+    clearInterval(intervalo);
   }
-  window.openMissoes = function(){
-    let html='';
-    window.ativasMissoes.forEach(m=>{
-      let pct=Math.min(100,Math.floor((m.prog/m.meta)*100));
-      html+=`<div class="card"><b>${m.t} ${m.prog>=m.meta?'💲':''}</b><div class="progress"><div class="bar" style="width:${pct}%"></div></div><small>${m.prog}/${m.meta} ${pct}%</small>${m.prog>=m.meta?`<button class="btn verde" onclick="coletarMissao(${m.id})">COLETAR 💲</button>`:''}</div>`;
-    });
-    document.getElementById('listaMissoes').innerHTML=html;
-    document.getElementById('missoesModal').style.display='flex';
-  }
-}, 1500);
+}, 500);
