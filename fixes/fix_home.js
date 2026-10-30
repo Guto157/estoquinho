@@ -1,6 +1,6 @@
 
-// fixes/fix_home.js - EMPRESTIMOS, CALOTE E RECUPERACAO CORRIGIDOS
-console.log("FIX HOME - SISTEMA FINANCEIRO E RECUPERACAO CORRIGIDOS");
+ // fixes/fix_home.js - RECUPERACAO DE 50% COM ANUNCIO
+console.log("FIX HOME - RECUPERACAO DE 50%");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -81,6 +81,7 @@ window.novo=function(){
  let div=document.getElementById('choices');
  div.innerHTML='';
  let tn=window.vezNegar===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
+
  let ops=[
   {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc,c:'amarelo',a:'emprestar'},
   {t:tn,d:'Evita calote',c:'branco',a:'negar'},
@@ -178,14 +179,14 @@ window.jogar=function(tipo){
 
  if(ch<5)ch=5;
 
- // O principal sai do caixa uma única vez.
+ // Desconta o principal uma única vez.
  money-=peBase;
  fb(peBase,'c');
 
  let pagou=Math.random()*100<ch;
 
  if(pagou){
-  // Recebe o valor integral prometido.
+  // Recebe o valor total prometido.
   money+=de;
   fb(de,'g');
 
@@ -203,21 +204,14 @@ window.jogar=function(tipo){
   novo();
 
  }else{
-  // O principal já foi descontado.
-  // A recuperação do anúncio devolve a porcentagem da moto.
+  // Calote: principal já descontado.
   fame=Math.max(0,fame-0.5);
   seq=0;
   pendentePerda=peBase;
 
-  let rec=getRecuperacaoBonus();
-
-  if(rec>0){
-   document.getElementById('adText').innerText=
-    cur.n+' deu calote de R$'+peBase+' - Moto recupera '+rec+'%';
-  }else{
-   document.getElementById('adText').innerText=
-    cur.n+' deu calote de R$'+peBase+' - chance era '+ch.toFixed(0)+'%';
-  }
+  document.getElementById('adText').innerText=
+   cur.n+' deu calote de R$'+peBase+
+   ' - Anúncio recupera 50% (R$'+Math.floor(peBase*0.5)+')';
 
   document.getElementById('adSave').style.display='flex';
   check();
@@ -236,18 +230,18 @@ window.aceitarPerda=function(){
  novo();
 };
 
-// Recuperação pelo anúncio.
+// Recuperação pelo anúncio: devolve 50% do empréstimo.
 window.recompensaLiberada=function(){
+
  document.getElementById('adModal').style.display='none';
 
  if(pendenteTipo=='salvar'){
-  let rec=getRecuperacaoBonus();
+  let recuperado=Math.floor(pendentePerda*0.5);
 
-  if(rec>0){
-   let recuperado=Math.floor(pendentePerda*rec/100);
+  if(recuperado>0){
    money+=recuperado;
-   log('🏍️ Moto recuperou R$'+recuperado);
    fb(recuperado,'g');
+   log('📺 Anúncio recuperou 50%: R$'+recuperado);
   }
 
   pendentePerda=0;
@@ -279,8 +273,8 @@ window.falencia=function(){
  window.taxaNegarAtual=0;
  window.incNegar=5;
  window.vezNegar=0;
- valorNegar=25;
  window.travado=false;
+ valorNegar=25;
 
  let c=document.getElementById('choices');
  if(c)c.style.pointerEvents='auto';
