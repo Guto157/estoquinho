@@ -1,5 +1,5 @@
-// fixes/fix_home.js - FINAL COM TRAVA ANTI-DUPLO
-console.log("FIX HOME - TRAVA CALOTE");
+// fixes/fix_home.js - FINAL COM TRAVA ANTI-DUPLO CORRIGIDO
+console.log("FIX HOME - TRAVA CALOTE CORRIGIDO");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -16,6 +16,9 @@ window.travado=false;
 
 window.novo=function(){
  window.travado=false;
+ let chDiv = document.getElementById('choices');
+ if(chDiv){ chDiv.style.pointerEvents='auto'; }
+
  let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
  let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
  if(d.length==0){usado={};d=l}
@@ -60,8 +63,9 @@ window.novo=function(){
 window.jogar=function(tipo){
  if(window.travado){return}
  window.travado=true;
- document.getElementById('choices').style.pointerEvents='none';
- if(!cur){window.travado=false;document.getElementById('choices').style.pointerEvents='auto';novo();return}
+ let chDiv = document.getElementById('choices');
+ if(chDiv){ chDiv.style.pointerEvents='none'; }
+ if(!cur){window.travado=false;if(chDiv){chDiv.style.pointerEvents='auto';}novo();return}
  if(tipo=='negar'){
   let desc=(window.vezNegar===0)?0:window.taxaNegarAtual;
   money-=desc;if(desc>0)fb(desc,'c');
@@ -109,12 +113,16 @@ window.jogar=function(tipo){
 }
 window.falencia=function(){
  money=100;window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;valorNegar=25;window.travado=false;
+ let chDiv = document.getElementById('choices');
+ if(chDiv){ chDiv.style.pointerEvents='auto'; }
  localStorage.removeItem('save_'+currentUser);
  alert("💸 FALÊNCIA! Resetado R$100");location.reload();
 }
 window.restartFull=function(){
  day=1;money=500;fame=1;level=1;usado={};window.travado=false;
  window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;valorNegar=25;
+ let chDiv = document.getElementById('choices');
+ if(chDiv){ chDiv.style.pointerEvents='auto'; }
  document.getElementById('gameOver').style.display='none';check();novo();
 }
 novo();
