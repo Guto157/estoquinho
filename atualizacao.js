@@ -1,85 +1,36 @@
 // =========================================
 // MAPA ORIGINAL - PEGA 1 PAGA 2 v1.0
-// ATUALIZACAO V21 - 22:20 - FIX COLETAR + FALÊNCIA
+// Variaveis: money, dolar, day, level, fame, inv, usado, totalEmp, totalLucro, seq, jurosCount, negarCount, cur, ativasMissoes, todasMissoes, proxMissaoIdx
+// Funcoes: novo(), jogar(tipo), check(), saveGame(), renderSlots(), gerarMissoes(), openMissoes(), coletarMissao(), atualizarProgress(), atualizarNotificacoes()
+// CORREÇÃO V22 - VALOR PEDIDO NUNCA MAIOR QUE CAIXA + 2x / 2.1x FIXO
 // =========================================
-console.log("V21 FIX COLETAR");
 
-// Mantém contador da V20
-window._mCont = JSON.parse(localStorage.getItem('p1p2_cont')||'{"emp":0,"lucro":0,"fama":0,"seq":0,"seqAtual":0,"juros":0}');
-
-// COLETAR QUE FUNCIONA MESMO DEPOIS DE FALÊNCIA
-window.coletarMissao = function(id){
-  if(!window.ativasMissoes) return;
-  let idx = window.ativasMissoes.findIndex(m=>m.id==id);
-  if(idx===-1) return;
-  let m = window.ativasMissoes[idx];
-  
-  if(m.prog < m.meta){
-    alert(`Ainda não completou: ${m.prog}/${m.meta}`);
-    return;
-  }
-  
-  // Paga prêmio
-  let premio = m.premio||50;
-  if(typeof money!=='undefined') money += premio;
-  else if(window.money!=null) window.money += premio;
-  
-  // Tira essa e puxa a próxima da fila
-  window.ativasMissoes.splice(idx,1);
-  if(window.todasMissoes && window.proxMissaoIdx < window.todasMissoes.length){
-    let proxima = window.todasMissoes[window.proxMissaoIdx];
-    // Reseta progresso da próxima com base no contador atual
-    if(proxima.tipo==="emp") proxima.prog = window._mCont.emp;
-    if(proxima.tipo==="lucro") proxima.prog = window._mCont.lucro;
-    if(proxima.tipo==="fama") proxima.prog = window._mCont.fama;
-    if(proxima.tipo==="seq") proxima.prog = window._mCont.seq;
-    if(proxima.tipo==="juros") proxima.prog = window._mCont.juros;
-    window.ativasMissoes.push(proxima);
-    window.proxMissaoIdx++;
-  }
-  
-  try{saveGame();}catch(e){}
-  try{localStorage.setItem('p1p2_cont', JSON.stringify(window._mCont));}catch(e){}
-  
-  // Atualiza tela
-  try{renderSlots();}catch(e){}
-  window.openMissoes();
-  console.log(`Missão ${m.t} coletada +R$${premio}`);
-};
-
-// FIX FALÊNCIA NÃO ZERAR O CONTADOR
 (function(){
-  // Se o jogo tem função de falência / game over
-  if(typeof window.check==='function'){
-    let origCheck = window.check;
-    window.check = function(){
-      let r = origCheck.apply(this, arguments);
-      // Se faliu (money <=0) NÃO apaga _mCont
-      if((typeof money!=='undefined' && money<=0) || (window.money!=null && window.money<=0)){
-        console.log("Faliu mas mantendo progresso das missões", window._mCont);
-        try{localStorage.setItem('p1p2_cont', JSON.stringify(window._mCont));}catch(e){}
-      }
-      return r;
-    };
+  if(typeof window.novo!=='function') return;
+  let origNovo = window.novo;
+  window.novo = function(){
+    let r = origNovo.apply(this, arguments);
+    if(!window.cur) return r;
+    let caixa = (typeof money!=='undefined'?money:window.money)||0;
+    let pede = window.cur.pede||window.cur.valor||0;
+    if(pede > caixa || pede==0){
+      let novoPede = Math.floor(caixa*0.8);
+      if(novoPede<10) novoPede = Math.min(10, caixa);
+      if(novoPede<1) novoPede = 1;
+      window.cur.pede = window.cur.valor = window.cur.v = novoPede;
+      window.cur.volta = Math.floor(novoPede*2);
+      window.cur.retorno = window.cur.volta;
+      window.cur.juros = Math.floor(novoPede*2.1);
+      window.cur.valorJuros = window.cur.juros;
+      try{renderSlots();}catch(e){}
+    }
+    return r;
+  };
+  // Corrige o que já está na tela agora
+  if(window.cur){
+    let caixa = (typeof money!=='undefined'?money:window.money)||0;
+    if(window.cur.pede > caixa){
+      window.novo();
+    }
   }
 })();
-
-// Garante que atualizarProgress não zera na falência
-window.atualizarProgress = function(){
-  if(!window.ativasMissoes) return;
-  window.ativasMissoes.forEach(m=>{
-    // Só atualiza se contador atual for MAIOR que o prog salvo (não deixa voltar pra trás)
-    let valorAtual = 0;
-    if(m.tipo==="emp") valorAtual = window._mCont.emp;
-    if(m.tipo==="lucro") valorAtual = window._mCont.lucro;
-    if(m.tipo==="fama") valorAtual = window._mCont.fama;
-    if(m.tipo==="seq") valorAtual = window._mCont.seq;
-    if(m.tipo==="juros") valorAtual = window._mCont.juros;
-    
-    if(valorAtual > m.prog) m.prog = valorAtual;
-    if(m.prog > m.meta) m.prog = m.meta;
-  });
-  try{saveGame();}catch(e){}
-};
-
-window.openMissoes();
