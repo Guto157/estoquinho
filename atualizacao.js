@@ -6,7 +6,8 @@
     'fixes/fix_menu_lateral.js',
     'fixes/fix_home.js',
     'fixes/fix_missoes.js',
-    'fixes/fix_desafios.js'
+    'fixes/fix_desafios.js',
+    'fixes/fix_lojinha.js'
   ];
 
   async function carregarAtualizacoes() {
