@@ -286,7 +286,8 @@ window.recompensaLiberada=function(){
  }
 
  if(pendenteTipo=='gameoverBanco'){
-  money+=pendenteBanco;
+  // Ao assistir o vídeo na falência, o caixa volta exatamente para R$300.
+  money=300;
   document.getElementById('gameOver').style.display='none';
   check();
   novo();
@@ -380,7 +381,6 @@ window.carregarSave=function(){
 };
 
 // Recarrega o save depois que o patch é instalado.
-// Isso corrige também o primeiro carregamento da página.
 if(currentUser){
  window.carregarSave();
 }else{
