@@ -1,6 +1,6 @@
 
-// fixes/fix_home.js - EMPRESTIMOS, CALOTE E RECUPERACAO
-console.log("FIX HOME - RECUPERACAO DA MOTO E ANUNCIO CORRIGIDOS");
+// fixes/fix_home.js - SISTEMA FINANCEIRO E SALVAMENTO
+console.log("FIX HOME - FINANCEIRO E SALVAMENTO CORRIGIDOS");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -335,4 +335,54 @@ window.restartFull=function(){
  novo();
 };
 
-novo();
+// CORREÇÃO DO CARREGAMENTO DO SAVE
+window.carregarSave=function(){
+ let raw=localStorage.getItem('save_'+currentUser);
+
+ if(!raw){
+  novo();
+  check();
+  return;
+ }
+
+ try{
+  let s=JSON.parse(raw);
+
+  day=s.day ?? 1;
+  money=s.money ?? 500;
+  fame=s.fame ?? 1;
+  level=s.level ?? 1;
+  dolar=s.dolar ?? 0;
+  inv=s.inv ?? {};
+  usado=s.usado ?? {};
+  totalEmp=s.totalEmp ?? 0;
+  totalLucro=s.totalLucro ?? 0;
+  jurosCount=s.jurosCount ?? 0;
+  negarCount=s.negarCount ?? 0;
+  conquistasColetadas=s.conquistasColetadas ?? {};
+  tituloEscolhido=s.tituloEscolhido ?? null;
+  proxMissaoIdx=s.proxMissaoIdx ?? 3;
+  proxDesafioIdx=s.proxDesafioIdx ?? 3;
+
+  if(s.ativasMissoes)ativasMissoes=s.ativasMissoes;
+  if(s.ativasDesafios)ativasDesafios=s.ativasDesafios;
+
+  renderSlots();
+  atualizarTituloAvatar();
+  novo();
+  check();
+
+ }catch(e){
+  console.error('Erro ao carregar save:',e);
+  novo();
+  check();
+ }
+};
+
+// Recarrega o save depois que o patch é instalado.
+// Isso corrige também o primeiro carregamento da página.
+if(currentUser){
+ window.carregarSave();
+}else{
+ novo();
+}
