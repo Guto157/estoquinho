@@ -1,9 +1,43 @@
-// fixes/fix_home.js - FINAL COMPLETO + VALOR ESTAVEL POR LEVEL
-console.log("FIX HOME - LOGICA NOVA NEGAR FINAL + VALOR ESTAVEL");
+// fixes/fix_home.js - FINAL + FEEDBACK VISUAL RECEBE/CALOTE
+console.log("FIX HOME - FEEDBACK");
 
-window.taxaNegarAtual = 0;
-window.incNegar = 5;
-window.vezNegar = 0;
+// CSS do feedback injetado
+let styleFeedback = document.createElement('style');
+styleFeedback.innerHTML = `
+@keyframes sobe { 0%{transform:translateY(20px) scale(0.8);opacity:0} 20%{opacity:1} 80%{opacity:1} 100%{transform:translateY(-80px) scale(1.2);opacity:0} }
+@keyframes treme { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }
+.anim-valor{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-weight:900;font-size:28px;z-index:9999;pointer-events:none;text-shadow:0 2px 0 #000}
+.flash-verde{animation:treme 0.3s}
+.flash-vermelho{animation:treme 0.4s}
+`;
+document.head.appendChild(styleFeedback);
+
+function mostrarFeedback(valor, tipo){
+  let el = document.createElement('div');
+  el.className = 'anim-valor';
+  el.style.animation = 'sobe 1.2s forwards';
+  if(tipo=='ganho'){
+    el.innerText = `+R$${valor}`;
+    el.style.color = '#00E676';
+    document.getElementById('money').style.color = '#00E676';
+    setTimeout(()=> document.getElementById('money').style.color='', 600);
+  } else {
+    el.innerText = `-R$${valor}`;
+    el.style.color = '#FF5252';
+    document.getElementById('money').style.color = '#FF5252';
+    document.getElementById('clienteBox').classList.add('flash-vermelho');
+    setTimeout(()=> {
+      document.getElementById('money').style.color='';
+      document.getElementById('clienteBox').classList.remove('flash-vermelho');
+    }, 600);
+  }
+  document.getElementById('clienteBox').appendChild(el);
+  setTimeout(()=> el.remove(), 1200);
+}
+
+window.taxaNegarAtual = window.taxaNegarAtual || 0;
+window.incNegar = window.incNegar || 5;
+window.vezNegar = window.vezNegar || 0;
 
 window.novo = function(){
   let lista = Math.random()<0.15 ? policiaisDisfarcados : personagensComuns;
@@ -26,26 +60,18 @@ window.novo = function(){
   let fala=cur.falas[Math.floor(Math.random()*cur.falas.length)];
   document.getElementById('hist').innerText=fala;
   document.getElementById('bubble').innerText=cur.n+': "'+fala+'"';
-  
-  // --- CORREÇÃO VALOR ESTAVEL ---
-  // Antes era cur.p * levelFactor * riscoMult (muito desregulado)
-  // Agora base fixa no level + variação pequena
-  let base = 40 + (level * 18) + (day * 2); // L1~60 / L5~140 / L10~230
+  let base = 40 + (level * 18) + (day * 2);
   let riscoMult = cur.r=='BAIXO'?0.90 : cur.r=='MÉDIO'?1.15 : 1.35;
-  let variacao = 0.85 + Math.random()*0.30; // 85% a 115%
+  let variacao = 0.85 + Math.random()*0.30;
   let pedeCalc = Math.floor(base * riscoMult * variacao);
-
-  // Trava de segurança: nunca pede mais que 70% do caixa
   let maxPermitido = Math.floor(money * 0.70);
   if(maxPermitido < 20) maxPermitido = 20;
   if(pedeCalc > maxPermitido) pedeCalc = maxPermitido;
   if(pedeCalc < 15) pedeCalc = 15;
-
   let bonusLucro=getTotalLucroBonus();
   let voltaCalc = Math.floor(pedeCalc * 2 * (1+bonusLucro/100));
   let difChance = Math.floor(level*0.7 + day*0.15);
   let chanceCalc = Math.max(5, cur.c - difChance);
-
   cur.pedeAtual = pedeCalc;
   cur.voltaAtual = voltaCalc;
   cur.chanceAtual = chanceCalc;
@@ -74,14 +100,10 @@ window.jogar = function(tipo){
   if(tipo=='negar'){
     let desconto = (window.vezNegar===0) ? 0 : window.taxaNegarAtual;
     money -= desconto;
+    if(desconto>0) mostrarFeedback(desconto, 'calote');
     negarCount++;
-    if(window.vezNegar===0){
-      window.taxaNegarAtual = 5;
-      window.incNegar = 10;
-    } else {
-      window.taxaNegarAtual += window.incNegar;
-      window.incNegar += 5;
-    }
+    if(window.vezNegar===0){ window.taxaNegarAtual = 5; window.incNegar = 10; } 
+    else { window.taxaNegarAtual += window.incNegar; window.incNegar += 5; }
     if(window.taxaNegarAtual > 100) window.taxaNegarAtual = 100;
     window.vezNegar++;
     fame=Math.max(0,fame-0.5);
@@ -95,16 +117,14 @@ window.jogar = function(tipo){
   if(window.taxaNegarAtual > 0){
     window.taxaNegarAtual = Math.max(0, window.taxaNegarAtual - 5);
     window.incNegar = Math.max(5, window.incNegar - 5);
-    if(window.taxaNegarAtual===0){
-      window.vezNegar=0;
-      window.incNegar=5;
-    }
+    if(window.taxaNegarAtual===0){ window.vezNegar=0; window.incNegar=5; }
   }
   if(cur.policia){
     usado._policia=(usado._policia||0)+1;
     let fianca=Math.floor(money*0.5);
     if(fianca<100) fianca=100;
     money-=fianca;
+    mostrarFeedback(fianca, 'calote');
     log(`🚨 POLÍCIA! -R$${fianca}`);
     fame=Math.max(0,fame-0.5);
     seq=0;
@@ -126,6 +146,7 @@ window.jogar = function(tipo){
   if(pagou){
     let lucro=de-pe;
     money+=lucro;
+    mostrarFeedback(lucro, 'ganho'); // << FEEDBACK GANHO
     fame+=1;
     totalEmp++;
     totalLucro+=lucro;
@@ -136,6 +157,8 @@ window.jogar = function(tipo){
     check();
     novo();
   }else{
+    // FEEDBACK CALOTE JÁ NO POPUP, MAS MOSTRA TAMBÉM
+    setTimeout(()=> mostrarFeedback(pe, 'calote'), 300);
     fame=Math.max(0,fame-0.5);
     seq=0;
     pendentePerda=pe;
@@ -159,19 +182,10 @@ window.falencia = function(){
 }
 
 window.restartFull = function(){
-  day=1;
-  money=500;
-  fame=1;
-  level=1;
-  usado={};
-  window.taxaNegarAtual=0;
-  window.incNegar=5;
-  window.vezNegar=0;
-  valorNegar=25;
+  day=1; money=500; fame=1; level=1; usado={};
+  window.taxaNegarAtual=0; window.incNegar=5; window.vezNegar=0; valorNegar=25;
   document.getElementById('gameOver').style.display='none';
-  check();
-  novo();
+  check(); novo();
 }
 
-console.log("FIX aplicado - Grátis, 5, 15, 30, 50, reset na falência + valor estável");
 novo();
