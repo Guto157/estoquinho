@@ -1,5 +1,5 @@
-// fixes/fix_home.js - FINAL CORRIGIDO TRAVA + CALOTE EXATO
-console.log("FIX HOME - CALOTE EXATO");
+// fixes/fix_home.js - ORIGINAL + FIX CALOTE EXATO
+console.log("FIX HOME - TRAVA CALOTE");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -16,8 +16,7 @@ window.travado=false;
 
 window.novo=function(){
  window.travado=false;
- let chDiv = document.getElementById('choices');
- if(chDiv){ chDiv.style.pointerEvents='auto'; }
+ let c=document.getElementById('choices'); if(c) c.style.pointerEvents='auto';
  let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
  let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
  if(d.length==0){usado={};d=l}
@@ -62,9 +61,8 @@ window.novo=function(){
 window.jogar=function(tipo){
  if(window.travado){return}
  window.travado=true;
- let chDiv = document.getElementById('choices');
- if(chDiv){ chDiv.style.pointerEvents='none'; }
- if(!cur){window.travado=false;if(chDiv){chDiv.style.pointerEvents='auto';}novo();return}
+ let c=document.getElementById('choices'); if(c) c.style.pointerEvents='none';
+ if(!cur){window.travado=false;if(c) c.style.pointerEvents='auto';novo();return}
  if(tipo=='negar'){
   let desc=(window.vezNegar===0)?0:window.taxaNegarAtual;
   money-=desc;if(desc>0)fb(desc,'c');
@@ -85,24 +83,28 @@ window.jogar=function(tipo){
   money-=fi;fb(fi,'c');
   log('🚨 POLÍCIA! -R$'+fi);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;
  }
+ // VALOR EXATO QUE FOI PEDIDO - SEM PEGAR DA TELA
  let peBase = cur.pedeAtual;
- let de=cur.voltaAtual;
+ let de = cur.voltaAtual;
  if(tipo=='juros'){de=cur.voltaJurosAtual;cur.chanceAtual-=30;jurosCount++}
  let ch=cur.chanceAtual+getTotalChanceBonus();
  if(cur.r=='ALTO'){ch+=getGlockBonusVsAlto()}
  if(tipo=='juros'){if(ch>78)ch=78}else{if(ch>92)ch=92}
  if(ch<5)ch=5;
+
+ // AQUI ESTÁ O FIX DO CALOTE: desconta o emprestimo NA HORA
+ money -= peBase;
+ fb(peBase,'c');
+
  let pagou=Math.random()*100<ch;
  if(pagou){
-  let lucro=de-peBase;
-  money+=lucro;
-  fb(lucro,'g');
-  fame+=1;totalEmp++;totalLucro+=lucro;seq++;
-  document.getElementById('bubble').innerText='✅ Pagou R$'+de+' (lucro R$'+lucro+')';
-  log('✅ '+cur.n+' pagou R$'+de+' lucro R$'+lucro);day++;check();novo();
+  money += de;
+  fb(de,'g');
+  fame+=1;totalEmp++;totalLucro+=(de-peBase);seq++;
+  document.getElementById('bubble').innerText='✅ Pagou R$'+de;
+  log('✅ '+cur.n+' pagou R$'+de+' lucro R$'+(de-peBase));day++;check();novo();
  }else{
-  money-=peBase;
-  fb(peBase,'c');
+  // CALOTE: já descontou o peBase ali em cima, não desconta de novo
   fame=Math.max(0,fame-0.5);seq=0;
   log('💀 Calote -R$'+peBase+' exato');
   document.getElementById('bubble').innerText='💀 Calote -R$'+peBase+'!';
@@ -110,17 +112,15 @@ window.jogar=function(tipo){
  }
 }
 window.falencia=function(){
- money=100;window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;window.travado=false;
- let chDiv = document.getElementById('choices');
- if(chDiv){ chDiv.style.pointerEvents='auto'; }
+ money=100;window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;valorNegar=25;window.travado=false;
+ let c=document.getElementById('choices'); if(c) c.style.pointerEvents='auto';
  localStorage.removeItem('save_'+currentUser);
  alert("💸 FALÊNCIA! Resetado R$100");location.reload();
 }
 window.restartFull=function(){
  day=1;money=500;fame=1;level=1;usado={};window.travado=false;
- window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;
- let chDiv = document.getElementById('choices');
- if(chDiv){ chDiv.style.pointerEvents='auto'; }
+ window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;valorNegar=25;
+ let c=document.getElementById('choices'); if(c) c.style.pointerEvents='auto';
  document.getElementById('gameOver').style.display='none';check();novo();
 }
 novo();
