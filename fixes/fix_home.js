@@ -1,7 +1,6 @@
-// fixes/fix_home.js - SUBSTITUI JOGAR E NEGAR
-console.log("FIX HOME - LOGICA NOVA NEGAR");
+// fixes/fix_home.js - FINAL COMPLETO COM RESET FALENCIA
+console.log("FIX HOME - LOGICA NOVA NEGAR FINAL");
 
-// zera a lógica antiga
 window.taxaNegarAtual = 0;
 window.incNegar = 5;
 window.vezNegar = 0;
@@ -34,7 +33,6 @@ window.novo = function(){
   let bonusLucro=getTotalLucroBonus();
   let voltaCalc = Math.floor(pedeCalc * 2 * (1+bonusLucro/100));
   let chanceCalc = Math.max(5, cur.c - difChance);
-  // TRAVA PEDIDO NO CAIXA
   if(pedeCalc > money) pedeCalc = Math.max(10, Math.floor(money * 0.8));
   cur.pedeAtual = pedeCalc;
   cur.voltaAtual = voltaCalc;
@@ -61,12 +59,10 @@ window.novo = function(){
 
 window.jogar = function(tipo){
   if(!cur){novo(); return;}
-  
   if(tipo=='negar'){
     let desconto = (window.vezNegar===0) ? 0 : window.taxaNegarAtual;
     money -= desconto;
     negarCount++;
-    
     if(window.vezNegar===0){
       window.taxaNegarAtual = 5;
       window.incNegar = 10;
@@ -76,7 +72,6 @@ window.jogar = function(tipo){
     }
     if(window.taxaNegarAtual > 100) window.taxaNegarAtual = 100;
     window.vezNegar++;
-
     fame=Math.max(0,fame-0.5);
     seq=0;
     day++;
@@ -85,8 +80,6 @@ window.jogar = function(tipo){
     novo();
     return;
   }
-
-  // se EMPRESTOU, diminui a taxa 5 por 5
   if(window.taxaNegarAtual > 0){
     window.taxaNegarAtual = Math.max(0, window.taxaNegarAtual - 5);
     window.incNegar = Math.max(5, window.incNegar - 5);
@@ -95,7 +88,6 @@ window.jogar = function(tipo){
       window.incNegar=5;
     }
   }
-
   if(cur.policia){
     usado._policia=(usado._policia||0)+1;
     let fianca=Math.floor(money*0.5);
@@ -109,7 +101,6 @@ window.jogar = function(tipo){
     novo();
     return;
   }
-
   let ch=cur.chanceAtual ?? cur.c;
   let pe=cur.pedeAtual ?? cur.p;
   let de=cur.voltaAtual ?? cur.d;
@@ -151,9 +142,24 @@ window.falencia = function(){
   window.vezNegar=0;
   valorNegar=25;
   localStorage.removeItem('save_'+currentUser);
-  alert("💸 FALÊNCIA! Resetado R$100");
+  alert("💸 FALÊNCIA! Resetado R$100 - Negar volta Grátis");
   location.reload();
 }
 
-console.log("FIX aplicado - teste: Grátis, 5, 15, 30, 50");
+window.restartFull = function(){
+  day=1;
+  money=500;
+  fame=1;
+  level=1;
+  usado={};
+  window.taxaNegarAtual=0;
+  window.incNegar=5;
+  window.vezNegar=0;
+  valorNegar=25;
+  document.getElementById('gameOver').style.display='none';
+  check();
+  novo();
+}
+
+console.log("FIX aplicado - Grátis, 5, 15, 30, 50, reset na falência");
 novo();
