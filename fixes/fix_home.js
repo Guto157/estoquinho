@@ -1,5 +1,5 @@
-// fixes/fix_home.js - FINAL COMPLETO COM RESET FALENCIA
-console.log("FIX HOME - LOGICA NOVA NEGAR FINAL");
+// fixes/fix_home.js - FINAL COMPLETO + VALOR ESTAVEL POR LEVEL
+console.log("FIX HOME - LOGICA NOVA NEGAR FINAL + VALOR ESTAVEL");
 
 window.taxaNegarAtual = 0;
 window.incNegar = 5;
@@ -26,14 +26,26 @@ window.novo = function(){
   let fala=cur.falas[Math.floor(Math.random()*cur.falas.length)];
   document.getElementById('hist').innerText=fala;
   document.getElementById('bubble').innerText=cur.n+': "'+fala+'"';
-  let levelFactor = 1 + (level * 0.10) + (day * 0.02);
-  let riscoMult = cur.r=='BAIXO'?1 : cur.r=='MÉDIO'?1.4 : 2.0;
-  let difChance = Math.floor(level*0.7 + day*0.15);
-  let pedeCalc = Math.floor(cur.p * levelFactor * riscoMult);
+  
+  // --- CORREÇÃO VALOR ESTAVEL ---
+  // Antes era cur.p * levelFactor * riscoMult (muito desregulado)
+  // Agora base fixa no level + variação pequena
+  let base = 40 + (level * 18) + (day * 2); // L1~60 / L5~140 / L10~230
+  let riscoMult = cur.r=='BAIXO'?0.90 : cur.r=='MÉDIO'?1.15 : 1.35;
+  let variacao = 0.85 + Math.random()*0.30; // 85% a 115%
+  let pedeCalc = Math.floor(base * riscoMult * variacao);
+
+  // Trava de segurança: nunca pede mais que 70% do caixa
+  let maxPermitido = Math.floor(money * 0.70);
+  if(maxPermitido < 20) maxPermitido = 20;
+  if(pedeCalc > maxPermitido) pedeCalc = maxPermitido;
+  if(pedeCalc < 15) pedeCalc = 15;
+
   let bonusLucro=getTotalLucroBonus();
   let voltaCalc = Math.floor(pedeCalc * 2 * (1+bonusLucro/100));
+  let difChance = Math.floor(level*0.7 + day*0.15);
   let chanceCalc = Math.max(5, cur.c - difChance);
-  if(pedeCalc > money) pedeCalc = Math.max(10, Math.floor(money * 0.8));
+
   cur.pedeAtual = pedeCalc;
   cur.voltaAtual = voltaCalc;
   cur.chanceAtual = chanceCalc;
@@ -161,5 +173,5 @@ window.restartFull = function(){
   novo();
 }
 
-console.log("FIX aplicado - Grátis, 5, 15, 30, 50, reset na falência");
+console.log("FIX aplicado - Grátis, 5, 15, 30, 50, reset na falência + valor estável");
 novo();
