@@ -1,6 +1,6 @@
 
- // fixes/fix_home.js - RECUPERACAO DE 50% COM ANUNCIO
-console.log("FIX HOME - RECUPERACAO DE 50%");
+// fixes/fix_home.js - EMPRESTIMOS, CALOTE E RECUPERACAO
+console.log("FIX HOME - RECUPERACAO DA MOTO E ANUNCIO CORRIGIDOS");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -44,6 +44,7 @@ window.novo=function(){
 
  document.getElementById('clienteAvatar').innerText=cur.sig;
  document.getElementById('clienteAvatar').style.background=cur.cor;
+
  let cb=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
  document.getElementById('clienteBox').style.borderColor=cb;
  document.getElementById('nome').innerText=cur.n;
@@ -58,6 +59,7 @@ window.novo=function(){
  let rm=cur.r=='BAIXO'?0.9:cur.r=='MÉDIO'?1.15:1.35;
  let vr=0.85+Math.random()*0.3;
  let pc=Math.floor(base*rm*vr);
+
  let max=Math.floor(money*0.7);
  if(max<20)max=20;
  if(pc>max)pc=max;
@@ -80,6 +82,7 @@ window.novo=function(){
 
  let div=document.getElementById('choices');
  div.innerHTML='';
+
  let tn=window.vezNegar===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
 
  let ops=[
@@ -99,6 +102,7 @@ window.novo=function(){
 
 window.jogar=function(tipo){
  if(window.travado)return;
+
  window.travado=true;
  let c=document.getElementById('choices');
  if(c)c.style.pointerEvents='none';
@@ -113,6 +117,7 @@ window.jogar=function(tipo){
  if(tipo=='negar'){
   let desc=(window.vezNegar===0)?0:window.taxaNegarAtual;
   money-=desc;
+
   if(desc>0)fb(desc,'c');
   negarCount++;
 
@@ -125,10 +130,12 @@ window.jogar=function(tipo){
   }
 
   if(window.taxaNegarAtual>100)window.taxaNegarAtual=100;
+
   window.vezNegar++;
   fame=Math.max(0,fame-0.5);
   seq=0;
   day++;
+
   log('❌ Negou '+cur.n+' -'+(desc==0?'Grátis':'R$'+desc));
   check();
   novo();
@@ -138,6 +145,7 @@ window.jogar=function(tipo){
  if(window.taxaNegarAtual>0){
   window.taxaNegarAtual=Math.max(0,window.taxaNegarAtual-5);
   window.incNegar=Math.max(5,window.incNegar-5);
+
   if(window.taxaNegarAtual===0){
    window.vezNegar=0;
    window.incNegar=5;
@@ -146,14 +154,18 @@ window.jogar=function(tipo){
 
  if(cur.policia){
   usado._policia=(usado._policia||0)+1;
+
   let fi=Math.floor(money*0.5);
   if(fi<100)fi=100;
+
   money-=fi;
   fb(fi,'c');
   log('🚨 POLÍCIA! -R$'+fi);
+
   fame=Math.max(0,fame-0.5);
   seq=0;
   day++;
+
   check();
   novo();
   return;
@@ -169,6 +181,7 @@ window.jogar=function(tipo){
  }
 
  let ch=cur.chanceAtual+getTotalChanceBonus();
+
  if(cur.r=='ALTO')ch+=getGlockBonusVsAlto();
 
  if(tipo=='juros'){
@@ -179,14 +192,13 @@ window.jogar=function(tipo){
 
  if(ch<5)ch=5;
 
- // Desconta o principal uma única vez.
+ // Desconta o valor emprestado apenas uma vez.
  money-=peBase;
  fb(peBase,'c');
 
  let pagou=Math.random()*100<ch;
 
  if(pagou){
-  // Recebe o valor total prometido.
   money+=de;
   fb(de,'g');
 
@@ -204,39 +216,53 @@ window.jogar=function(tipo){
   novo();
 
  }else{
-  // Calote: principal já descontado.
+  // Calote: o principal já foi descontado.
   fame=Math.max(0,fame-0.5);
   seq=0;
   pendentePerda=peBase;
 
+  let recMoto=getRecuperacaoBonus();
+
   document.getElementById('adText').innerText=
    cur.n+' deu calote de R$'+peBase+
-   ' - Anúncio recupera 50% (R$'+Math.floor(peBase*0.5)+')';
+   ' - Anúncio recupera 50% (R$'+Math.floor(peBase*0.5)+')'+
+   (recMoto>0?' | Moto recupera '+recMoto+'% se aceitar a perda':'');
 
   document.getElementById('adSave').style.display='flex';
+
   check();
   window.travado=false;
   if(c)c.style.pointerEvents='auto';
  }
 };
 
-// Aceitar perda: não desconta novamente.
+// ACEITAR PERDA: recupera somente o percentual da moto.
 window.aceitarPerda=function(){
  document.getElementById('adSave').style.display='none';
+
+ let recMoto=getRecuperacaoBonus();
+ let recuperado=Math.floor((pendentePerda||0)*recMoto/100);
+
+ if(recuperado>0){
+  money+=recuperado;
+  fb(recuperado,'g');
+  log('🏍️ Moto recuperou R$'+recuperado+' ('+recMoto+'%)');
+ }
+
  pendentePerda=0;
  pendenteTipo=null;
+
  day++;
  check();
  novo();
 };
 
-// Recuperação pelo anúncio: devolve 50% do empréstimo.
+// ANÚNCIO: recupera sempre 50% do valor emprestado.
 window.recompensaLiberada=function(){
-
  document.getElementById('adModal').style.display='none';
 
  if(pendenteTipo=='salvar'){
-  let recuperado=Math.floor(pendentePerda*0.5);
+  let recuperado=Math.floor((pendentePerda||0)*0.5);
 
   if(recuperado>0){
    money+=recuperado;
@@ -249,6 +275,7 @@ window.recompensaLiberada=function(){
   totalEmp++;
   seq++;
   day++;
+
   check();
   novo();
  }
@@ -290,11 +317,13 @@ window.restartFull=function(){
  fame=1;
  level=1;
  usado={};
+
  window.travado=false;
  window.taxaNegarAtual=0;
  window.incNegar=5;
  window.vezNegar=0;
  valorNegar=25;
+
  pendentePerda=0;
  pendenteTipo=null;
 
