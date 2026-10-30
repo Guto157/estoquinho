@@ -1,5 +1,5 @@
-// fixes/fix_home.js - FINAL CALOTE VALOR PEDIDO
-console.log("FIX HOME - CALOTE VALOR PEDIDO");
+// fixes/fix_home.js - FINAL CALOTE = VALOR PEDIDO
+console.log("FIX HOME - FINAL CALOTE FIX");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -46,7 +46,7 @@ window.novo=function(){
  let div=document.getElementById('choices');div.innerHTML='';
  let tn=window.taxaNegarAtual===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
  let ops=[
-  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc+' | Chance '+cc+'% (+'+getTotalChanceBonus()+'% itens)',c:'amarelo',a:'pagar'},
+  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc+' | Chance '+cc+'%',c:'amarelo',a:'emprestar'},
   {t:tn,d:'Evita calote',c:'branco',a:'negar'},
   {t:'😈 JUROS R$'+(vc+80),d:'Lucro +80 mas chance -30%',c:'preto',a:'juros'}
  ];
@@ -75,21 +75,20 @@ window.jogar=function(tipo){
   log('🚨 POLÍCIA! -R$'+fi);fame=Math.max(0,fame-0.5);seq=0;day++;check();novo();return;
  }
  let peBase=cur.pedeAtual;
- let ch=cur.chanceAtual!=null?cur.chanceAtual:cur.c;
- let pe=peBase;
- let de=cur.voltaAtual!=null?cur.voltaAtual:cur.d;
- if(tipo=='pagar'){pe=peBase*2;de=pe*2;ch-=8}
- if(tipo=='juros'){de+=80;ch-=30;jurosCount++}
+ let deBase=cur.voltaAtual;
+ let ch=cur.chanceAtual;
+ let de=deBase;
+ if(tipo=='juros'){de=deBase+80;ch-=30;jurosCount++}
  ch+=getTotalChanceBonus();
  if(cur.r=='ALTO'){ch+=getGlockBonusVsAlto()}
  if(tipo=='juros'){if(ch>78)ch=78}else{if(ch>92)ch=92}
  if(ch<5)ch=5;
  let pagou=Math.random()*100<ch;
  if(pagou){
-  let lucro=de-pe;money+=lucro;fb(lucro,'g');
+  let lucro=de-peBase;money+=lucro;fb(lucro,'g');
   fame+=1;totalEmp++;totalLucro+=lucro;seq++;
   document.getElementById('bubble').innerText='✅ '+cur.n+' pagou R$'+de+'! ('+ch.toFixed(0)+'%)';
-  log('✅ '+cur.n+' pagou R$'+de+' ['+ch.toFixed(0)+'%]');day++;check();novo();
+  log('✅ '+cur.n+' pagou R$'+de+' lucro R$'+lucro+' ['+ch.toFixed(0)+'%]');day++;check();novo();
  }else{
   money-=peBase;fb(peBase,'c');
   fame=Math.max(0,fame-0.5);seq=0;
