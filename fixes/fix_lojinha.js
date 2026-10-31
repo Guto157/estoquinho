@@ -46,7 +46,7 @@ console.log("FIX LOJINHA CARREGADO");
     if(!chave) return;
 
     try{
-      localStorage.setItem(chave,JSON.stringify(inv || {}));
+      localStorage.setItem(chave, JSON.stringify({ ...inv }));
       console.log("Inventário da lojinha salvo:",inv);
     }catch(e){
       console.error("Erro ao salvar inventário:",e);
