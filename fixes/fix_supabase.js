@@ -1,3 +1,4 @@
+
 // SUPABASE: LOGIN, PROTECAO DE VERSAO E SINCRONIZACAO EM TEMPO REAL
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
@@ -175,11 +176,48 @@
   }
 
   // =====================================================
-  // DADOS DO JOGO, INCLUINDO XP
+  // CLIENTE ATUAL: FUNCOES DE PERSISTENCIA
+  // =====================================================
+
+  function copiarCliente(cliente) {
+    if (!cliente) return null;
+
+    try {
+      return JSON.parse(JSON.stringify(cliente));
+    } catch (erro) {
+      console.error('Erro ao copiar cliente atual:', erro);
+      return null;
+    }
+  }
+
+  function obterClienteAtual() {
+    return copiarCliente(
+      typeof cur !== 'undefined' ? cur : null
+    );
+  }
+
+  function estadoRecuperacao() {
+    const tela = document.getElementById('adSave');
+
+    return {
+      recuperacaoPendente: !!(
+        tela &&
+        tela.style.display !== 'none' &&
+        getComputedStyle(tela).display !== 'none'
+      ),
+      pendentePerda: Number(
+        typeof pendentePerda !== 'undefined' ? pendentePerda : 0
+      ) || 0
+    };
+  }
+
+  // =====================================================
+  // DADOS DO JOGO, INCLUINDO XP E CLIENTE ATUAL
   // =====================================================
 
   function dadosDoJogo() {
     const inventario = obterInventarioAtual();
+    const recuperacao = estadoRecuperacao();
 
     return {
       day,
@@ -190,6 +228,13 @@
       level: window.levelXP || level || 1,
       levelXP: window.levelXP || level || 1,
       xpAtual: Number(window.xpAtual) || 0,
+
+      // CLIENTE ATUAL
+      clienteAtual: obterClienteAtual(),
+
+      // ESTADO DA RECUPERACAO DE CALOTE
+      recuperacaoPendente: recuperacao.recuperacaoPendente,
+      pendentePerda: recuperacao.pendentePerda,
 
       dolar,
       inv: inventario,
@@ -253,19 +298,51 @@
         ativasDesafios = progresso.ativasDesafios;
       }
 
+      // CLIENTE ATUAL
+      const clienteSalvo = progresso.clienteAtual || progresso.cur || null;
+
+      if (clienteSalvo) {
+        const clienteRestaurado = copiarCliente(clienteSalvo);
+
+        if (clienteRestaurado) {
+          cur = clienteRestaurado;
+        }
+      }
+
+      // RECUPERACAO DE CALOTE
+      if (typeof progresso.pendentePerda === 'number') {
+        pendentePerda = progresso.pendentePerda;
+      }
+
       if (typeof renderSlots === 'function') renderSlots();
       if (typeof atualizarTituloAvatar === 'function') atualizarTituloAvatar();
 
       if (typeof check === 'function') check();
 
-      // Reafirma o nível após o check original.
+      // Reafirma o nivel apos o check original.
       level = window.levelXP;
 
       const elementoNivel = document.getElementById('lvl');
       if (elementoNivel) elementoNivel.innerText = window.levelXP;
 
-      if (typeof window.atualizarBarraXP === 'function') {
-        window.atualizarBarraXP();
+      if (typeof window.atualizarNivelXP === 'function') {
+        window.atualizarNivelXP();
+      }
+
+      // EXIBE O MESMO CLIENTE, SEM SORTEAR OUTRO
+      if (
+        clienteSalvo &&
+        typeof window.renderizarClienteAtual === 'function'
+      ) {
+        window.renderizarClienteAtual();
+      }
+
+      // RESTAURA A TELA DE RECUPERACAO SE ESTAVA ABERTA
+      const telaRecuperacao = document.getElementById('adSave');
+
+      if (telaRecuperacao) {
+        telaRecuperacao.style.display =
+          progresso.recuperacaoPendente ? 'flex' : 'none';
       }
 
       console.log('PROGRESSO APLICADO:', {
@@ -276,7 +353,9 @@
         xpAtual: window.xpAtual,
         levelXP: window.levelXP,
         dolar,
-        inv
+        inv,
+        clienteAtual: clienteSalvo,
+        recuperacaoPendente: progresso.recuperacaoPendente
       });
 
     } finally {
@@ -382,6 +461,8 @@
         level: dadosAtuais.level,
         levelXP: dadosAtuais.levelXP,
         xpAtual: dadosAtuais.xpAtual,
+        clienteAtual: dadosAtuais.clienteAtual,
+        recuperacaoPendente: dadosAtuais.recuperacaoPendente,
         version: versaoNuvem,
         inventario: inventarioFinal
       });
@@ -426,7 +507,7 @@
   }
 
   // =====================================================
-  // ATUALIZAÇÕES REMOTAS
+  // ATUALIZACOES REMOTAS
   // =====================================================
 
   async function processarAtualizacaoRemota() {
@@ -501,6 +582,7 @@
         level,
         levelXP: window.levelXP,
         xpAtual: window.xpAtual,
+        clienteAtual: dadosCarregados.clienteAtual,
         inv
       });
 
@@ -586,7 +668,7 @@
   };
 
   // =====================================================
-  // SINCRONIZA APÓS COMPRAR ITEM
+  // SINCRONIZA APOS COMPRAR ITEM
   // =====================================================
 
   if (typeof window.comprarItem === 'function') {
@@ -707,6 +789,11 @@
 
         aplicarProgresso(saveLocal, inventarioFinal);
 
+        // Se o save antigo nao tinha cliente, cria um agora.
+        if (!cur && typeof novo === 'function') {
+          novo();
+        }
+
       } else {
         inv = mesclarInventarios(inventarioLocal, inventarioSaveLocal);
 
@@ -729,6 +816,16 @@
 
     carregamentoConcluido = true;
 
+    // Garante que o estado carregado seja salvo localmente.
+    try {
+      localStorage.setItem(
+        'save_' + currentUser,
+        JSON.stringify(dadosDoJogo())
+      );
+    } catch (erro) {
+      console.error('Erro ao atualizar save local:', erro);
+    }
+
     modal.style.display = 'none';
     limparMensagem();
 
@@ -742,6 +839,7 @@
       levelXP: window.levelXP,
       xpAtual: window.xpAtual,
       version: versaoNuvem,
+      clienteAtual: obterClienteAtual(),
       inv
     });
   }
@@ -889,7 +987,7 @@
   modal.style.display = 'flex';
 
   // =====================================================
-  // VERIFICA SESSÃO
+  // VERIFICA SESSAO
   // =====================================================
 
   const { data: sessao, error: erroSessao } =
