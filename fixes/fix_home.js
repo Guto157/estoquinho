@@ -1,230 +1,218 @@
-// fixes/fix_home.js - FINANCEIRO, DIÁLOGOS, GIROFLEX, XP E CLIENTE PERSISTENTE
+// fixes/fix_home.js - FINANCEIRO, DIÁLOGOS, GIROFLEX E CLIENTE PERSISTENTE
 console.log("FIX HOME - SISTEMA COMPLETO ATUALIZADO");
 
 // =====================================================
-// SISTEMA DE XP
+// SISTEMA DE XP E LEVEL
 // =====================================================
 
-window.xpAtual = 0;
+window.xpAtual = Math.max(0, Number(window.xpAtual) || 0);
 
-// LEVEL 1 -> 2 = 5 XP
-// LEVEL 2 -> 3 = 15 XP
-// LEVEL 3 -> 4 = 30 XP
-// LEVEL 4 -> 5 = 50 XP
-// Progressão automática até o LEVEL 1000.
-window.xpNecessarioProximoNivel = function () {
- var nivelAtual = Math.max(1, Number(level) || 1);
- return Math.floor(5 * nivelAtual * (nivelAtual + 1) / 2);
+window.xpNecessarioProximoNivel = function(){
+ let L = Math.max(1, Number(level) || 1);
+ return 5 * L * (L + 1) / 2;
 };
 
-window.atualizarBarraXP = function () {
- var atual = Math.max(0, Number(window.xpAtual) || 0);
- var necessario = window.xpNecessarioProximoNivel();
- var barra = document.getElementById('xp-fix-container');
+window.atualizarBarraXP = function(){
+ let nivel = Math.max(1, Number(level) || 1);
+ let xp = Math.max(0, Number(window.xpAtual) || 0);
+ let maximo = 1000;
 
- if (!barra) {
-  barra = document.createElement('div');
-  barra.id = 'xp-fix-container';
-  barra.innerHTML = `
-   <div id="xp-fix-topo">
-    <span id="xp-fix-nivel">LEVEL ${Number(level) || 1}</span>
-    <span id="xp-fix-valores">0 / 5 XP</span>
-   </div>
-   <div id="xp-fix-trilho">
-    <div id="xp-fix-progresso"></div>
-   </div>
-  `;
+ let referencia = null;
 
-  var moneyEl = document.getElementById('money');
+ // Procura o elemento LEVEL existente sem substituir seu conteúdo.
+ const seletores = [
+  '#level',
+  '#levelDisplay',
+  '#level-display',
+  '#playerLevel',
+  '#player-level',
+  '.level'
+ ];
 
-  if (moneyEl && moneyEl.parentNode) {
-   moneyEl.insertAdjacentElement('afterend', barra);
-  } else {
-   var gameEl = document.getElementById('game');
+ for(const seletor of seletores){
+  const el = document.querySelector(seletor);
+  if(el){
+   referencia = el;
+   break;
+  }
+ }
 
-   if (gameEl) {
-    gameEl.insertBefore(barra, gameEl.firstChild);
-   } else {
-    document.body.insertBefore(barra, document.body.firstChild);
+ if(!referencia){
+  const elementos = document.querySelectorAll('body *');
+
+  for(const el of elementos){
+   if(el.id === 'barraXP' || el.closest('#barraXP'))continue;
+   if(el.children.length > 2)continue;
+
+   const texto = (el.textContent || '').trim();
+
+   if(/^LEVEL\s*[:#-]?\s*\d+/i.test(texto)){
+    referencia = el;
+    break;
    }
   }
  }
 
- var nivelEl = document.getElementById('xp-fix-nivel');
- var valoresEl = document.getElementById('xp-fix-valores');
- var progressoEl = document.getElementById('xp-fix-progresso');
+ if(!referencia)return;
 
- if (nivelEl) {
-  nivelEl.textContent = 'LEVEL ' + (Number(level) || 1);
+ let barra = document.getElementById('barraXP');
+
+ if(!barra){
+  barra = document.createElement('div');
+  barra.id = 'barraXP';
+
+  barra.style.cssText = [
+   'height:9px',
+   'width:100%',
+   'max-width:180px',
+   'margin:3px 0 5px',
+   'border-radius:20px',
+   'background:#333',
+   'border:1px solid #555',
+   'overflow:hidden',
+   'position:relative',
+   'box-sizing:border-box',
+   'font-size:7px',
+   'line-height:7px'
+  ].join(';');
+
+  barra.innerHTML = `
+   <div id="barraXPPreenchimento" style="
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#00c853,#aaff00);
+    border-radius:20px;
+    transition:width .25s;
+   "></div>
+   <span id="barraXPTexto" style="
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:7px;
+    font-weight:900;
+    text-shadow:0 1px 2px #000;
+    white-space:nowrap;
+   "></span>
+  `;
+
+  referencia.insertAdjacentElement('afterend',barra);
  }
 
- if (valoresEl) {
-  valoresEl.textContent = atual + ' / ' + necessario + ' XP';
+ // Mantém a barra junto ao elemento LEVEL caso a interface seja recriada.
+ if(barra.previousElementSibling !== referencia){
+  referencia.insertAdjacentElement('afterend',barra);
  }
 
- if (progressoEl) {
-  var percentual = necessario > 0
-   ? Math.min(100, atual / necessario * 100)
-   : 0;
+ const preenchimento = document.getElementById('barraXPPreenchimento');
+ const texto = document.getElementById('barraXPTexto');
 
-  progressoEl.style.width = percentual + '%';
+ if(nivel >= maximo){
+  if(preenchimento)preenchimento.style.width = '100%';
+  if(texto)texto.textContent = 'MÁXIMO';
+  return;
  }
 
- barra.style.display = 'block';
+ const necessario = window.xpNecessarioProximoNivel();
+ const percentual = necessario > 0
+  ? Math.min(100,(xp / necessario) * 100)
+  : 0;
+
+ if(preenchimento)preenchimento.style.width = percentual + '%';
+
+ if(texto){
+  texto.textContent = Math.floor(xp) + '/' + necessario;
+ }
 };
 
-(function instalarEstiloXP () {
- if (document.getElementById('xp-fix-style')) return;
+window.alterarXP = function(quantidade, motivo){
+ let valor = Number(quantidade) || 0;
 
- var style = document.createElement('style');
- style.id = 'xp-fix-style';
+ if(!valor)return;
 
- style.textContent = `
-  #xp-fix-container {
-   width: min(100% - 20px, 520px);
-   box-sizing: border-box;
-   margin: 8px auto 12px;
-   padding: 9px 12px;
-   background: #171717;
-   border: 1px solid #383838;
-   border-radius: 10px;
-   color: #fff;
-   font-family: Arial, sans-serif;
-   z-index: 20;
-  }
+ let nivelAtual = Math.max(1,Number(level) || 1);
 
-  #xp-fix-topo {
-   display: flex;
-   justify-content: space-between;
-   align-items: center;
-   gap: 8px;
-   margin-bottom: 7px;
-   font-size: 12px;
-   font-weight: 900;
-  }
-
-  #xp-fix-nivel {
-   color: #FFD600;
-  }
-
-  #xp-fix-valores {
-   color: #fff;
-  }
-
-  #xp-fix-trilho {
-   width: 100%;
-   height: 9px;
-   overflow: hidden;
-   background: #444;
-   border-radius: 20px;
-  }
-
-  #xp-fix-progresso {
-   width: 0%;
-   height: 100%;
-   background: linear-gradient(90deg, #00C853, #B2FF59);
-   border-radius: 20px;
-   transition: width .25s ease;
-  }
- `;
-
- document.head.appendChild(style);
-})();
-
-// Soma ou remove XP. O XP não fica negativo.
-// O excedente é mantido quando o jogador sobe de nível.
-window.alterarXP = function (quantidade, motivo) {
- var valor = Number(quantidade) || 0;
- var antes = Math.max(0, Number(window.xpAtual) || 0);
-
- window.xpAtual = Math.max(0, antes + valor);
-
- var subiuNivel = false;
-
- while ((Number(level) || 1) < 1000) {
-  var necessario = window.xpNecessarioProximoNivel();
-
-  if (window.xpAtual < necessario) break;
-
-  window.xpAtual -= necessario;
-  level = (Number(level) || 1) + 1;
-  subiuNivel = true;
+ if(nivelAtual >= 1000){
+  level = 1000;
+  window.xpAtual = 0;
+  window.atualizarBarraXP();
+  return;
  }
 
- if ((Number(level) || 1) >= 1000) {
+ window.xpAtual = Math.max(0,(Number(window.xpAtual) || 0) + valor);
+
+ // Aproveita todo o XP excedente nos próximos níveis.
+ while(level < 1000){
+  const necessario = window.xpNecessarioProximoNivel();
+
+  if(window.xpAtual < necessario)break;
+
+  window.xpAtual -= necessario;
+  level++;
+ }
+
+ if(level >= 1000){
   level = 1000;
   window.xpAtual = 0;
  }
 
  window.atualizarBarraXP();
 
- if (valor !== 0) {
-  var texto = (valor > 0 ? '+' : '') + valor + ' XP';
+ console.log('XP ALTERADO:',{
+  quantidade:valor,
+  motivo:motivo || '',
+  xp:window.xpAtual,
+  level:level
+ });
 
-  if (motivo) texto += ' • ' + motivo;
-
-  if (typeof log === 'function') {
-   log('⭐ ' + texto);
-  }
- }
-
- if (subiuNivel) {
-  if (typeof check === 'function') check();
-
-  if (typeof atualizarTituloAvatar === 'function') {
-   atualizarTituloAvatar();
-  }
-
-  if (typeof log === 'function') {
-   log('🎉 LEVEL UP! Você chegou ao LEVEL ' + level);
-  }
- }
-
- if (typeof window.saveGame === 'function') {
+ // Salva localmente e solicita sincronização com a nuvem.
+ if(typeof window.saveGame === 'function'){
   window.saveGame();
  }
-
- return {
-  xp: window.xpAtual,
-  level: level,
-  subiuNivel: subiuNivel
- };
 };
 
-window.obterDadosXP = function () {
- return {
-  xp: Math.max(0, Number(window.xpAtual) || 0),
-  level: Number(level) || 1,
-  necessario: window.xpNecessarioProximoNivel()
- };
-};
+// Atualiza a barra quando o LEVEL ou a tela forem recriados.
+(function(){
+ function iniciarAtualizacaoXP(){
+  window.atualizarBarraXP();
+
+  if(window.observadorXP)return;
+
+  window.observadorXP = new MutationObserver(function(){
+   window.atualizarBarraXP();
+  });
+
+  window.observadorXP.observe(document.body,{
+   childList:true,
+   subtree:true,
+   characterData:true
+  });
+ }
+
+ if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded',iniciarAtualizacaoXP);
+ }else{
+  iniciarAtualizacaoXP();
+ }
+})();
 
 // =====================================================
-// EFEITO DE DINHEIRO
+// ANIMAÇÃO DE DINHEIRO
 // =====================================================
 
 function fb(v,t){
  var m=document.getElementById('money');
  if(!m)return;
-
  var e=document.createElement('div');
-
  e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:8px 14px;border-radius:10px;background:#111;border:2px solid;transition:all 1.5s';
-
  e.innerText=t=='g'?'+R$'+v:'-R$'+v;
  e.style.color=t=='g'?'#00E676':'#FF5252';
  e.style.borderColor=e.style.color;
-
  document.body.appendChild(e);
-
- setTimeout(function(){
-  e.style.transform='translateY(-70px)';
-  e.style.opacity='0';
- },1200);
-
- setTimeout(function(){
-  e.remove();
- },2200);
+ setTimeout(function(){e.style.transform='translateY(-70px)';e.style.opacity='0'},1200);
+ setTimeout(function(){e.remove()},2200);
 }
 
 // =====================================================
@@ -372,7 +360,6 @@ const dialogosPoliciais = [
 
 window.giroflexPolicial=function(){
  let antigo=document.getElementById('giroflex-policial');
-
  if(antigo)antigo.remove();
 
  let giro=document.createElement('div');
@@ -417,7 +404,6 @@ window.obterDialogo=function(personagem){
 
   for(let i=personalizadas.length-1;i>0;i--){
    let j=Math.floor(Math.random()*(i+1));
-
    [personalizadas[i],personalizadas[j]]=
    [personalizadas[j],personalizadas[i]];
   }
@@ -432,7 +418,6 @@ window.obterDialogo=function(personagem){
  if(disponiveis.length===0)disponiveis=falas;
 
  let escolhida=disponiveis[Math.floor(Math.random()*disponiveis.length)];
-
  personagem._ultimaFalaFixHome=escolhida;
 
  return escolhida;
@@ -486,7 +471,6 @@ window.novo=function(){
  window.travado=false;
 
  let c=document.getElementById('choices');
-
  if(c)c.style.pointerEvents='auto';
 
  let salvo=null;
@@ -501,6 +485,7 @@ window.novo=function(){
 
  let np=null;
 
+ // Tenta recuperar o mesmo cliente.
  if(salvo){
   let lista=salvo.policia?policiaisDisfarcados:personagensComuns;
 
@@ -518,6 +503,7 @@ window.novo=function(){
   }
  }
 
+ // Se não encontrou cliente salvo, sorteia um novo.
  if(!np){
   let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
 
@@ -545,7 +531,6 @@ window.novo=function(){
   usado._ultimo=cur.n;
 
   let f=window.obterDialogo(cur);
-
   window.dialogoAtual=f;
 
   let base=40+(level*18)+(day*2);
@@ -554,7 +539,6 @@ window.novo=function(){
   let pc=Math.floor(base*rm*vr);
 
   let max=Math.floor(money*0.7);
-
   if(max<20)max=20;
   if(pc>max)pc=max;
   if(pc<15)pc=15;
@@ -571,9 +555,11 @@ window.novo=function(){
   cur.voltaJurosAtual=vcJuros;
   cur.chanceAtual=cc;
 
+  // Salva cliente, diálogo e valores para sobreviver ao F5.
   window.salvarClienteAtual();
  }
 
+ // Atualiza a apresentação.
  document.getElementById('clienteAvatar').innerText=cur.sig;
  document.getElementById('clienteAvatar').style.background=cur.cor;
 
@@ -592,7 +578,6 @@ window.novo=function(){
  document.getElementById('chance').innerText=cur.chanceAtual+'%';
 
  let div=document.getElementById('choices');
-
  div.innerHTML='';
 
  let tn=window.vezNegar===0
@@ -607,15 +592,11 @@ window.novo=function(){
 
  ops.forEach(o=>{
   let b=document.createElement('button');
-
   b.className='btn '+o.c;
   b.innerHTML=o.t+'<small>'+o.d+'</small>';
   b.onclick=()=>{jogar(o.a)};
-
   div.appendChild(b);
  });
-
- window.atualizarBarraXP();
 };
 
 // =====================================================
@@ -628,24 +609,20 @@ window.jogar=function(tipo){
  window.travado=true;
 
  let c=document.getElementById('choices');
-
  if(c)c.style.pointerEvents='none';
 
  if(!cur){
   window.travado=false;
-
   if(c)c.style.pointerEvents='auto';
-
   novo();
   return;
  }
 
- // NEGAR CLIENTE
+ // NEGAR CLIENTE: -1 XP
  if(tipo=='negar'){
   window.limparClienteAtual();
 
   let desc=(window.vezNegar===0)?0:window.taxaNegarAtual;
-
   money-=desc;
 
   if(desc>0)fb(desc,'c');
@@ -663,20 +640,20 @@ window.jogar=function(tipo){
   if(window.taxaNegarAtual>100)window.taxaNegarAtual=100;
 
   window.vezNegar++;
-
   fame=Math.max(0,fame-0.5);
   seq=0;
   day++;
 
-  window.alterarXP(-1, 'Cliente negado');
-
   log('❌ Negou '+cur.n+' -'+(desc==0?'Grátis':'R$'+desc));
+
+  window.alterarXP(-1,'Negou cliente');
 
   check();
   novo();
   return;
  }
 
+ // A PARTIR DAQUI O JOGADOR ESCOLHEU EMPRESTAR.
  // O CLIENTE ANTERIOR NÃO DEVE VOLTAR APÓS ATUALIZAR.
  window.limparClienteAtual();
 
@@ -691,19 +668,17 @@ window.jogar=function(tipo){
  }
 
  // POLICIAL DISFARÇADO
+ // Polícia não concede nem retira XP.
  if(cur.policia){
   window.giroflexPolicial();
 
   usado._policia=(usado._policia||0)+1;
 
   let fi=Math.floor(money*0.5);
-
   if(fi<100)fi=100;
 
   money-=fi;
-
   fb(fi,'c');
-
   log('🚨 POLÍCIA! -R$'+fi);
 
   fame=Math.max(0,fame-0.5);
@@ -737,35 +712,29 @@ window.jogar=function(tipo){
 
  if(ch<5)ch=5;
 
+ // Desconta o valor emprestado apenas uma vez.
  money-=peBase;
-
  fb(peBase,'c');
 
  let pagou=Math.random()*100<ch;
 
  if(pagou){
   money+=de;
-
   fb(de,'g');
 
   let lucro=de-peBase;
-
   fame+=1;
   totalEmp++;
   totalLucro+=lucro;
   seq++;
 
-  window.alterarXP(
-   tipo=='juros'?5:3,
-   tipo=='juros'?'Pagamento com juros':'Pagamento normal'
-  );
-
   document.getElementById('bubble').innerText='✅ Pagou R$'+de;
-
   log('✅ '+cur.n+' pagou R$'+de+' - lucro R$'+lucro);
 
-  day++;
+  // Pagamento normal: +3 XP. Pagamento com juros: +5 XP.
+  window.alterarXP(tipo=='juros'?5:3,tipo=='juros'?'Pagamento com juros':'Pagamento normal');
 
+  day++;
   check();
   novo();
 
@@ -774,7 +743,8 @@ window.jogar=function(tipo){
   seq=0;
   pendentePerda=peBase;
 
-  window.alterarXP(-1, 'Calote');
+  // Calote: -1 XP. Aceitar perda ou recuperar pelo anúncio não altera XP.
+  window.alterarXP(-1,'Calote');
 
   let recMoto=getRecuperacaoBonus();
 
@@ -786,9 +756,7 @@ window.jogar=function(tipo){
   document.getElementById('adSave').style.display='flex';
 
   check();
-
   window.travado=false;
-
   if(c)c.style.pointerEvents='auto';
  }
 };
@@ -805,9 +773,7 @@ window.aceitarPerda=function(){
 
  if(recuperado>0){
   money+=recuperado;
-
   fb(recuperado,'g');
-
   log('🏍️ Moto recuperou R$'+recuperado+' ('+recMoto+'%)');
  }
 
@@ -815,7 +781,6 @@ window.aceitarPerda=function(){
  pendenteTipo=null;
 
  day++;
-
  check();
  novo();
 };
@@ -832,9 +797,7 @@ window.recompensaLiberada=function(){
 
   if(recuperado>0){
    money+=recuperado;
-
    fb(recuperado,'g');
-
    log('📺 Anúncio recuperou 50%: R$'+recuperado);
   }
 
@@ -855,9 +818,7 @@ window.recompensaLiberada=function(){
 
  if(pendenteTipo=='gameoverBanco'){
   money=300;
-
   document.getElementById('gameOver').style.display='none';
-
   check();
   novo();
  }
@@ -871,24 +832,19 @@ window.recompensaLiberada=function(){
 
 window.falencia=function(){
  money=100;
-
  window.taxaNegarAtual=0;
  window.incNegar=5;
  window.vezNegar=0;
  window.travado=false;
-
  valorNegar=25;
 
  window.limparClienteAtual();
 
  let c=document.getElementById('choices');
-
  if(c)c.style.pointerEvents='auto';
 
  localStorage.removeItem('save_'+currentUser);
-
  alert('💸 FALÊNCIA! Resetado R$100');
-
  location.reload();
 };
 
@@ -901,8 +857,11 @@ window.restartFull=function(){
  money=500;
  fame=1;
  level=1;
- window.xpAtual=0;
  usado={};
+
+ // Reinicia o XP junto com o jogo.
+ window.xpAtual=0;
+ window.atualizarBarraXP();
 
  window.limparClienteAtual();
 
@@ -916,19 +875,14 @@ window.restartFull=function(){
  pendenteTipo=null;
 
  let c=document.getElementById('choices');
-
  if(c)c.style.pointerEvents='auto';
 
  document.getElementById('gameOver').style.display='none';
-
- window.atualizarBarraXP();
-
  check();
- novo();
 
- if(typeof window.saveGame==='function') {
-  window.saveGame();
- }
+ if(typeof window.saveGame==='function')window.saveGame();
+
+ novo();
 };
 
 // =====================================================
@@ -940,12 +894,9 @@ window.carregarSave=function(){
 
  if(!raw){
   window.xpAtual=0;
-
   novo();
   check();
-
   window.atualizarBarraXP();
-
   return;
  }
 
@@ -956,7 +907,6 @@ window.carregarSave=function(){
   money=s.money ?? 500;
   fame=s.fame ?? 1;
   level=s.level ?? 1;
-  window.xpAtual=Math.max(0, Number(s.xp ?? s.xpAtual ?? 0) || 0);
   dolar=s.dolar ?? 0;
   inv=s.inv ?? {};
   usado=s.usado ?? {};
@@ -969,75 +919,26 @@ window.carregarSave=function(){
   proxMissaoIdx=s.proxMissaoIdx ?? 3;
   proxDesafioIdx=s.proxDesafioIdx ?? 3;
 
+  // Recupera o XP salvo.
+  window.xpAtual=Math.max(0,Number(s.xpAtual) || 0);
+
   if(s.ativasMissoes)ativasMissoes=s.ativasMissoes;
   if(s.ativasDesafios)ativasDesafios=s.ativasDesafios;
 
-  while((Number(level)||1)<1000){
-   var necessario=window.xpNecessarioProximoNivel();
-
-   if(window.xpAtual<necessario)break;
-
-   window.xpAtual-=necessario;
-   level++;
-  }
-
   renderSlots();
   atualizarTituloAvatar();
-
   novo();
   check();
-
   window.atualizarBarraXP();
 
  }catch(e){
   console.error('Erro ao carregar save:',e);
-
   window.xpAtual=0;
-
   novo();
   check();
-
   window.atualizarBarraXP();
  }
 };
-
-// =====================================================
-// PERSISTÊNCIA LOCAL DO XP
-// =====================================================
-
-(function instalarPersistenciaLocalXP(){
- var saveAnterior=window.saveGame;
-
- if(typeof saveAnterior==='function' && !window._saveGameXPInstalado){
-  window._saveGameXPInstalado=true;
-
-  window.saveGame=function(){
-   var retorno=saveAnterior.apply(this,arguments);
-
-   try{
-    if(currentUser){
-     var chave='save_'+currentUser;
-     var dados={};
-
-     try{
-      dados=JSON.parse(localStorage.getItem(chave)||'{}');
-     }catch(e){
-      dados={};
-     }
-
-     dados.xp=Math.max(0,Number(window.xpAtual)||0);
-     dados.level=Number(level)||1;
-
-     localStorage.setItem(chave,JSON.stringify(dados));
-    }
-   }catch(e){
-    console.error('Erro ao salvar XP local:',e);
-   }
-
-   return retorno;
-  };
- }
-})();
 
 // =====================================================
 // INICIALIZAÇÃO
@@ -1046,9 +947,7 @@ window.carregarSave=function(){
 if(currentUser){
  window.carregarSave();
 }else{
- window.xpAtual=0;
  novo();
- window.atualizarBarraXP();
 }
 
 // =====================================================
