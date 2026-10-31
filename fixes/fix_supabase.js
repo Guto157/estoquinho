@@ -44,6 +44,9 @@
   let processandoEvento = false;
   let eventoPendente = false;
 
+  // Indica que o inventário foi zerado por um reinício completo.
+  let lojinhaResetada = false;
+
   const modal = document.getElementById('loginModal');
   const campoNome = document.getElementById('loginUser');
   const campoSenha = document.getElementById('loginPass');
@@ -126,6 +129,46 @@
 
     return inventario;
   }
+
+  // =====================================================
+  // REINICIO DEFINITIVO DA LOJINHA
+  // =====================================================
+
+  window.resetarInventarioLojinha = function () {
+    lojinhaResetada = true;
+    inv = {};
+
+    const chave = chaveInventario();
+
+    if (chave) {
+      localStorage.setItem(chave, '{}');
+    }
+
+    try {
+      const chaveSave = 'save_' + currentUser;
+      let dados = {};
+
+      try {
+        dados = JSON.parse(localStorage.getItem(chaveSave) || '{}');
+      } catch (e) {
+        dados = {};
+      }
+
+      dados.inv = {};
+      dados.lojinhaPermanente = {};
+      dados.lojinhaResetada = true;
+
+      localStorage.setItem(chaveSave, JSON.stringify(dados));
+    } catch (erro) {
+      console.error('Erro ao registrar reinício da lojinha:', erro);
+    }
+
+    if (typeof window.saveGame === 'function') {
+      window.saveGame();
+    }
+
+    console.log('LOJINHA REINICIADA: inventário zerado.');
+  };
 
   function mensagem(msg) {
     const el = document.getElementById('loginErro');
@@ -227,7 +270,6 @@
       levelXP: window.levelXP || level || 1,
       xpAtual: Number(window.xpAtual) || 0,
 
-      // CLIENTE ATUAL COMPLETO
       clienteAtual: obterClienteAtual(),
 
       recuperacaoPendente: recuperacao.recuperacaoPendente,
@@ -246,7 +288,10 @@
       proxDesafioIdx,
       ativasMissoes,
       ativasDesafios,
-      lojinhaPermanente: inventario
+      lojinhaPermanente: inventario,
+
+      // MARCADOR DO REINICIO COMPLETO DA LOJINHA
+      lojinhaResetada: lojinhaResetada
     };
   }
 
@@ -275,6 +320,8 @@
 
       inv = inventarioFinal;
 
+      lojinhaResetada = !!progresso.lojinhaResetada;
+
       usado = progresso.usado ?? {};
       totalEmp = progresso.totalEmp ?? 0;
       totalLucro = progresso.totalLucro ?? 0;
@@ -295,7 +342,6 @@
         ativasDesafios = progresso.ativasDesafios;
       }
 
-      // RESTAURA O CLIENTE EXATO QUE FOI SALVO
       const clienteSalvo = progresso.clienteAtual || progresso.cur || null;
 
       if (clienteSalvo) {
@@ -304,7 +350,6 @@
         cur = null;
       }
 
-      // RESTAURA A RECUPERACAO DE CALOTE
       if (typeof progresso.pendentePerda === 'number') {
         pendentePerda = progresso.pendentePerda;
       }
@@ -323,7 +368,6 @@
         window.atualizarNivelXP();
       }
 
-      // EXIBE O CLIENTE RESTAURADO SEM SORTEAR OUTRO
       if (cur && typeof window.renderizarClienteAtual === 'function') {
         window.renderizarClienteAtual();
       }
@@ -344,6 +388,7 @@
         levelXP: window.levelXP,
         dolar,
         inv,
+        lojinhaResetada,
         clienteAtual: obterClienteAtual(),
         recuperacaoPendente: progresso.recuperacaoPendente
       });
@@ -399,13 +444,17 @@
     try {
       const dadosAtuais = dadosDoJogo();
 
-      const inventarioFinal = mesclarInventarios(
-        dadosAtuais.inv,
-        dadosAtuais.lojinhaPermanente
-      );
+      // Depois do reset, não recupera inventário de fontes antigas.
+      const inventarioFinal = lojinhaResetada
+        ? converterInventario(dadosAtuais.inv)
+        : mesclarInventarios(
+            dadosAtuais.inv,
+            dadosAtuais.lojinhaPermanente
+          );
 
       dadosAtuais.inv = inventarioFinal;
       dadosAtuais.lojinhaPermanente = inventarioFinal;
+      dadosAtuais.lojinhaResetada = lojinhaResetada;
       inv = inventarioFinal;
 
       const { data, error } = await sb.rpc(
@@ -454,7 +503,8 @@
         clienteAtual: dadosAtuais.clienteAtual,
         recuperacaoPendente: dadosAtuais.recuperacaoPendente,
         version: versaoNuvem,
-        inventario: inventarioFinal
+        inventario: inventarioFinal,
+        lojinhaResetada
       });
 
     } catch (erro) {
@@ -541,10 +591,17 @@
 
       const progresso = data.game_data || {};
 
-      const inventarioFinal = mesclarInventarios(
-        progresso.inv,
-        progresso.lojinhaPermanente
-      );
+      const resetRemoto = !!progresso.lojinhaResetada;
+
+      const inventarioFinal = resetRemoto
+        ? mesclarInventarios(
+            progresso.inv,
+            progresso.lojinhaPermanente
+          )
+        : mesclarInventarios(
+            progresso.inv,
+            progresso.lojinhaPermanente
+          );
 
       versaoNuvem = novaVersao;
 
@@ -556,7 +613,6 @@
 
       aplicarProgresso(progresso, inventarioFinal);
 
-      // Se o save remoto antigo não tiver cliente, gera um e salva.
       if (!cur && typeof novo === 'function') {
         novo();
       }
@@ -749,16 +805,46 @@
     if (data?.game_data) {
       const progresso = data.game_data;
 
-      const inventarioNuvem = mesclarInventarios(
-        progresso.inv,
-        progresso.lojinhaPermanente
-      );
+      // Se qualquer save já registrou o reset, fontes antigas
+      // não podem trazer os itens anteriores de volta.
+      const resetRegistrado =
+        !!progresso.lojinhaResetada ||
+        !!saveLocal.lojinhaResetada;
 
-      const inventarioFinal = mesclarInventarios(
-        inventarioNuvem,
-        inventarioSaveLocal,
-        inventarioLocal
-      );
+      lojinhaResetada = resetRegistrado;
+
+      let inventarioFinal;
+
+      if (resetRegistrado) {
+        const fontesValidas = [];
+
+        if (progresso.lojinhaResetada) {
+          fontesValidas.push(
+            progresso.inv,
+            progresso.lojinhaPermanente
+          );
+        }
+
+        if (saveLocal.lojinhaResetada) {
+          fontesValidas.push(
+            saveLocal.inv,
+            saveLocal.lojinhaPermanente
+          );
+        }
+
+        inventarioFinal = mesclarInventarios(...fontesValidas);
+      } else {
+        const inventarioNuvem = mesclarInventarios(
+          progresso.inv,
+          progresso.lojinhaPermanente
+        );
+
+        inventarioFinal = mesclarInventarios(
+          inventarioNuvem,
+          inventarioSaveLocal,
+          inventarioLocal
+        );
+      }
 
       if (chave) {
         localStorage.setItem(chave, JSON.stringify(inventarioFinal));
@@ -766,7 +852,10 @@
 
       aplicarProgresso(progresso, inventarioFinal);
 
-      // Só gera outro cliente se realmente não existir cliente salvo.
+      // Mantém o marcador caso o reset tenha sido salvo localmente
+      // antes de chegar à nuvem.
+      lojinhaResetada = resetRegistrado;
+
       if (!cur && typeof novo === 'function') {
         novo();
       }
@@ -781,27 +870,37 @@
       if (typeof renderSlots === 'function') renderSlots();
 
     } else {
+      const resetLocal = !!saveLocal.lojinhaResetada;
+
+      lojinhaResetada = resetLocal;
+
       if (saveLocal && Object.keys(saveLocal).length > 0) {
-        const inventarioFinal = mesclarInventarios(
-          inventarioSaveLocal,
-          inventarioLocal
-        );
+        const inventarioFinal = resetLocal
+          ? mesclarInventarios(
+              saveLocal.inv,
+              saveLocal.lojinhaPermanente
+            )
+          : mesclarInventarios(
+              inventarioSaveLocal,
+              inventarioLocal
+            );
 
         aplicarProgresso(saveLocal, inventarioFinal);
+        lojinhaResetada = resetLocal;
 
-        // Restaura o cliente local ou gera um se não houver nenhum.
         if (!cur && typeof novo === 'function') {
           novo();
         }
 
       } else {
-        inv = mesclarInventarios(inventarioLocal, inventarioSaveLocal);
+        inv = resetLocal
+          ? mesclarInventarios(saveLocal.inv)
+          : mesclarInventarios(inventarioLocal, inventarioSaveLocal);
 
         window.levelXP = 1;
         window.xpAtual = 0;
         level = 1;
 
-        // Primeiro acesso: gera o primeiro cliente.
         if (typeof novo === 'function') novo();
 
         if (typeof check === 'function') check();
@@ -817,7 +916,6 @@
 
     carregamentoConcluido = true;
 
-    // Salva localmente o estado já restaurado, inclusive o cliente.
     try {
       const dadosIniciais = dadosDoJogo();
 
@@ -826,7 +924,6 @@
         JSON.stringify(dadosIniciais)
       );
 
-      // Garante que o estado inicial também chegue à nuvem.
       agendarSalvamentoNuvem();
 
     } catch (erro) {
@@ -847,7 +944,8 @@
       xpAtual: window.xpAtual,
       version: versaoNuvem,
       clienteAtual: obterClienteAtual(),
-      inv
+      inv,
+      lojinhaResetada
     });
   }
 
@@ -973,6 +1071,7 @@
     versaoNuvem = 0;
     sincronizacaoBloqueada = false;
     alteracoesPendentes = false;
+    lojinhaResetada = false;
 
     localStorage.removeItem('currentUser');
 
@@ -1027,6 +1126,7 @@
       versaoNuvem = 0;
       sincronizacaoBloqueada = false;
       alteracoesPendentes = false;
+      lojinhaResetada = false;
 
       if (saveTimer) {
         clearTimeout(saveTimer);
