@@ -84,6 +84,7 @@
         const categoria = categorias[etapa % categorias.length];
         const indice = Math.floor(etapa / categorias.length);
         const dificuldade = dificuldades[nivel];
+
         const meta = Math.ceil(
           categoria.base[indice] * dificuldade.multiplicador
         );
@@ -92,7 +93,7 @@
           id: nivel * 100 + etapa + 1,
           t: `${categoria.nome} ${String(indice + 1).padStart(2, "0")}`,
           objetivo: categoria.descricao(meta),
-          meta,
+          meta: meta,
           premioDolar: dificuldade.estrelas,
           estrelas: dificuldade.estrelas,
           dif: dificuldade.nome,
@@ -107,17 +108,38 @@
 
   function obterProgresso(d) {
     switch (d.tipo) {
-      case "caixa": return Number(money) || 0;
-      case "totalEmp": return Number(totalEmp) || 0;
-      case "lucroTotal": return Number(totalLucro) || 0;
-      case "jurosTotal": return Number(jurosCount) || 0;
-      case "negar": return Number(negarCount) || 0;
-      case "fama": return Number(fame) || 0;
-      case "seq": return Number(seq) || 0;
-      case "dia": return Number(day) || 1;
-      case "videos": return Number(usado?._videosAssistidos) || 0;
-      case "recAnuncios": return Number(usado?._dinheiroAnuncios) || 0;
-      default: return 0;
+      case "caixa":
+        return Number(money) || 0;
+
+      case "totalEmp":
+        return Number(totalEmp) || 0;
+
+      case "lucroTotal":
+        return Number(totalLucro) || 0;
+
+      case "jurosTotal":
+        return Number(jurosCount) || 0;
+
+      case "negar":
+        return Number(negarCount) || 0;
+
+      case "fama":
+        return Number(fame) || 0;
+
+      case "seq":
+        return Number(seq) || 0;
+
+      case "dia":
+        return Number(day) || 1;
+
+      case "videos":
+        return Number(usado && usado._videosAssistidos) || 0;
+
+      case "recAnuncios":
+        return Number(usado && usado._dinheiroAnuncios) || 0;
+
+      default:
+        return 0;
     }
   }
 
@@ -126,25 +148,32 @@
 
     const categoria = categorias.find(c => c.tipo === d.tipo);
 
-    if (categoria) return categoria.descricao(d.meta);
+    if (categoria) {
+      return categoria.descricao(d.meta);
+    }
 
     return d.t || "Complete este desafio";
   }
 
-  const novos = gerarDesafios();
+  const novosDesafios = gerarDesafios();
 
-  todosDesafios.splice(0, todosDesafios.length, ...novos);
-
+  // Preserva os IDs dos desafios que já estavam ativos.
   const idsAntigos = Array.isArray(ativasDesafios)
     ? ativasDesafios.map(d => Number(d.id))
     : [];
 
+  todosDesafios.splice(
+    0,
+    todosDesafios.length,
+    ...novosDesafios
+  );
+
   ativasDesafios = idsAntigos
-    .map(id => novos.find(d => d.id === id))
+    .map(id => novosDesafios.find(d => d.id === id))
     .filter(Boolean);
 
   if (ativasDesafios.length === 0) {
-    ativasDesafios = novos.slice(0, 3);
+    ativasDesafios = novosDesafios.slice(0, 3);
     proxDesafioIdx = 3;
   }
 
@@ -152,6 +181,11 @@
     proxDesafioIdx = 3;
   }
 
+  if (proxDesafioIdx > 500) {
+    proxDesafioIdx = 500;
+  }
+
+  // Atualiza progresso e notificações sem abrir a tela.
   function atualizarDesafios() {
     if (!Array.isArray(ativasDesafios)) return;
 
@@ -164,15 +198,17 @@
       d => d.prog >= d.meta
     );
 
+    // Atualiza somente os avisos do Dolinha.
     if (typeof atualizarNotificacoes === "function") {
       atualizarNotificacoes();
     }
 
+    // Mantém a área de coleta atualizada.
     if (typeof renderColeta === "function") {
       renderColeta();
     }
 
-    // Atualiza a tela se o modal estiver aberto
+    // Só redesenha os cartões se o jogador já abriu o modal.
     const modal = document.getElementById("desafiosModal");
 
     if (modal && modal.style.display === "flex") {
@@ -180,6 +216,7 @@
     }
   }
 
+  // Layout dos desafios seguindo o padrão das conquistas.
   function renderizarLista() {
     let html = `
       <div class="conquistaCard">
@@ -200,10 +237,13 @@
           <small>🎯 ${obterDescricao(d)}</small><br>
           <small>⭐ ${"★".repeat(Math.max(1, Number(d.estrelas) || 1))} | ${d.dif || "DESAFIO"}</small><br>
           <small>🎁 💲${Number(d.premioDolar) || 0}</small>
+
           <div class="progress">
             <div class="bar" style="width:${pct}%"></div>
           </div>
+
           <small>${Math.floor(prog)}/${meta} ${pct}%</small>
+
           ${
             feito
               ? `<button class="btn verde" onclick="coletarDesafio(${d.id})">✅ RESGATAR 💲${d.premioDolar}</button>`
@@ -214,11 +254,13 @@
     });
 
     const lista = document.getElementById("listaDesafios");
-    if (lista) lista.innerHTML = html;
+
+    if (lista) {
+      lista.innerHTML = html;
+    }
   }
 
-  window.atualizarProgressoDesafios = atualizarDesafios;
-
+  // Só abre quando o jogador clicar no botão Desafios.
   window.openDesafios = function () {
     atualizarDesafios();
     renderizarLista();
@@ -226,16 +268,22 @@
     document.getElementById("desafiosModal").style.display = "flex";
   };
 
+  // Coleta a recompensa e libera o próximo desafio.
   window.coletarDesafio = function (id) {
-    const idx = ativasDesafios.findIndex(d => Number(d.id) === Number(id));
+    const idx = ativasDesafios.findIndex(
+      d => Number(d.id) === Number(id)
+    );
+
     if (idx < 0) return;
 
     const d = ativasDesafios[idx];
+
     d.prog = obterProgresso(d);
 
     if (d.prog < d.meta) return;
 
     dolar += Number(d.premioDolar) || 0;
+
     ativasDesafios.splice(idx, 1);
 
     if (proxDesafioIdx < todosDesafios.length) {
@@ -245,13 +293,18 @@
 
     atualizarDesafios();
 
-    if (typeof check === "function") check();
-    if (typeof saveGame === "function") saveGame();
+    if (typeof check === "function") {
+      check();
+    }
+
+    if (typeof saveGame === "function") {
+      saveGame();
+    }
 
     renderizarLista();
   };
 
-  // Atualização automática no fluxo normal do jogo
+  // Atualização automática depois das ações do jogo.
   const checkOriginal = window.check;
 
   if (typeof checkOriginal === "function") {
@@ -272,7 +325,7 @@
     };
   }
 
-  // Conta somente quando a recompensa do anúncio é liberada
+  // Conta vídeos somente quando a recompensa é liberada.
   const recompensaOriginal = window.recompensaLiberada;
 
   if (typeof recompensaOriginal === "function") {
@@ -283,7 +336,8 @@
       const resultado = recompensaOriginal.apply(this, args);
 
       if (tipo) {
-        usado._videosAssistidos = (usado._videosAssistidos || 0) + 1;
+        usado._videosAssistidos =
+          (usado._videosAssistidos || 0) + 1;
 
         const ganho = Math.max(
           0,
@@ -297,13 +351,16 @@
 
         atualizarDesafios();
 
-        if (typeof saveGame === "function") saveGame();
+        if (typeof saveGame === "function") {
+          saveGame();
+        }
       }
 
       return resultado;
     };
   }
 
+  // Primeira atualização, sem abrir qualquer modal.
   atualizarDesafios();
 
 })();
