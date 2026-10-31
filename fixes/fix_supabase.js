@@ -1,5 +1,5 @@
 
-// SUPABASE: LOGIN E SALVAMENTO NA NUVEM
+// SUPABASE: LOGIN E SINCRONIZACAO COMPLETA
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_Bd-vtxSYz23BH0L8k744SA_9t12A4dv';
@@ -37,7 +37,7 @@
   const campoSenha = document.getElementById('loginPass');
   const botaoLogin = modal.querySelector('.btn.amarelo');
 
-  // Campo de e-mail
+  // Adiciona campo de e-mail
   if (!document.getElementById('loginEmail')) {
     const email = document.createElement('input');
     email.id = 'loginEmail';
@@ -87,7 +87,7 @@
     document.getElementById('menuUser').innerText = nomeJogador || '-';
   }
 
-  // Captura o progresso e os itens permanentes da lojinha
+  // Captura todos os dados do jogo e da lojinha
   function dadosDoJogo() {
     return {
       day,
@@ -113,7 +113,7 @@
     };
   }
 
-  // Salva o progresso no Supabase
+  // Envia o progresso para a nuvem
   async function salvarNuvem() {
     if (!usuarioId || !carregamentoConcluido) return;
 
@@ -141,18 +141,24 @@
     }
   }
 
-  // Preserva a função anterior, inclusive a integração da lojinha
+  // Agenda o envio para evitar muitas gravações seguidas
+  function agendarSalvamentoNuvem() {
+    if (!usuarioId || !carregamentoConcluido) return;
+
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(salvarNuvem, 1500);
+  }
+
+  // Preserva o salvamento anterior, inclusive o da lojinha
   const salvarJogoAnterior = window.saveGame;
 
   window.saveGame = function () {
     if (!currentUser) return;
 
-    // Executa primeiro o salvamento anterior
     if (typeof salvarJogoAnterior === 'function') {
-      salvarJogoAnterior();
+      salvarJogoAnterior.apply(this, arguments);
     }
 
-    // Atualiza o salvamento local
     try {
       const dados = dadosDoJogo();
 
@@ -166,12 +172,23 @@
       console.error('Erro no salvamento local:', erro);
     }
 
-    // Agenda a sincronização com a nuvem
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(salvarNuvem, 1500);
+    agendarSalvamentoNuvem();
   };
 
-  // Carrega a conta e o progresso do jogador
+  // Detecta compras da lojinha e agenda sincronização
+  if (typeof window.comprarItem === 'function') {
+    const comprarItemAnterior = window.comprarItem;
+
+    window.comprarItem = function () {
+      const resultado = comprarItemAnterior.apply(this, arguments);
+
+      agendarSalvamentoNuvem();
+
+      return resultado;
+    };
+  }
+
+  // Carrega os dados da conta
   async function abrirJogo(usuario, nome) {
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
@@ -199,7 +216,7 @@
     if (data?.game_data) {
       const progresso = data.game_data;
 
-      // Restaura os itens permanentes da lojinha
+      // Recupera o inventário permanente da lojinha
       if (
         progresso.lojinhaPermanente !== undefined &&
         progresso.lojinhaPermanente !== null
@@ -215,6 +232,7 @@
         JSON.stringify(progresso)
       );
 
+      // O fix_home e o fix_lojinha carregam os dados
       if (typeof carregarSave === 'function') {
         carregarSave();
       }
@@ -235,7 +253,7 @@
     console.log('Jogador conectado:', nomeJogador);
   }
 
-  // Entrar na conta
+  // Entrar
   window.fazerLogin = async function () {
     limparMensagem();
 
@@ -275,7 +293,7 @@
     );
   };
 
-  // Criar uma nova conta
+  // Criar conta
   botaoCadastro.onclick = async function () {
     limparMensagem();
 
@@ -326,7 +344,7 @@
     }
   };
 
-  // Sair da conta
+  // Sair
   window.logout = async function () {
     if (saveTimer) clearTimeout(saveTimer);
     await salvarNuvem();
@@ -349,12 +367,12 @@
     if (typeof closeMenu === 'function') closeMenu();
   };
 
-  // Desconsidera o antigo login local
+  // Desconsidera o login antigo do navegador
   currentUser = null;
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
-  // Verifica se existe sessão ativa
+  // Verifica sessão existente
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
