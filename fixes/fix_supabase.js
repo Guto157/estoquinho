@@ -1,4 +1,3 @@
-
 // SUPABASE: LOGIN E SINCRONIZACAO COMPLETA
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
@@ -37,6 +36,125 @@
   const campoSenha = document.getElementById('loginPass');
   const botaoLogin = modal.querySelector('.btn.amarelo');
 
+  // ITENS PERMANENTES DA LOJINHA
+  const IDs_LOJINHA = [
+    'bone',
+    'cordao',
+    'relogio',
+    'glock',
+    'pit',
+    'moto'
+  ];
+
+  // CONVERTE O INVENTÁRIO PARA OBJETO
+  function converterInventario(dados) {
+    if (!dados) return {};
+
+    if (typeof dados === 'string') {
+      try {
+        dados = JSON.parse(dados);
+      } catch (e) {
+        return {};
+      }
+    }
+
+    if (typeof dados !== 'object' || dados === null) {
+      return {};
+    }
+
+    const resultado = {};
+
+    IDs_LOJINHA.forEach(id => {
+      const nivel = Number(dados[id]);
+
+      if (
+        dados[id] !== undefined &&
+        Number.isInteger(nivel) &&
+        nivel >= 0 &&
+        nivel <= 4
+      ) {
+        resultado[id] = nivel;
+      }
+    });
+
+    return resultado;
+  }
+
+  // JUNTA INVENTÁRIOS SEM PERDER NÍVEIS
+  function mesclarInventarios(...inventarios) {
+    const resultado = {};
+
+    inventarios.forEach(dados => {
+      const inventario = converterInventario(dados);
+
+      IDs_LOJINHA.forEach(id => {
+        if (inventario[id] === undefined) return;
+
+        if (
+          resultado[id] === undefined ||
+          inventario[id] > resultado[id]
+        ) {
+          resultado[id] = inventario[id];
+        }
+      });
+    });
+
+    return resultado;
+  }
+
+  function chaveInventario() {
+    if (!currentUser) return null;
+    return 'lojinha_permanente_' + currentUser;
+  }
+
+  // RECUPERA E JUNTA INVENTÁRIO ATUAL E LOCAL
+  function obterInventarioAtual() {
+    const chave = chaveInventario();
+
+    let inventarioLocal = {};
+
+    if (chave) {
+      inventarioLocal = converterInventario(
+        localStorage.getItem(chave)
+      );
+    }
+
+    const inventario = mesclarInventarios(
+      inv,
+      inventarioLocal
+    );
+
+    inv = inventario;
+
+    if (chave) {
+      localStorage.setItem(
+        chave,
+        JSON.stringify(inventario)
+      );
+    }
+
+    return inventario;
+  }
+
+  function mensagem(msg) {
+    const el = document.getElementById('loginErro');
+    el.innerText = msg;
+    el.style.display = 'block';
+    el.style.background = '#FFF3CD';
+    el.style.color = '#664D03';
+    el.style.borderColor = '#FFCA2C';
+  }
+
+  function limparMensagem() {
+    const el = document.getElementById('loginErro');
+    el.style.display = 'none';
+  }
+
+  function atualizarMenu() {
+    document.getElementById('menuUser').innerText =
+      nomeJogador || '-';
+  }
+
   if (!document.getElementById('loginEmail')) {
     const email = document.createElement('input');
     email.id = 'loginEmail';
@@ -56,43 +174,34 @@
   campoSenha.placeholder = 'Senha (mínimo 6 caracteres)';
   botaoLogin.textContent = 'ENTRAR';
 
-  let botaoCadastro = document.getElementById('botaoCadastroSupabase');
+  let botaoCadastro =
+    document.getElementById('botaoCadastroSupabase');
 
   if (!botaoCadastro) {
     botaoCadastro = document.createElement('button');
     botaoCadastro.id = 'botaoCadastroSupabase';
     botaoCadastro.className = 'btn preto';
     botaoCadastro.textContent = 'CRIAR CONTA';
-    botaoCadastro.style.cssText = 'width:100%;margin-top:8px';
-    botaoLogin.insertAdjacentElement('afterend', botaoCadastro);
+    botaoCadastro.style.cssText =
+      'width:100%;margin-top:8px';
+
+    botaoLogin.insertAdjacentElement(
+      'afterend',
+      botaoCadastro
+    );
   }
 
-  function mensagem(msg) {
-    const el = document.getElementById('loginErro');
-    el.innerText = msg;
-    el.style.display = 'block';
-    el.style.background = '#FFF3CD';
-    el.style.color = '#664D03';
-    el.style.borderColor = '#FFCA2C';
-  }
-
-  function limparMensagem() {
-    const el = document.getElementById('loginErro');
-    el.style.display = 'none';
-  }
-
-  function atualizarMenu() {
-    document.getElementById('menuUser').innerText = nomeJogador || '-';
-  }
-
+  // DADOS DO JOGO
   function dadosDoJogo() {
+    const inventario = obterInventarioAtual();
+
     return {
       day,
       money,
       fame,
       level,
       dolar,
-      inv,
+      inv: inventario,
       usado,
       totalEmp,
       totalLucro,
@@ -104,34 +213,77 @@
       proxDesafioIdx,
       ativasMissoes,
       ativasDesafios,
-      lojinhaPermanente: localStorage.getItem(
-        'lojinha_permanente_' + currentUser
-      )
+
+      // Agora fica salvo como objeto, não como texto.
+      lojinhaPermanente: inventario
     };
   }
 
+  // SALVAR NA NUVEM SEM APAGAR ITENS EXISTENTES
   async function salvarNuvem() {
     if (!usuarioId || !carregamentoConcluido) return;
 
     try {
-      const dados = dadosDoJogo();
+      const { data: registro, error: erroLeitura } = await sb
+        .from('game_saves')
+        .select('game_data')
+        .eq('user_id', usuarioId)
+        .maybeSingle();
+
+      if (erroLeitura) throw erroLeitura;
+
+      const dadosAtuais = dadosDoJogo();
+      const dadosNuvem = registro?.game_data || {};
+
+      // Junta o inventário do dispositivo com o da nuvem.
+      const inventarioFinal = mesclarInventarios(
+        dadosNuvem.inv,
+        dadosNuvem.lojinhaPermanente,
+        dadosAtuais.inv,
+        dadosAtuais.lojinhaPermanente
+      );
+
+      // Atualiza o inventário global e o armazenamento local.
+      inv = inventarioFinal;
+
+      const chave = chaveInventario();
+
+      if (chave) {
+        localStorage.setItem(
+          chave,
+          JSON.stringify(inventarioFinal)
+        );
+      }
+
+      dadosAtuais.inv = inventarioFinal;
+      dadosAtuais.lojinhaPermanente = inventarioFinal;
 
       const { error } = await sb
         .from('game_saves')
         .upsert({
           user_id: usuarioId,
-          game_data: dados,
+          game_data: dadosAtuais,
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+        }, {
+          onConflict: 'user_id'
+        });
 
       if (error) throw error;
 
       localStorage.setItem(
         'save_' + nomeJogador,
-        JSON.stringify(dados)
+        JSON.stringify(dadosAtuais)
       );
 
-      console.log('Progresso e lojinha sincronizados com a nuvem.');
+      if (typeof renderSlots === 'function') {
+        renderSlots();
+      }
+
+      console.log(
+        'PROGRESSO SINCRONIZADO. INVENTÁRIO PRESERVADO:',
+        inventarioFinal
+      );
+
     } catch (erro) {
       console.error('Erro ao salvar na nuvem:', erro);
     }
@@ -141,9 +293,11 @@
     if (!usuarioId || !carregamentoConcluido) return;
 
     if (saveTimer) clearTimeout(saveTimer);
+
     saveTimer = setTimeout(salvarNuvem, 1500);
   }
 
+  // SALVAMENTO LOCAL E NA NUVEM
   const salvarJogoAnterior = window.saveGame;
 
   window.saveGame = function () {
@@ -162,6 +316,7 @@
       );
 
       localStorage.setItem('currentUser', currentUser);
+
     } catch (erro) {
       console.error('Erro no salvamento local:', erro);
     }
@@ -169,23 +324,30 @@
     agendarSalvamentoNuvem();
   };
 
+  // SINCRONIZAÇÃO APÓS COMPRAR ITEM
   if (typeof window.comprarItem === 'function') {
     const comprarItemAnterior = window.comprarItem;
 
     window.comprarItem = function () {
-      const resultado = comprarItemAnterior.apply(this, arguments);
+      const resultado = comprarItemAnterior.apply(
+        this,
+        arguments
+      );
+
       agendarSalvamentoNuvem();
+
       return resultado;
     };
   }
 
-  // CARREGAR JOGO E RECUPERAR INVENTARIO
+  // ABRIR JOGO
   async function abrirJogo(usuario, nome) {
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
     currentUser = nomeJogador;
 
     localStorage.setItem('currentUser', currentUser);
+
     campoNome.value = nomeJogador;
     atualizarMenu();
 
@@ -204,67 +366,117 @@
       return;
     }
 
+    const chave = chaveInventario();
+
+    // INVENTÁRIO QUE JÁ EXISTE NESTE DISPOSITIVO
+    const inventarioLocal = chave
+      ? converterInventario(localStorage.getItem(chave))
+      : {};
+
+    // INVENTÁRIO QUE JÁ EXISTE NO SAVE LOCAL
+    let saveLocal = {};
+
+    try {
+      saveLocal = JSON.parse(
+        localStorage.getItem('save_' + currentUser) || '{}'
+      );
+    } catch (e) {
+      saveLocal = {};
+    }
+
+    const inventarioSaveLocal = mesclarInventarios(
+      saveLocal.inv,
+      saveLocal.lojinhaPermanente
+    );
+
     if (data?.game_data) {
       const progresso = data.game_data;
+
+      // INVENTÁRIO DA NUVEM
+      const inventarioNuvem = mesclarInventarios(
+        progresso.inv,
+        progresso.lojinhaPermanente
+      );
+
+      // JUNTA OS TRÊS INVENTÁRIOS
+      const inventarioFinal = mesclarInventarios(
+        inventarioNuvem,
+        inventarioSaveLocal,
+        inventarioLocal,
+        inv
+      );
+
+      inv = inventarioFinal;
+
+      if (chave) {
+        localStorage.setItem(
+          chave,
+          JSON.stringify(inventarioFinal)
+        );
+      }
+
+      // Corrige os dados antes de carregar o save.
+      progresso.inv = inventarioFinal;
+      progresso.lojinhaPermanente = inventarioFinal;
 
       localStorage.setItem(
         'save_' + currentUser,
         JSON.stringify(progresso)
       );
 
-      // Primeiro carrega o progresso normal
       if (typeof carregarSave === 'function') {
         carregarSave();
       }
 
-      // Depois recupera os itens diretamente da nuvem
-      try {
-        let inventarioNuvem = progresso.lojinhaPermanente;
+      // Garante que o carregamento não apagou os itens.
+      inv = mesclarInventarios(
+        inv,
+        inventarioFinal,
+        obterInventarioAtual()
+      );
 
-        if (typeof inventarioNuvem === 'string') {
-          inventarioNuvem = JSON.parse(inventarioNuvem || '{}');
-        }
-
-        if (
-          inventarioNuvem &&
-          typeof inventarioNuvem === 'object'
-        ) {
-          if (typeof inv !== 'object' || inv === null) {
-            inv = [];
-          }
-
-          Object.assign(inv, inventarioNuvem);
-
-          localStorage.setItem(
-            'lojinha_permanente_' + currentUser,
-            JSON.stringify({ ...inv })
-          );
-
-          if (typeof renderSlots === 'function') {
-            renderSlots();
-          }
-
-          console.log(
-            'INVENTÁRIO DA NUVEM RECUPERADO:',
-            inv
-          );
-        }
-      } catch (erro) {
-        console.error('Erro ao recuperar inventário da nuvem:', erro);
+      if (chave) {
+        localStorage.setItem(
+          chave,
+          JSON.stringify(inv)
+        );
       }
 
+      if (typeof renderSlots === 'function') {
+        renderSlots();
+      }
+
+      console.log(
+        'INVENTÁRIO CARREGADO:',
+        inv
+      );
+
     } else {
+      // CONTA SEM SAVE NA NUVEM
+      inv = mesclarInventarios(
+        inventarioSaveLocal,
+        inventarioLocal,
+        inv
+      );
+
+      if (chave) {
+        localStorage.setItem(
+          chave,
+          JSON.stringify(inv)
+        );
+      }
+
       if (typeof novo === 'function') novo();
       if (typeof check === 'function') check();
     }
 
     carregamentoConcluido = true;
+
     modal.style.display = 'none';
     limparMensagem();
 
-    if (!data?.game_data) {
-      await salvarNuvem();
-    }
+    // Envia o progresso inicial ou o inventário recuperado.
+    await salvarNuvem();
 
     console.log('Jogador conectado:', nomeJogador);
   }
@@ -356,13 +568,19 @@
     if (data.session) {
       await abrirJogo(data.user, nome);
     } else {
-      mensagem('Conta criada! Confira seu e-mail e clique no link de confirmação para entrar.');
+      mensagem(
+        'Conta criada! Confira seu e-mail e clique no link de confirmação para entrar.'
+      );
     }
   };
 
   // SAIR
   window.logout = async function () {
-    if (saveTimer) clearTimeout(saveTimer);
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+
     await salvarNuvem();
 
     await sb.auth.signOut();
@@ -380,7 +598,9 @@
 
     atualizarMenu();
 
-    if (typeof closeMenu === 'function') closeMenu();
+    if (typeof closeMenu === 'function') {
+      closeMenu();
+    }
   };
 
   // IGNORA LOGIN ANTIGO
@@ -388,13 +608,15 @@
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
-  // VERIFICA SESSAO EXISTENTE
+  // VERIFICA SESSÃO EXISTENTE
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
   if (erroSessao) {
     console.error(erroSessao);
-    mensagem('Não foi possível verificar sua sessão. Atualize a página.');
+    mensagem(
+      'Não foi possível verificar sua sessão. Atualize a página.'
+    );
     return;
   }
 
@@ -418,4 +640,5 @@
       modal.style.display = 'flex';
     }
   });
+
 })();
