@@ -5,39 +5,31 @@ console.log("FIX HOME - SISTEMA COMPLETO ATUALIZADO");
 // SISTEMA XP E LEVEL
 // =====================================================
 
-if (typeof window.xpAtual !== 'number') {
- window.xpAtual = 0;
-}
+window.xpAtual = Number(window.xpAtual) || 0;
+window.levelXP = Number(window.levelXP) || 1;
 
-window.xpNecessarioNivel = function(nivel){
+window.xpNecessarioNivel = function(nivel) {
  return Math.floor(5 * nivel * (nivel + 1) / 2);
 };
 
-window.atualizarNivelXP = function(){
- if (typeof window.xpAtual !== 'number' || !Number.isFinite(window.xpAtual)) {
-  window.xpAtual = 0;
- }
-
- window.xpAtual = Math.max(0, Math.floor(window.xpAtual));
-
- if (typeof level !== 'number' || !Number.isFinite(level)) {
-  level = 1;
- }
-
- level = Math.max(1, Math.min(1000, Math.floor(level)));
+window.atualizarNivelXP = function() {
+ window.xpAtual = Math.max(0, Math.floor(Number(window.xpAtual) || 0));
+ window.levelXP = Math.max(1, Math.min(1000, Math.floor(Number(window.levelXP) || 1)));
 
  while (
-  level < 1000 &&
-  window.xpAtual >= window.xpNecessarioNivel(level)
+  window.levelXP < 1000 &&
+  window.xpAtual >= window.xpNecessarioNivel(window.levelXP)
  ) {
-  window.xpAtual -= window.xpNecessarioNivel(level);
-  level++;
+  window.xpAtual -= window.xpNecessarioNivel(window.levelXP);
+  window.levelXP++;
  }
+
+ level = window.levelXP;
 
  window.atualizarBarraXP();
 };
 
-window.atualizarBarraXP = function(){
+window.atualizarBarraXP = function() {
  const elementoNivel = document.getElementById('lvl');
  if (!elementoNivel) return;
 
@@ -48,7 +40,6 @@ window.atualizarBarraXP = function(){
   barra.id = 'barraXP';
 
   barra.style.cssText = `
-   display:block;
    position:relative;
    width:110px;
    height:13px;
@@ -69,7 +60,6 @@ window.atualizarBarraXP = function(){
 
   const preenchimento = document.createElement('div');
   preenchimento.id = 'barraXPPreenchimento';
-
   preenchimento.style.cssText = `
    position:absolute;
    top:0;
@@ -83,7 +73,6 @@ window.atualizarBarraXP = function(){
 
   const texto = document.createElement('span');
   texto.id = 'textoXP';
-
   texto.style.cssText = `
    position:absolute;
    inset:0;
@@ -102,77 +91,77 @@ window.atualizarBarraXP = function(){
  const preenchimento = document.getElementById('barraXPPreenchimento');
  const texto = document.getElementById('textoXP');
 
- if (!preenchimento || !texto) return;
-
- if (level >= 1000) {
+ if (window.levelXP >= 1000) {
   preenchimento.style.width = '100%';
   texto.textContent = 'LEVEL MÁXIMO';
   return;
  }
 
- const necessario = window.xpNecessarioNivel(level);
+ const necessario = window.xpNecessarioNivel(window.levelXP);
  const atual = Math.min(window.xpAtual, necessario);
- const porcentagem = necessario > 0
-  ? Math.min(100, (atual / necessario) * 100)
-  : 0;
+ const porcentagem = necessario > 0 ? atual / necessario * 100 : 0;
 
  preenchimento.style.width = porcentagem + '%';
  texto.textContent = atual + '/' + necessario;
 };
 
-window.alterarXP = function(valor){
+window.alterarXP = function(valor) {
  valor = Math.floor(Number(valor) || 0);
 
- if (valor < 0) {
-  window.xpAtual = Math.max(0, window.xpAtual + valor);
- } else {
-  window.xpAtual += valor;
- }
+ window.xpAtual = Math.max(0, window.xpAtual + valor);
 
  window.atualizarNivelXP();
 
  console.log('XP ALTERADO:', {
   xp: window.xpAtual,
-  level: level,
+  level: window.levelXP,
   alteracao: valor
  });
+
+ if (typeof window.saveGame === 'function') {
+  window.saveGame();
+ }
 };
 
 // =====================================================
-// INTEGRAÇÃO COM O CHECK ORIGINAL
+// PROTEÇÃO DO LEVEL CONTRA O CHECK BASEADO NA FAMA
 // =====================================================
 
-(function(){
- const checkOriginalXP = window.check;
+(function() {
+ const checkOriginal = window.check;
 
- if (typeof checkOriginalXP !== 'function') {
-  console.error('Não foi possível localizar a função check original.');
+ if (typeof checkOriginal !== 'function') {
+  console.error('ERRO: função check original não encontrada.');
   return;
  }
 
- window.check = function(){
+ window.check = function() {
   window.atualizarNivelXP();
 
-  const resultado = checkOriginalXP.apply(this, arguments);
+  try {
+   return checkOriginal.apply(this, arguments);
+  } finally {
+   // Restaura o nível verdadeiro calculado pelo XP.
+   window.atualizarNivelXP();
 
-  // O check original calculava LEVEL pela fama.
-  // Aqui o LEVEL volta a ser controlado pelo XP.
-  window.atualizarNivelXP();
+   const elementoNivel = document.getElementById('lvl');
 
-  const elementoNivel = document.getElementById('lvl');
+   if (elementoNivel) {
+    elementoNivel.innerText = window.levelXP;
+   }
 
-  if (elementoNivel) {
-   elementoNivel.innerText = level;
+   const elementoPatrao = document.getElementById('patrao');
+
+   if (elementoPatrao && typeof getTituloLevel === 'function') {
+    elementoPatrao.innerText = getTituloLevel(window.levelXP);
+   }
+
+   window.atualizarBarraXP();
+
+   if (typeof window.saveGame === 'function') {
+    window.saveGame();
+   }
   }
-
-  window.atualizarBarraXP();
-
-  // Salva novamente com o LEVEL correto.
-  if (typeof window.saveGame === 'function') {
-   window.saveGame();
-  }
-
-  return resultado;
  };
 })();
 
@@ -180,17 +169,26 @@ window.alterarXP = function(valor){
 // ANIMAÇÃO DE DINHEIRO
 // =====================================================
 
-function fb(v,t){
- var m=document.getElementById('money');
- if(!m)return;
- var e=document.createElement('div');
- e.style.cssText='position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:8px 14px;border-radius:10px;background:#111;border:2px solid;transition:all 1.5s';
- e.innerText=t=='g'?'+R$'+v:'-R$'+v;
- e.style.color=t=='g'?'#00E676':'#FF5252';
- e.style.borderColor=e.style.color;
+function fb(v,t) {
+ var m = document.getElementById('money');
+ if (!m) return;
+
+ var e = document.createElement('div');
+ e.style.cssText = 'position:fixed;right:15px;top:85px;font-weight:900;font-size:22px;z-index:9999;padding:8px 14px;border-radius:10px;background:#111;border:2px solid;transition:all 1.5s';
+ e.innerText = t == 'g' ? '+R$' + v : '-R$' + v;
+ e.style.color = t == 'g' ? '#00E676' : '#FF5252';
+ e.style.borderColor = e.style.color;
+
  document.body.appendChild(e);
- setTimeout(function(){e.style.transform='translateY(-70px)';e.style.opacity='0'},1200);
- setTimeout(function(){e.remove()},2200);
+
+ setTimeout(function() {
+  e.style.transform = 'translateY(-70px)';
+  e.style.opacity = '0';
+ }, 1200);
+
+ setTimeout(function() {
+  e.remove();
+ }, 2200);
 }
 
 // =====================================================
@@ -241,13 +239,13 @@ const dialogosPoliciais = [
 // ESTILO DO BALÃO E GIROFLEX
 // =====================================================
 
-(function(){
- if(document.getElementById('fix-dialogos-style'))return;
+(function() {
+ if (document.getElementById('fix-dialogos-style')) return;
 
- const style=document.createElement('style');
- style.id='fix-dialogos-style';
+ const style = document.createElement('style');
+ style.id = 'fix-dialogos-style';
 
- style.textContent=`
+ style.textContent = `
   #bubble {
     display:block !important;
     position:relative;
@@ -278,9 +276,7 @@ const dialogosPoliciais = [
     transform:rotate(45deg);
   }
 
-  #hist {
-    display:none !important;
-  }
+  #hist { display:none !important; }
 
   #giroflex-policial {
     position:fixed;
@@ -336,14 +332,14 @@ const dialogosPoliciais = [
 // GIROFLEX POLICIAL
 // =====================================================
 
-window.giroflexPolicial=function(){
- let antigo=document.getElementById('giroflex-policial');
- if(antigo)antigo.remove();
+window.giroflexPolicial = function() {
+ let antigo = document.getElementById('giroflex-policial');
+ if (antigo) antigo.remove();
 
- let giro=document.createElement('div');
- giro.id='giroflex-policial';
+ let giro = document.createElement('div');
+ giro.id = 'giroflex-policial';
 
- giro.innerHTML=`
+ giro.innerHTML = `
   <div class="giroflex-luzes">
    <div class="luz-azul"></div>
    <div class="luz-vermelha"></div>
@@ -352,51 +348,50 @@ window.giroflexPolicial=function(){
 
  document.body.appendChild(giro);
 
- setTimeout(function(){
+ setTimeout(function() {
   giro.remove();
- },2200);
+ }, 2200);
 };
 
 // =====================================================
 // SISTEMA DE DIÁLOGOS
 // =====================================================
 
-window.obterDialogo=function(personagem){
- let lista=personagem.policia?dialogosPoliciais:dialogosClientes;
+window.obterDialogo = function(personagem) {
+ let lista = personagem.policia ? dialogosPoliciais : dialogosClientes;
 
- if(!personagem._dialogosFixHome){
-  let originais=Array.isArray(personagem.falas)?personagem.falas:[];
-  let base=lista.slice();
+ if (!personagem._dialogosFixHome) {
+  let originais = Array.isArray(personagem.falas) ? personagem.falas : [];
+  let base = lista.slice();
 
-  originais.forEach(function(f){
-   if(typeof f==='string' && f.trim() && !base.includes(f)){
+  originais.forEach(function(f) {
+   if (typeof f === 'string' && f.trim() && !base.includes(f)) {
     base.push(f);
    }
   });
 
-  let nome=personagem.n || 'Cliente';
+  let nome = personagem.n || 'Cliente';
 
-  let personalizadas=base.map(function(f){
-   return f.replace(/\{nome\}/g,nome);
+  let personalizadas = base.map(function(f) {
+   return f.replace(/\{nome\}/g, nome);
   });
 
-  for(let i=personalizadas.length-1;i>0;i--){
-   let j=Math.floor(Math.random()*(i+1));
-   [personalizadas[i],personalizadas[j]]=
-   [personalizadas[j],personalizadas[i]];
+  for (let i = personalizadas.length - 1; i > 0; i--) {
+   let j = Math.floor(Math.random() * (i + 1));
+   [personalizadas[i], personalizadas[j]] = [personalizadas[j], personalizadas[i]];
   }
 
-  personagem._dialogosFixHome=personalizadas.slice(0,15);
+  personagem._dialogosFixHome = personalizadas.slice(0, 15);
  }
 
- let falas=personagem._dialogosFixHome;
- let ultima=personagem._ultimaFalaFixHome;
- let disponiveis=falas.filter(f=>f!==ultima);
+ let falas = personagem._dialogosFixHome;
+ let ultima = personagem._ultimaFalaFixHome;
+ let disponiveis = falas.filter(f => f !== ultima);
 
- if(disponiveis.length===0)disponiveis=falas;
+ if (disponiveis.length === 0) disponiveis = falas;
 
- let escolhida=disponiveis[Math.floor(Math.random()*disponiveis.length)];
- personagem._ultimaFalaFixHome=escolhida;
+ let escolhida = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+ personagem._ultimaFalaFixHome = escolhida;
 
  return escolhida;
 };
@@ -405,30 +400,27 @@ window.obterDialogo=function(personagem){
 // MEMORIZAR O CLIENTE ATUAL
 // =====================================================
 
-window.chaveClienteAtual=function(){
- return 'cliente_atual_'+currentUser;
+window.chaveClienteAtual = function() {
+ return 'cliente_atual_' + currentUser;
 };
 
-window.salvarClienteAtual=function(){
- if(!cur)return;
+window.salvarClienteAtual = function() {
+ if (!cur) return;
 
- let dados={
-  nome:cur.n,
-  policia:!!cur.policia,
-  dialogo:window.dialogoAtual,
-  pedeAtual:cur.pedeAtual,
-  voltaAtual:cur.voltaAtual,
-  voltaJurosAtual:cur.voltaJurosAtual,
-  chanceAtual:cur.chanceAtual
+ let dados = {
+  nome: cur.n,
+  policia: !!cur.policia,
+  dialogo: window.dialogoAtual,
+  pedeAtual: cur.pedeAtual,
+  voltaAtual: cur.voltaAtual,
+  voltaJurosAtual: cur.voltaJurosAtual,
+  chanceAtual: cur.chanceAtual
  };
 
- localStorage.setItem(
-  window.chaveClienteAtual(),
-  JSON.stringify(dados)
- );
+ localStorage.setItem(window.chaveClienteAtual(), JSON.stringify(dados));
 };
 
-window.limparClienteAtual=function(){
+window.limparClienteAtual = function() {
  localStorage.removeItem(window.chaveClienteAtual());
 };
 
@@ -436,139 +428,137 @@ window.limparClienteAtual=function(){
 // CONTROLES GERAIS
 // =====================================================
 
-window.taxaNegarAtual=0;
-window.incNegar=5;
-window.vezNegar=0;
-window.travado=false;
+window.taxaNegarAtual = 0;
+window.incNegar = 5;
+window.vezNegar = 0;
+window.travado = false;
 
 // =====================================================
 // NOVO CLIENTE COM RECUPERAÇÃO APÓS F5
 // =====================================================
 
-window.novo=function(){
- window.travado=false;
+window.novo = function() {
+ window.travado = false;
 
- let c=document.getElementById('choices');
- if(c)c.style.pointerEvents='auto';
+ let c = document.getElementById('choices');
+ if (c) c.style.pointerEvents = 'auto';
 
- let salvo=null;
+ let salvo = null;
 
- try{
-  salvo=JSON.parse(
-   localStorage.getItem(window.chaveClienteAtual())
-  );
- }catch(e){
-  salvo=null;
+ try {
+  salvo = JSON.parse(localStorage.getItem(window.chaveClienteAtual()));
+ } catch (e) {
+  salvo = null;
  }
 
- let np=null;
+ let np = null;
 
- if(salvo){
-  let lista=salvo.policia?policiaisDisfarcados:personagensComuns;
+ if (salvo) {
+  let lista = salvo.policia ? policiaisDisfarcados : personagensComuns;
 
-  np=lista.find(p=>p.n===salvo.nome);
+  np = lista.find(p => p.n === salvo.nome);
 
-  if(np){
-   cur=np;
+  if (np) {
+   cur = np;
 
-   cur.pedeAtual=salvo.pedeAtual;
-   cur.voltaAtual=salvo.voltaAtual;
-   cur.voltaJurosAtual=salvo.voltaJurosAtual;
-   cur.chanceAtual=salvo.chanceAtual;
+   cur.pedeAtual = salvo.pedeAtual;
+   cur.voltaAtual = salvo.voltaAtual;
+   cur.voltaJurosAtual = salvo.voltaJurosAtual;
+   cur.chanceAtual = salvo.chanceAtual;
 
-   window.dialogoAtual=salvo.dialogo;
+   window.dialogoAtual = salvo.dialogo;
   }
  }
 
- if(!np){
-  let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
+ if (!np) {
+  let l = Math.random() < 0.15 ? policiaisDisfarcados : personagensComuns;
 
-  let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
+  let d = l.filter(p => !usado[p.n] || usado[p.n] < 4);
 
-  if(d.length==0){
-   usado={};
-   d=l;
+  if (d.length == 0) {
+   usado = {};
+   d = l;
   }
 
-  np=d[Math.floor(Math.random()*d.length)];
+  np = d[Math.floor(Math.random() * d.length)];
 
-  if(usado._ultimo&&d.length>1){
-   let t=0;
+  if (usado._ultimo && d.length > 1) {
+   let t = 0;
 
-   while(np.n===usado._ultimo&&t<10){
-    np=d[Math.floor(Math.random()*d.length)];
+   while (np.n === usado._ultimo && t < 10) {
+    np = d[Math.floor(Math.random() * d.length)];
     t++;
    }
   }
 
-  cur=np;
+  cur = np;
 
-  usado[cur.n]=(usado[cur.n]||0)+1;
-  usado._ultimo=cur.n;
+  usado[cur.n] = (usado[cur.n] || 0) + 1;
+  usado._ultimo = cur.n;
 
-  let f=window.obterDialogo(cur);
-  window.dialogoAtual=f;
+  let f = window.obterDialogo(cur);
+  window.dialogoAtual = f;
 
-  let base=40+(level*18)+(day*2);
-  let rm=cur.r=='BAIXO'?0.9:cur.r=='MÉDIO'?1.15:1.35;
-  let vr=0.85+Math.random()*0.3;
-  let pc=Math.floor(base*rm*vr);
+  let base = 40 + (level * 18) + (day * 2);
+  let rm = cur.r == 'BAIXO' ? 0.9 : cur.r == 'MÉDIO' ? 1.15 : 1.35;
+  let vr = 0.85 + Math.random() * 0.3;
+  let pc = Math.floor(base * rm * vr);
 
-  let max=Math.floor(money*0.7);
-  if(max<20)max=20;
-  if(pc>max)pc=max;
-  if(pc<15)pc=15;
+  let max = Math.floor(money * 0.7);
+  if (max < 20) max = 20;
+  if (pc > max) pc = max;
+  if (pc < 15) pc = 15;
 
-  let bl=getTotalLucroBonus();
-  let vc=Math.floor(pc*2*(1+bl/100));
-  let vcJuros=Math.floor(pc*2*1.10*(1+bl/100));
+  let bl = getTotalLucroBonus();
+  let vc = Math.floor(pc * 2 * (1 + bl / 100));
+  let vcJuros = Math.floor(pc * 2 * 1.10 * (1 + bl / 100));
 
-  let df=Math.floor(level*0.7+day*0.15);
-  let cc=Math.max(5,cur.c-df);
+  let df = Math.floor(level * 0.7 + day * 0.15);
+  let cc = Math.max(5, cur.c - df);
 
-  cur.pedeAtual=pc;
-  cur.voltaAtual=vc;
-  cur.voltaJurosAtual=vcJuros;
-  cur.chanceAtual=cc;
+  cur.pedeAtual = pc;
+  cur.voltaAtual = vc;
+  cur.voltaJurosAtual = vcJuros;
+  cur.chanceAtual = cc;
 
   window.salvarClienteAtual();
  }
 
- document.getElementById('clienteAvatar').innerText=cur.sig;
- document.getElementById('clienteAvatar').style.background=cur.cor;
+ document.getElementById('clienteAvatar').innerText = cur.sig;
+ document.getElementById('clienteAvatar').style.background = cur.cor;
 
- let cb=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
+ let cb = cur.r == 'BAIXO' ? '#00E676' : cur.r == 'MÉDIO' ? '#FFD600' : '#FF5252';
 
- document.getElementById('clienteBox').style.borderColor=cb;
- document.getElementById('nome').innerText=cur.n;
- document.getElementById('tag').innerText=cur.r;
- document.getElementById('tag').style.background=cb;
+ document.getElementById('clienteBox').style.borderColor = cb;
+ document.getElementById('nome').innerText = cur.n;
+ document.getElementById('tag').innerText = cur.r;
+ document.getElementById('tag').style.background = cb;
 
- document.getElementById('hist').innerText=window.dialogoAtual;
- document.getElementById('bubble').innerText='"'+window.dialogoAtual+'"';
+ document.getElementById('hist').innerText = window.dialogoAtual;
+ document.getElementById('bubble').innerText = '"' + window.dialogoAtual + '"';
 
- document.getElementById('pede').innerText='R$'+cur.pedeAtual;
- document.getElementById('volta').innerText='R$'+cur.voltaAtual;
- document.getElementById('chance').innerText=cur.chanceAtual+'%';
+ document.getElementById('pede').innerText = 'R$' + cur.pedeAtual;
+ document.getElementById('volta').innerText = 'R$' + cur.voltaAtual;
+ document.getElementById('chance').innerText = cur.chanceAtual + '%';
 
- let div=document.getElementById('choices');
- div.innerHTML='';
+ let div = document.getElementById('choices');
+ div.innerHTML = '';
 
- let tn=window.vezNegar===0
-  ?'❌ NEGAR<small>Grátis</small>'
-  :'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
+ let tn = window.vezNegar === 0
+  ? '❌ NEGAR<small>Grátis</small>'
+  : '❌ NEGAR<small>Paga R$' + window.taxaNegarAtual + '</small>';
 
- let ops=[
-  {t:'💵 EMPRESTAR R$'+cur.pedeAtual,d:'Recebe R$'+cur.voltaAtual,c:'amarelo',a:'emprestar'},
+ let ops = [
+  {t:'💵 EMPRESTAR R$' + cur.pedeAtual,d:'Recebe R$' + cur.voltaAtual,c:'amarelo',a:'emprestar'},
   {t:tn,d:'Evita calote',c:'branco',a:'negar'},
-  {t:'😈 JUROS R$'+cur.voltaJurosAtual,d:'Recebe R$'+cur.voltaJurosAtual,c:'preto',a:'juros'}
+  {t:'😈 JUROS R$' + cur.voltaJurosAtual,d:'Recebe R$' + cur.voltaJurosAtual,c:'preto',a:'juros'}
  ];
 
- ops.forEach(o=>{
-  let b=document.createElement('button');
-  b.className='btn '+o.c;
-  b.innerHTML=o.t+'<small>'+o.d+'</small>';
-  b.onclick=()=>{jogar(o.a)};
+ ops.forEach(o => {
+  let b = document.createElement('button');
+  b.className = 'btn ' + o.c;
+  b.innerHTML = o.t + '<small>' + o.d + '</small>';
+  b.onclick = () => { jogar(o.a); };
   div.appendChild(b);
  });
 };
@@ -577,49 +567,49 @@ window.novo=function(){
 // SISTEMA DE JOGO
 // =====================================================
 
-window.jogar=function(tipo){
- if(window.travado)return;
+window.jogar = function(tipo) {
+ if (window.travado) return;
 
- window.travado=true;
+ window.travado = true;
 
- let c=document.getElementById('choices');
- if(c)c.style.pointerEvents='none';
+ let c = document.getElementById('choices');
+ if (c) c.style.pointerEvents = 'none';
 
- if(!cur){
-  window.travado=false;
-  if(c)c.style.pointerEvents='auto';
+ if (!cur) {
+  window.travado = false;
+  if (c) c.style.pointerEvents = 'auto';
   novo();
   return;
  }
 
  // NEGAR CLIENTE: -1 XP
- if(tipo=='negar'){
+ if (tipo == 'negar') {
   window.limparClienteAtual();
 
-  let desc=(window.vezNegar===0)?0:window.taxaNegarAtual;
-  money-=desc;
+  let desc = (window.vezNegar === 0) ? 0 : window.taxaNegarAtual;
+  money -= desc;
 
-  if(desc>0)fb(desc,'c');
+  if (desc > 0) fb(desc, 'c');
 
   negarCount++;
   window.alterarXP(-1);
 
-  if(window.vezNegar===0){
-   window.taxaNegarAtual=5;
-   window.incNegar=10;
-  }else{
-   window.taxaNegarAtual+=window.incNegar;
-   window.incNegar+=5;
+  if (window.vezNegar === 0) {
+   window.taxaNegarAtual = 5;
+   window.incNegar = 10;
+  } else {
+   window.taxaNegarAtual += window.incNegar;
+   window.incNegar += 5;
   }
 
-  if(window.taxaNegarAtual>100)window.taxaNegarAtual=100;
+  if (window.taxaNegarAtual > 100) window.taxaNegarAtual = 100;
 
   window.vezNegar++;
-  fame=Math.max(0,fame-0.5);
-  seq=0;
+  fame = Math.max(0, fame - 0.5);
+  seq = 0;
   day++;
 
-  log('❌ Negou '+cur.n+' -'+(desc==0?'Grátis':'R$'+desc));
+  log('❌ Negou ' + cur.n + ' -' + (desc == 0 ? 'Grátis' : 'R$' + desc));
   check();
   novo();
   return;
@@ -627,31 +617,31 @@ window.jogar=function(tipo){
 
  window.limparClienteAtual();
 
- if(window.taxaNegarAtual>0){
-  window.taxaNegarAtual=Math.max(0,window.taxaNegarAtual-5);
-  window.incNegar=Math.max(5,window.incNegar-5);
+ if (window.taxaNegarAtual > 0) {
+  window.taxaNegarAtual = Math.max(0, window.taxaNegarAtual - 5);
+  window.incNegar = Math.max(5, window.incNegar - 5);
 
-  if(window.taxaNegarAtual===0){
-   window.vezNegar=0;
-   window.incNegar=5;
+  if (window.taxaNegarAtual === 0) {
+   window.vezNegar = 0;
+   window.incNegar = 5;
   }
  }
 
- // POLICIAL: NÃO GANHA NEM PERDE XP
- if(cur.policia){
+ // POLICIAL: NÃO ALTERA XP
+ if (cur.policia) {
   window.giroflexPolicial();
 
-  usado._policia=(usado._policia||0)+1;
+  usado._policia = (usado._policia || 0) + 1;
 
-  let fi=Math.floor(money*0.5);
-  if(fi<100)fi=100;
+  let fi = Math.floor(money * 0.5);
+  if (fi < 100) fi = 100;
 
-  money-=fi;
-  fb(fi,'c');
-  log('🚨 POLÍCIA! -R$'+fi);
+  money -= fi;
+  fb(fi, 'c');
+  log('🚨 POLÍCIA! -R$' + fi);
 
-  fame=Math.max(0,fame-0.5);
-  seq=0;
+  fame = Math.max(0, fame - 0.5);
+  seq = 0;
   day++;
 
   check();
@@ -660,94 +650,93 @@ window.jogar=function(tipo){
  }
 
  // CLIENTE COMUM
- let peBase=cur.pedeAtual;
- let de=cur.voltaAtual;
+ let peBase = cur.pedeAtual;
+ let de = cur.voltaAtual;
 
- if(tipo=='juros'){
-  de=cur.voltaJurosAtual;
-  cur.chanceAtual-=30;
+ if (tipo == 'juros') {
+  de = cur.voltaJurosAtual;
+  cur.chanceAtual -= 30;
   jurosCount++;
  }
 
- let ch=cur.chanceAtual+getTotalChanceBonus();
+ let ch = cur.chanceAtual + getTotalChanceBonus();
 
- if(cur.r=='ALTO')ch+=getGlockBonusVsAlto();
+ if (cur.r == 'ALTO') ch += getGlockBonusVsAlto();
 
- if(tipo=='juros'){
-  if(ch>78)ch=78;
- }else{
-  if(ch>92)ch=92;
+ if (tipo == 'juros') {
+  if (ch > 78) ch = 78;
+ } else {
+  if (ch > 92) ch = 92;
  }
 
- if(ch<5)ch=5;
+ if (ch < 5) ch = 5;
 
- money-=peBase;
- fb(peBase,'c');
+ money -= peBase;
+ fb(peBase, 'c');
 
- let pagou=Math.random()*100<ch;
+ let pagou = Math.random() * 100 < ch;
 
- if(pagou){
-  money+=de;
-  fb(de,'g');
+ if (pagou) {
+  money += de;
+  fb(de, 'g');
 
-  let lucro=de-peBase;
-  fame+=1;
+  let lucro = de - peBase;
+  fame += 1;
   totalEmp++;
-  totalLucro+=lucro;
+  totalLucro += lucro;
   seq++;
 
-  // PAGAMENTO NORMAL +3 XP / PAGAMENTO COM JUROS +5 XP
-  window.alterarXP(tipo=='juros'?5:3);
+  // PAGAMENTO NORMAL +3 XP / COM JUROS +5 XP
+  window.alterarXP(tipo == 'juros' ? 5 : 3);
 
-  document.getElementById('bubble').innerText='✅ Pagou R$'+de;
-  log('✅ '+cur.n+' pagou R$'+de+' - lucro R$'+lucro);
+  document.getElementById('bubble').innerText = '✅ Pagou R$' + de;
+  log('✅ ' + cur.n + ' pagou R$' + de + ' - lucro R$' + lucro);
 
   day++;
   check();
   novo();
 
- }else{
+ } else {
   // CALOTE: -1 XP
   window.alterarXP(-1);
 
-  fame=Math.max(0,fame-0.5);
-  seq=0;
-  pendentePerda=peBase;
+  fame = Math.max(0, fame - 0.5);
+  seq = 0;
+  pendentePerda = peBase;
 
-  let recMoto=getRecuperacaoBonus();
+  let recMoto = getRecuperacaoBonus();
 
-  document.getElementById('adText').innerText=
-   cur.n+' deu calote de R$'+peBase+
-   ' - Anúncio recupera 50% (R$'+Math.floor(peBase*0.5)+')'+
-   (recMoto>0?' | Moto recupera '+recMoto+'% se aceitar a perda':'');
+  document.getElementById('adText').innerText =
+   cur.n + ' deu calote de R$' + peBase +
+   ' - Anúncio recupera 50% (R$' + Math.floor(peBase * 0.5) + ')' +
+   (recMoto > 0 ? ' | Moto recupera ' + recMoto + '% se aceitar a perda' : '');
 
-  document.getElementById('adSave').style.display='flex';
+  document.getElementById('adSave').style.display = 'flex';
 
   check();
-  window.travado=false;
-  if(c)c.style.pointerEvents='auto';
+  window.travado = false;
+  if (c) c.style.pointerEvents = 'auto';
  }
 };
 
 // =====================================================
-// ACEITAR PERDA
-// NÃO ALTERA XP
+// ACEITAR PERDA: NÃO ALTERA XP
 // =====================================================
 
-window.aceitarPerda=function(){
- document.getElementById('adSave').style.display='none';
+window.aceitarPerda = function() {
+ document.getElementById('adSave').style.display = 'none';
 
- let recMoto=getRecuperacaoBonus();
- let recuperado=Math.floor((pendentePerda||0)*recMoto/100);
+ let recMoto = getRecuperacaoBonus();
+ let recuperado = Math.floor((pendentePerda || 0) * recMoto / 100);
 
- if(recuperado>0){
-  money+=recuperado;
-  fb(recuperado,'g');
-  log('🏍️ Moto recuperou R$'+recuperado+' ('+recMoto+'%)');
+ if (recuperado > 0) {
+  money += recuperado;
+  fb(recuperado, 'g');
+  log('🏍️ Moto recuperou R$' + recuperado + ' (' + recMoto + '%)');
  }
 
- pendentePerda=0;
- pendenteTipo=null;
+ pendentePerda = 0;
+ pendenteTipo = null;
 
  day++;
  check();
@@ -755,24 +744,23 @@ window.aceitarPerda=function(){
 };
 
 // =====================================================
-// RECOMPENSA DO ANÚNCIO
-// NÃO ALTERA XP
+// RECOMPENSA DO ANÚNCIO: NÃO ALTERA XP
 // =====================================================
 
-window.recompensaLiberada=function(){
- document.getElementById('adModal').style.display='none';
+window.recompensaLiberada = function() {
+ document.getElementById('adModal').style.display = 'none';
 
- if(pendenteTipo=='salvar'){
-  let recuperado=Math.floor((pendentePerda||0)*0.5);
+ if (pendenteTipo == 'salvar') {
+  let recuperado = Math.floor((pendentePerda || 0) * 0.5);
 
-  if(recuperado>0){
-   money+=recuperado;
-   fb(recuperado,'g');
-   log('📺 Anúncio recuperou 50%: R$'+recuperado);
+  if (recuperado > 0) {
+   money += recuperado;
+   fb(recuperado, 'g');
+   log('📺 Anúncio recuperou 50%: R$' + recuperado);
   }
 
-  pendentePerda=0;
-  fame+=1;
+  pendentePerda = 0;
+  fame += 1;
   totalEmp++;
   seq++;
   day++;
@@ -781,39 +769,39 @@ window.recompensaLiberada=function(){
   novo();
  }
 
- if(pendenteTipo=='banco'){
-  money+=pendenteBanco;
+ if (pendenteTipo == 'banco') {
+  money += pendenteBanco;
   check();
  }
 
- if(pendenteTipo=='gameoverBanco'){
-  money=300;
-  document.getElementById('gameOver').style.display='none';
+ if (pendenteTipo == 'gameoverBanco') {
+  money = 300;
+  document.getElementById('gameOver').style.display = 'none';
   check();
   novo();
  }
 
- pendenteTipo=null;
+ pendenteTipo = null;
 };
 
 // =====================================================
 // FALÊNCIA
 // =====================================================
 
-window.falencia=function(){
- money=100;
- window.taxaNegarAtual=0;
- window.incNegar=5;
- window.vezNegar=0;
- window.travado=false;
- valorNegar=25;
+window.falencia = function() {
+ money = 100;
+ window.taxaNegarAtual = 0;
+ window.incNegar = 5;
+ window.vezNegar = 0;
+ window.travado = false;
+ valorNegar = 25;
 
  window.limparClienteAtual();
 
- let c=document.getElementById('choices');
- if(c)c.style.pointerEvents='auto';
+ let c = document.getElementById('choices');
+ if (c) c.style.pointerEvents = 'auto';
 
- localStorage.removeItem('save_'+currentUser);
+ localStorage.removeItem('save_' + currentUser);
  alert('💸 FALÊNCIA! Resetado R$100');
  location.reload();
 };
@@ -822,29 +810,32 @@ window.falencia=function(){
 // REINICIAR JOGO
 // =====================================================
 
-window.restartFull=function(){
- day=1;
- money=500;
- fame=1;
- level=1;
- window.xpAtual=0;
- usado={};
+window.restartFull = function() {
+ day = 1;
+ money = 500;
+ fame = 1;
+
+ window.xpAtual = 0;
+ window.levelXP = 1;
+ level = 1;
+
+ usado = {};
 
  window.limparClienteAtual();
 
- window.travado=false;
- window.taxaNegarAtual=0;
- window.incNegar=5;
- window.vezNegar=0;
- valorNegar=25;
+ window.travado = false;
+ window.taxaNegarAtual = 0;
+ window.incNegar = 5;
+ window.vezNegar = 0;
+ valorNegar = 25;
 
- pendentePerda=0;
- pendenteTipo=null;
+ pendentePerda = 0;
+ pendenteTipo = null;
 
- let c=document.getElementById('choices');
- if(c)c.style.pointerEvents='auto';
+ let c = document.getElementById('choices');
+ if (c) c.style.pointerEvents = 'auto';
 
- document.getElementById('gameOver').style.display='none';
+ document.getElementById('gameOver').style.display = 'none';
  check();
  novo();
 };
@@ -853,42 +844,43 @@ window.restartFull=function(){
 // CARREGAMENTO DO SAVE
 // =====================================================
 
-window.carregarSave=function(){
- let raw=localStorage.getItem('save_'+currentUser);
+window.carregarSave = function() {
+ let raw = localStorage.getItem('save_' + currentUser);
 
- if(!raw){
-  window.xpAtual=0;
-  level=1;
+ if (!raw) {
+  window.xpAtual = 0;
+  window.levelXP = 1;
+  level = 1;
   novo();
   check();
   return;
  }
 
- try{
-  let s=JSON.parse(raw);
+ try {
+  let s = JSON.parse(raw);
 
-  day=s.day ?? 1;
-  money=s.money ?? 500;
-  fame=s.fame ?? 1;
+  day = s.day ?? 1;
+  money = s.money ?? 500;
+  fame = s.fame ?? 1;
 
-  // Mantém o nível antigo de quem ainda não tem XP salvo.
-  level=s.level ?? 1;
-  window.xpAtual=s.xpAtual ?? 0;
+  window.xpAtual = s.xpAtual ?? 0;
+  window.levelXP = s.levelXP ?? (s.xpAtual !== undefined ? (s.level ?? 1) : 1);
+  level = window.levelXP;
 
-  dolar=s.dolar ?? 0;
-  inv=s.inv ?? {};
-  usado=s.usado ?? {};
-  totalEmp=s.totalEmp ?? 0;
-  totalLucro=s.totalLucro ?? 0;
-  jurosCount=s.jurosCount ?? 0;
-  negarCount=s.negarCount ?? 0;
-  conquistasColetadas=s.conquistasColetadas ?? {};
-  tituloEscolhido=s.tituloEscolhido ?? null;
-  proxMissaoIdx=s.proxMissaoIdx ?? 3;
-  proxDesafioIdx=s.proxDesafioIdx ?? 3;
+  dolar = s.dolar ?? 0;
+  inv = s.inv ?? {};
+  usado = s.usado ?? {};
+  totalEmp = s.totalEmp ?? 0;
+  totalLucro = s.totalLucro ?? 0;
+  jurosCount = s.jurosCount ?? 0;
+  negarCount = s.negarCount ?? 0;
+  conquistasColetadas = s.conquistasColetadas ?? {};
+  tituloEscolhido = s.tituloEscolhido ?? null;
+  proxMissaoIdx = s.proxMissaoIdx ?? 3;
+  proxDesafioIdx = s.proxDesafioIdx ?? 3;
 
-  if(s.ativasMissoes)ativasMissoes=s.ativasMissoes;
-  if(s.ativasDesafios)ativasDesafios=s.ativasDesafios;
+  if (s.ativasMissoes) ativasMissoes = s.ativasMissoes;
+  if (s.ativasDesafios) ativasDesafios = s.ativasDesafios;
 
   window.atualizarNivelXP();
 
@@ -897,8 +889,11 @@ window.carregarSave=function(){
   novo();
   check();
 
- }catch(e){
-  console.error('Erro ao carregar save:',e);
+ } catch (e) {
+  console.error('Erro ao carregar save:', e);
+  window.xpAtual = 0;
+  window.levelXP = 1;
+  level = 1;
   novo();
   check();
  }
@@ -908,11 +903,12 @@ window.carregarSave=function(){
 // INICIALIZAÇÃO
 // =====================================================
 
-if(currentUser){
+if (currentUser) {
  window.carregarSave();
-}else{
- window.xpAtual=0;
- level=1;
+} else {
+ window.xpAtual = 0;
+ window.levelXP = 1;
+ level = 1;
  novo();
  check();
 }
@@ -921,7 +917,7 @@ if(currentUser){
 // JOGO OCUPA TODA A LARGURA NO NOTEBOOK
 // =====================================================
 
-(function(){
+(function() {
  const style = document.createElement('style');
  style.id = 'fix-game-desktop-width';
 
