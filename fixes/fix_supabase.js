@@ -1,4 +1,3 @@
-
 // SUPABASE: LOGIN, PROTECAO DE VERSAO E SINCRONIZACAO EM TEMPO REAL
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
@@ -176,7 +175,7 @@
   }
 
   // =====================================================
-  // CLIENTE ATUAL: FUNCOES DE PERSISTENCIA
+  // CLIENTE ATUAL: PERSISTENCIA
   // =====================================================
 
   function copiarCliente(cliente) {
@@ -212,7 +211,7 @@
   }
 
   // =====================================================
-  // DADOS DO JOGO, INCLUINDO XP E CLIENTE ATUAL
+  // DADOS DO JOGO
   // =====================================================
 
   function dadosDoJogo() {
@@ -224,15 +223,13 @@
       money,
       fame,
 
-      // LEVEL CONTROLADO PELO XP
       level: window.levelXP || level || 1,
       levelXP: window.levelXP || level || 1,
       xpAtual: Number(window.xpAtual) || 0,
 
-      // CLIENTE ATUAL
+      // CLIENTE ATUAL COMPLETO
       clienteAtual: obterClienteAtual(),
 
-      // ESTADO DA RECUPERACAO DE CALOTE
       recuperacaoPendente: recuperacao.recuperacaoPendente,
       pendentePerda: recuperacao.pendentePerda,
 
@@ -298,18 +295,16 @@
         ativasDesafios = progresso.ativasDesafios;
       }
 
-      // CLIENTE ATUAL
+      // RESTAURA O CLIENTE EXATO QUE FOI SALVO
       const clienteSalvo = progresso.clienteAtual || progresso.cur || null;
 
       if (clienteSalvo) {
-        const clienteRestaurado = copiarCliente(clienteSalvo);
-
-        if (clienteRestaurado) {
-          cur = clienteRestaurado;
-        }
+        cur = copiarCliente(clienteSalvo);
+      } else {
+        cur = null;
       }
 
-      // RECUPERACAO DE CALOTE
+      // RESTAURA A RECUPERACAO DE CALOTE
       if (typeof progresso.pendentePerda === 'number') {
         pendentePerda = progresso.pendentePerda;
       }
@@ -319,7 +314,6 @@
 
       if (typeof check === 'function') check();
 
-      // Reafirma o nivel apos o check original.
       level = window.levelXP;
 
       const elementoNivel = document.getElementById('lvl');
@@ -329,15 +323,11 @@
         window.atualizarNivelXP();
       }
 
-      // EXIBE O MESMO CLIENTE, SEM SORTEAR OUTRO
-      if (
-        clienteSalvo &&
-        typeof window.renderizarClienteAtual === 'function'
-      ) {
+      // EXIBE O CLIENTE RESTAURADO SEM SORTEAR OUTRO
+      if (cur && typeof window.renderizarClienteAtual === 'function') {
         window.renderizarClienteAtual();
       }
 
-      // RESTAURA A TELA DE RECUPERACAO SE ESTAVA ABERTA
       const telaRecuperacao = document.getElementById('adSave');
 
       if (telaRecuperacao) {
@@ -354,7 +344,7 @@
         levelXP: window.levelXP,
         dolar,
         inv,
-        clienteAtual: clienteSalvo,
+        clienteAtual: obterClienteAtual(),
         recuperacaoPendente: progresso.recuperacaoPendente
       });
 
@@ -566,6 +556,11 @@
 
       aplicarProgresso(progresso, inventarioFinal);
 
+      // Se o save remoto antigo não tiver cliente, gera um e salva.
+      if (!cur && typeof novo === 'function') {
+        novo();
+      }
+
       const dadosCarregados = dadosDoJogo();
 
       localStorage.setItem(
@@ -771,6 +766,11 @@
 
       aplicarProgresso(progresso, inventarioFinal);
 
+      // Só gera outro cliente se realmente não existir cliente salvo.
+      if (!cur && typeof novo === 'function') {
+        novo();
+      }
+
       const dadosCarregados = dadosDoJogo();
 
       localStorage.setItem(
@@ -789,7 +789,7 @@
 
         aplicarProgresso(saveLocal, inventarioFinal);
 
-        // Se o save antigo nao tinha cliente, cria um agora.
+        // Restaura o cliente local ou gera um se não houver nenhum.
         if (!cur && typeof novo === 'function') {
           novo();
         }
@@ -797,12 +797,13 @@
       } else {
         inv = mesclarInventarios(inventarioLocal, inventarioSaveLocal);
 
-        // Novo jogador ou primeiro acesso.
         window.levelXP = 1;
         window.xpAtual = 0;
         level = 1;
 
+        // Primeiro acesso: gera o primeiro cliente.
         if (typeof novo === 'function') novo();
+
         if (typeof check === 'function') check();
       }
 
@@ -816,12 +817,18 @@
 
     carregamentoConcluido = true;
 
-    // Garante que o estado carregado seja salvo localmente.
+    // Salva localmente o estado já restaurado, inclusive o cliente.
     try {
+      const dadosIniciais = dadosDoJogo();
+
       localStorage.setItem(
         'save_' + currentUser,
-        JSON.stringify(dadosDoJogo())
+        JSON.stringify(dadosIniciais)
       );
+
+      // Garante que o estado inicial também chegue à nuvem.
+      agendarSalvamentoNuvem();
+
     } catch (erro) {
       console.error('Erro ao atualizar save local:', erro);
     }
