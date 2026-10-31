@@ -1,5 +1,5 @@
 
-// SUPABASE: LOGIN E SINCRONIZACAO COM PROTECAO DE VERSAO
+// SUPABASE: LOGIN, PROTECAO DE VERSAO E SINCRONIZACAO EM TEMPO REAL
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_Bd-vtxSYz23BH0L8k744SA_9t12A4dv';
@@ -33,9 +33,19 @@
   let carregamentoConcluido = false;
   let salvamentoEmAndamento = false;
 
-  // CONTROLE DE VERSAO DA NUVEM
   let versaoNuvem = 0;
   let sincronizacaoBloqueada = false;
+
+  // CONTROLE DAS ALTERACOES LOCAIS
+  let alteracoesPendentes = false;
+  let revisaoLocal = 0;
+  let aplicandoProgresso = false;
+  let avisoConflitoExibido = false;
+
+  // REALTIME
+  let canalRealtime = null;
+  let processandoEvento = false;
+  let eventoPendente = false;
 
   const modal = document.getElementById('loginModal');
   const campoNome = document.getElementById('loginUser');
@@ -43,12 +53,7 @@
   const botaoLogin = modal.querySelector('.btn.amarelo');
 
   const IDs_LOJINHA = [
-    'bone',
-    'cordao',
-    'relogio',
-    'glock',
-    'pit',
-    'moto'
+    'bone', 'cordao', 'relogio', 'glock', 'pit', 'moto'
   ];
 
   function converterInventario(dados) {
@@ -62,9 +67,7 @@
       }
     }
 
-    if (typeof dados !== 'object' || dados === null) {
-      return {};
-    }
+    if (typeof dados !== 'object' || dados === null) return {};
 
     const resultado = {};
 
@@ -106,9 +109,7 @@
   }
 
   function chaveInventario() {
-    return currentUser
-      ? 'lojinha_permanente_' + currentUser
-      : null;
+    return currentUser ? 'lojinha_permanente_' + currentUser : null;
   }
 
   function obterInventarioAtual() {
@@ -139,13 +140,11 @@
   }
 
   function limparMensagem() {
-    const el = document.getElementById('loginErro');
-    el.style.display = 'none';
+    document.getElementById('loginErro').style.display = 'none';
   }
 
   function atualizarMenu() {
-    document.getElementById('menuUser').innerText =
-      nomeJogador || '-';
+    document.getElementById('menuUser').innerText = nomeJogador || '-';
   }
 
   if (!document.getElementById('loginEmail')) {
@@ -167,8 +166,7 @@
   campoSenha.placeholder = 'Senha (mínimo 6 caracteres)';
   botaoLogin.textContent = 'ENTRAR';
 
-  let botaoCadastro =
-    document.getElementById('botaoCadastroSupabase');
+  let botaoCadastro = document.getElementById('botaoCadastroSupabase');
 
   if (!botaoCadastro) {
     botaoCadastro = document.createElement('button');
@@ -179,7 +177,6 @@
     botaoLogin.insertAdjacentElement('afterend', botaoCadastro);
   }
 
-  // MONTA OS DADOS ATUAIS DO JOGO
   function dadosDoJogo() {
     const inventario = obterInventarioAtual();
 
@@ -205,59 +202,72 @@
     };
   }
 
-  // APLICA DIRETAMENTE O PROGRESSO RECEBIDO DA NUVEM
   function aplicarProgresso(progresso, inventarioFinal) {
-    day = progresso.day ?? 1;
-    money = progresso.money ?? 500;
-    fame = progresso.fame ?? 1;
-    level = progresso.level ?? 1;
-    dolar = progresso.dolar ?? 0;
+    aplicandoProgresso = true;
 
-    inv = inventarioFinal;
+    try {
+      day = progresso.day ?? 1;
+      money = progresso.money ?? 500;
+      fame = progresso.fame ?? 1;
+      level = progresso.level ?? 1;
+      dolar = progresso.dolar ?? 0;
 
-    usado = progresso.usado ?? {};
-    totalEmp = progresso.totalEmp ?? 0;
-    totalLucro = progresso.totalLucro ?? 0;
-    jurosCount = progresso.jurosCount ?? 0;
-    negarCount = progresso.negarCount ?? 0;
+      inv = inventarioFinal;
 
-    conquistasColetadas = progresso.conquistasColetadas ?? {};
-    tituloEscolhido = progresso.tituloEscolhido ?? null;
+      usado = progresso.usado ?? {};
+      totalEmp = progresso.totalEmp ?? 0;
+      totalLucro = progresso.totalLucro ?? 0;
+      jurosCount = progresso.jurosCount ?? 0;
+      negarCount = progresso.negarCount ?? 0;
 
-    proxMissaoIdx = progresso.proxMissaoIdx ?? 3;
-    proxDesafioIdx = progresso.proxDesafioIdx ?? 3;
+      conquistasColetadas = progresso.conquistasColetadas ?? {};
+      tituloEscolhido = progresso.tituloEscolhido ?? null;
 
-    if (progresso.ativasMissoes !== undefined) {
-      ativasMissoes = progresso.ativasMissoes;
+      proxMissaoIdx = progresso.proxMissaoIdx ?? 3;
+      proxDesafioIdx = progresso.proxDesafioIdx ?? 3;
+
+      if (progresso.ativasMissoes !== undefined) {
+        ativasMissoes = progresso.ativasMissoes;
+      }
+
+      if (progresso.ativasDesafios !== undefined) {
+        ativasDesafios = progresso.ativasDesafios;
+      }
+
+      if (typeof renderSlots === 'function') renderSlots();
+      if (typeof atualizarTituloAvatar === 'function') atualizarTituloAvatar();
+      if (typeof check === 'function') check();
+
+      console.log('PROGRESSO APLICADO:', {
+        day, money, level, fame, dolar, inv
+      });
+    } finally {
+      aplicandoProgresso = false;
     }
-
-    if (progresso.ativasDesafios !== undefined) {
-      ativasDesafios = progresso.ativasDesafios;
-    }
-
-    if (typeof renderSlots === 'function') {
-      renderSlots();
-    }
-
-    if (typeof atualizarTituloAvatar === 'function') {
-      atualizarTituloAvatar();
-    }
-
-    if (typeof check === 'function') {
-      check();
-    }
-
-    console.log('PROGRESSO APLICADO DIRETAMENTE:', {
-      day,
-      money,
-      level,
-      fame,
-      dolar,
-      inv
-    });
   }
 
-  // SALVAR NA NUVEM COM CONTROLE DE VERSAO
+  function bloquearPorConflito(motivo) {
+    sincronizacaoBloqueada = true;
+    alteracoesPendentes = true;
+
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+
+    console.warn('SINCRONIZACAO BLOQUEADA:', motivo);
+
+    if (!avisoConflitoExibido) {
+      avisoConflitoExibido = true;
+
+      alert(
+        'Outro dispositivo salvou um progresso mais recente. ' +
+        'Este jogo foi protegido para evitar perda de dados. ' +
+        'Atualize a página para carregar o progresso mais recente.'
+      );
+    }
+  }
+
   async function salvarNuvem() {
     if (
       !usuarioId ||
@@ -269,6 +279,7 @@
     }
 
     salvamentoEmAndamento = true;
+    const revisaoSalva = revisaoLocal;
 
     try {
       const dadosAtuais = dadosDoJogo();
@@ -295,24 +306,10 @@
       const resultado = Array.isArray(data) ? data[0] : data;
 
       if (!resultado?.saved) {
-        sincronizacaoBloqueada = true;
-
-        if (saveTimer) {
-          clearTimeout(saveTimer);
-          saveTimer = null;
-        }
-
-        console.error('CONFLITO DE SALVAMENTO:', {
+        bloquearPorConflito({
           versaoLocal: versaoNuvem,
           versaoNuvemAtual: resultado?.current_version
         });
-
-        alert(
-          'ATENÇÃO: outro dispositivo salvou um progresso mais recente. ' +
-          'Este dispositivo foi impedido de sobrescrever os dados. ' +
-          'Atualize a página para carregar o progresso mais recente.'
-        );
-
         return;
       }
 
@@ -321,10 +318,7 @@
       const chave = chaveInventario();
 
       if (chave) {
-        localStorage.setItem(
-          chave,
-          JSON.stringify(inventarioFinal)
-        );
+        localStorage.setItem(chave, JSON.stringify(inventarioFinal));
       }
 
       localStorage.setItem(
@@ -332,7 +326,11 @@
         JSON.stringify(dadosAtuais)
       );
 
-      console.log('SALVAMENTO PROTEGIDO CONCLUÍDO:', {
+      if (revisaoLocal === revisaoSalva) {
+        alteracoesPendentes = false;
+      }
+
+      console.log('SALVAMENTO CONCLUIDO:', {
         money: dadosAtuais.money,
         day: dadosAtuais.day,
         level: dadosAtuais.level,
@@ -344,10 +342,42 @@
       console.error('Erro ao salvar na nuvem:', erro);
     } finally {
       salvamentoEmAndamento = false;
+
+      if (eventoPendente) {
+        eventoPendente = false;
+        processarAtualizacaoRemota();
+      }
+
+      if (
+        alteracoesPendentes &&
+        !sincronizacaoBloqueada &&
+        revisaoLocal !== revisaoSalva
+      ) {
+        agendarSalvamentoNuvem();
+      }
     }
   }
 
   function agendarSalvamentoNuvem() {
+    if (
+      !usuarioId ||
+      !carregamentoConcluido ||
+      sincronizacaoBloqueada ||
+      aplicandoProgresso
+    ) {
+      return;
+    }
+
+    alteracoesPendentes = true;
+    revisaoLocal++;
+
+    if (saveTimer) clearTimeout(saveTimer);
+
+    saveTimer = setTimeout(salvarNuvem, 1500);
+  }
+
+  // RECEBE E APLICA ALTERACOES DE OUTROS DISPOSITIVOS
+  async function processarAtualizacaoRemota() {
     if (
       !usuarioId ||
       !carregamentoConcluido ||
@@ -356,9 +386,115 @@
       return;
     }
 
-    if (saveTimer) clearTimeout(saveTimer);
+    if (salvamentoEmAndamento || processandoEvento) {
+      eventoPendente = true;
+      return;
+    }
 
-    saveTimer = setTimeout(salvarNuvem, 1500);
+    processandoEvento = true;
+
+    try {
+      const { data, error } = await sb
+        .from('game_saves')
+        .select('game_data, version')
+        .eq('user_id', usuarioId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) return;
+
+      const novaVersao = Number(data.version ?? 0);
+
+      if (novaVersao <= versaoNuvem) return;
+
+      // NAO SUBSTITUI ALTERACOES LOCAIS AINDA NAO SALVAS
+      if (alteracoesPendentes || salvamentoEmAndamento) {
+        bloquearPorConflito({
+          motivo: 'Chegou uma atualização enquanto havia alterações locais pendentes.',
+          versaoLocal: versaoNuvem,
+          versaoRemota: novaVersao
+        });
+        return;
+      }
+
+      const progresso = data.game_data || {};
+
+      const inventarioFinal = mesclarInventarios(
+        progresso.inv,
+        progresso.lojinhaPermanente
+      );
+
+      versaoNuvem = novaVersao;
+
+      const chave = chaveInventario();
+
+      if (chave) {
+        localStorage.setItem(chave, JSON.stringify(inventarioFinal));
+      }
+
+      aplicarProgresso(progresso, inventarioFinal);
+
+      const dadosCarregados = dadosDoJogo();
+
+      localStorage.setItem(
+        'save_' + currentUser,
+        JSON.stringify(dadosCarregados)
+      );
+
+      alteracoesPendentes = false;
+
+      console.log('ATUALIZACAO AUTOMATICA RECEBIDA:', {
+        version: versaoNuvem,
+        money,
+        day,
+        level,
+        inv
+      });
+
+    } catch (erro) {
+      console.error('Erro ao receber atualização remota:', erro);
+    } finally {
+      processandoEvento = false;
+
+      if (eventoPendente) {
+        eventoPendente = false;
+        processarAtualizacaoRemota();
+      }
+    }
+  }
+
+  function configurarRealtime() {
+    if (!usuarioId || !carregamentoConcluido) return;
+
+    if (canalRealtime) {
+      sb.removeChannel(canalRealtime);
+      canalRealtime = null;
+    }
+
+    canalRealtime = sb
+      .channel('game-saves-' + usuarioId)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'game_saves',
+          filter: 'user_id=eq.' + usuarioId
+        },
+        payload => {
+          console.log('ALTERACAO DETECTADA NO SUPABASE:', payload);
+
+          if (salvamentoEmAndamento) {
+            eventoPendente = true;
+            return;
+          }
+
+          processarAtualizacaoRemota();
+        }
+      )
+      .subscribe(status => {
+        console.log('STATUS REALTIME:', status);
+      });
   }
 
   // INTERCEPTA O SALVAMENTO ORIGINAL
@@ -388,18 +524,13 @@
     agendarSalvamentoNuvem();
   };
 
-  // SINCRONIZA APÓS COMPRAR ITEM
+  // SINCRONIZA APOS COMPRAR ITEM
   if (typeof window.comprarItem === 'function') {
     const comprarItemAnterior = window.comprarItem;
 
     window.comprarItem = function () {
-      const resultado = comprarItemAnterior.apply(
-        this,
-        arguments
-      );
-
+      const resultado = comprarItemAnterior.apply(this, arguments);
       agendarSalvamentoNuvem();
-
       return resultado;
     };
   }
@@ -412,10 +543,18 @@
 
     versaoNuvem = 0;
     sincronizacaoBloqueada = false;
+    alteracoesPendentes = false;
+    revisaoLocal = 0;
+    avisoConflitoExibido = false;
 
     if (saveTimer) {
       clearTimeout(saveTimer);
       saveTimer = null;
+    }
+
+    if (canalRealtime) {
+      await sb.removeChannel(canalRealtime);
+      canalRealtime = null;
     }
 
     carregamentoConcluido = false;
@@ -440,7 +579,6 @@
       return;
     }
 
-    // REGISTRA A VERSAO QUE ESTE DISPOSITIVO CARREGOU
     versaoNuvem = Number(data?.version ?? 0);
 
     const chave = chaveInventario();
@@ -465,7 +603,6 @@
     );
 
     if (data?.game_data) {
-      // A NUVEM É A FONTE DO PROGRESSO.
       const progresso = data.game_data;
 
       const inventarioNuvem = mesclarInventarios(
@@ -480,10 +617,7 @@
       );
 
       if (chave) {
-        localStorage.setItem(
-          chave,
-          JSON.stringify(inventarioFinal)
-        );
+        localStorage.setItem(chave, JSON.stringify(inventarioFinal));
       }
 
       aplicarProgresso(progresso, inventarioFinal);
@@ -495,12 +629,9 @@
         JSON.stringify(dadosCarregados)
       );
 
-      if (typeof renderSlots === 'function') {
-        renderSlots();
-      }
+      if (typeof renderSlots === 'function') renderSlots();
 
     } else {
-      // CONTA SEM PROGRESSO NA NUVEM.
       if (saveLocal && Object.keys(saveLocal).length > 0) {
         const inventarioFinal = mesclarInventarios(
           inventarioSaveLocal,
@@ -509,18 +640,10 @@
 
         aplicarProgresso(saveLocal, inventarioFinal);
       } else {
-        inv = mesclarInventarios(
-          inventarioLocal,
-          inventarioSaveLocal
-        );
+        inv = mesclarInventarios(inventarioLocal, inventarioSaveLocal);
 
-        if (typeof novo === 'function') {
-          novo();
-        }
-
-        if (typeof check === 'function') {
-          check();
-        }
+        if (typeof novo === 'function') novo();
+        if (typeof check === 'function') check();
       }
 
       if (chave) {
@@ -535,6 +658,8 @@
 
     modal.style.display = 'none';
     limparMensagem();
+
+    configurarRealtime();
 
     console.log('JOGO CARREGADO:', {
       jogador: nomeJogador,
@@ -580,10 +705,7 @@
       return;
     }
 
-    await abrirJogo(
-      data.user,
-      data.user.user_metadata?.username
-    );
+    await abrirJogo(data.user, data.user.user_metadata?.username);
   };
 
   // CRIAR CONTA
@@ -648,6 +770,11 @@
 
     await salvarNuvem();
 
+    if (canalRealtime) {
+      await sb.removeChannel(canalRealtime);
+      canalRealtime = null;
+    }
+
     await sb.auth.signOut();
 
     usuarioId = null;
@@ -656,6 +783,7 @@
     currentUser = null;
     versaoNuvem = 0;
     sincronizacaoBloqueada = false;
+    alteracoesPendentes = false;
 
     localStorage.removeItem('currentUser');
 
@@ -665,9 +793,7 @@
 
     atualizarMenu();
 
-    if (typeof closeMenu === 'function') {
-      closeMenu();
-    }
+    if (typeof closeMenu === 'function') closeMenu();
   };
 
   // IGNORA LOGIN ANTIGO
@@ -675,15 +801,13 @@
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
-  // VERIFICA SESSÃO
+  // VERIFICA SESSAO
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
   if (erroSessao) {
     console.error(erroSessao);
-    mensagem(
-      'Não foi possível verificar sua sessão. Atualize a página.'
-    );
+    mensagem('Não foi possível verificar sua sessão. Atualize a página.');
     return;
   }
 
@@ -706,10 +830,16 @@
       currentUser = null;
       versaoNuvem = 0;
       sincronizacaoBloqueada = false;
+      alteracoesPendentes = false;
 
       if (saveTimer) {
         clearTimeout(saveTimer);
         saveTimer = null;
+      }
+
+      if (canalRealtime) {
+        sb.removeChannel(canalRealtime);
+        canalRealtime = null;
       }
 
       modal.style.display = 'flex';
