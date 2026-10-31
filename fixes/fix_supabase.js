@@ -169,7 +169,7 @@
   let botaoCadastro = document.getElementById('botaoCadastroSupabase');
 
   if (!botaoCadastro) {
-    botaoCadastro = document.createElement('button';
+    botaoCadastro = document.createElement('button');
     botaoCadastro.id = 'botaoCadastroSupabase';
     botaoCadastro.className = 'btn preto';
     botaoCadastro.textContent = 'CRIAR CONTA';
