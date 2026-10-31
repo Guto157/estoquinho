@@ -386,3 +386,20 @@ if(currentUser){
 }else{
  novo();
 }
+
+// CORREÇÃO: JOGO OCUPA TODA A LARGURA NO NOTEBOOK
+(function(){
+ const style = document.createElement('style');
+ style.id = 'fix-game-desktop-width';
+
+ style.textContent = `
+  @media (min-width: 600px) {
+    #game {
+      width: 100vw !important;
+      max-width: none !important;
+    }
+  }
+ `;
+
+ document.head.appendChild(style);
+})();
