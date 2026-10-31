@@ -26,6 +26,12 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   window.sbClient = sb;
 
+  // Carrega a interface Pix sem alterar o carregador central ou o HTML principal.
+  const pixScript = document.createElement('script');
+  pixScript.src = 'fixes/fix_pix.js?v=' + Date.now();
+  pixScript.onerror = () => console.error('PIX: falha ao carregar fixes/fix_pix.js');
+  document.body.appendChild(pixScript);
+
   let usuarioId = null;
   let nomeJogador = null;
   let saveTimer = null;
