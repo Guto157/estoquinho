@@ -1,53 +1,97 @@
 
-// ============================================
-// FIX EMOTE DOLINHA
-// Notificações por categoria
-// ============================================
-
 (function () {
   if (window.fixEmoteDolinhaAtivo) return;
   window.fixEmoteDolinhaAtivo = true;
 
-  console.log("FIX EMOTE DOLINHA CARREGADO");
+  console.log("FIX EMOTE DOLINHA CORRIGIDO");
 
-  function elemento(id) {
+  function el(id) {
     return document.getElementById(id);
   }
 
   function exibir(id, ativo) {
-    const el = elemento(id);
-    if (el) el.style.display = ativo ? "flex" : "none";
+    const item = el(id);
+    if (item) item.style.display = ativo ? "flex" : "none";
+  }
+
+  function chaveTitulo() {
+    const usuario = typeof currentUser !== "undefined" && currentUser
+      ? String(currentUser)
+      : "visitante";
+
+    return "titulosVisualizados_" + usuario;
+  }
+
+  function titulosDesbloqueados() {
+    const lista = [];
+
+    if (typeof titulosLevel !== "undefined") {
+      titulosLevel.forEach(t => {
+        if (level >= t.l) lista.push("LEVEL:" + t.n);
+      });
+    }
+
+    if (
+      typeof conquistas !== "undefined" &&
+      typeof conquistasColetadas !== "undefined"
+    ) {
+      conquistas.forEach(c => {
+        if (conquistasColetadas[c.id] && c.premioTitulo) {
+          lista.push("EXCLUSIVO:" + c.premioTitulo);
+        }
+      });
+    }
+
+    return lista.sort();
+  }
+
+  function assinaturaTitulos() {
+    return JSON.stringify(titulosDesbloqueados());
+  }
+
+  function tituloJaVisualizado() {
+    try {
+      return localStorage.getItem(chaveTitulo()) === assinaturaTitulos();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function marcarTitulosVisualizados() {
+    try {
+      localStorage.setItem(chaveTitulo(), assinaturaTitulos());
+    } catch (e) {}
+
+    atualizarEmotes();
   }
 
   function atualizarEmotes() {
-    const temMissao = Array.isArray(missaoParaColetar) &&
+    const temMissao =
+      typeof missaoParaColetar !== "undefined" &&
       missaoParaColetar.length > 0;
 
-    const temDesafio = Array.isArray(desafiosParaColetar) &&
+    const temDesafio =
+      typeof desafiosParaColetar !== "undefined" &&
       desafiosParaColetar.length > 0;
 
-    const conquistasProntas = typeof conquistas !== "undefined"
-      ? conquistas.filter(c =>
-          !conquistasColetadas[c.id] &&
-          getProgConquista(c) >= c.meta
-        )
-      : [];
+    let conquistasProntas = [];
 
-    const temConquista = conquistasProntas.length > 0;
-
-    let temTituloLevel = false;
-
-    if (typeof titulosLevel !== "undefined") {
-      temTituloLevel = titulosLevel.some(t =>
-        level >= t.l && tituloEscolhido !== t.n
+    if (
+      typeof conquistas !== "undefined" &&
+      typeof conquistasColetadas !== "undefined" &&
+      typeof getProgConquista === "function"
+    ) {
+      conquistasProntas = conquistas.filter(c =>
+        !conquistasColetadas[c.id] &&
+        getProgConquista(c) >= c.meta
       );
     }
 
-    const temTituloConquista = conquistasProntas.some(c =>
-      Boolean(c.premioTitulo)
-    );
+    const temConquista = conquistasProntas.length > 0;
 
-    const temTitulo = temTituloLevel || temTituloConquista;
+    const temTitulo =
+      titulosDesbloqueados().length > 0 &&
+      !tituloJaVisualizado();
 
     exibir("notifMissoes", temMissao);
     exibir("notifDesafios", temDesafio);
@@ -56,55 +100,60 @@
     exibir("notifTitulosMenu", temTitulo);
     exibir("notifTituloHud", temTitulo);
 
-    const temAlguma = temMissao || temDesafio || temConquista || temTitulo;
+    const temAlgum = temMissao || temDesafio || temConquista || temTitulo;
 
-    exibir("notifMenuGeral", temAlguma);
+    exibir("notifMenuGeral", temAlgum);
 
-    const btnMissoes = elemento("btnMissoes");
-    const btnDesafios = elemento("btnDesafios");
+    const btnMissoes = el("btnMissoes");
+    const btnDesafios = el("btnDesafios");
 
-    if (btnMissoes) btnMissoes.classList.toggle("btnNotif", temMissao);
-    if (btnDesafios) btnDesafios.classList.toggle("btnNotif", temDesafio);
+    if (btnMissoes) {
+      btnMissoes.classList.toggle("btnNotif", temMissao);
+    }
+
+    if (btnDesafios) {
+      btnDesafios.classList.toggle("btnNotif", temDesafio);
+    }
   }
 
-  // Substitui a atualização antiga das notificações
   window.atualizarNotificacoes = atualizarEmotes;
 
-  // Atualiza quando missões e desafios forem coletados
-  const coletarMissaoOriginal = window.coletarMissao;
+  // Selecionar qualquer título reconhece os títulos
+  // que já estavam desbloqueados naquele momento.
+  const selecionarOriginal = window.selecionarTitulo;
 
-  if (typeof coletarMissaoOriginal === "function") {
-    window.coletarMissao = function (...args) {
-      const resultado = coletarMissaoOriginal.apply(this, args);
-      atualizarEmotes();
-      return resultado;
-    };
-  }
-
-  const selecionarTituloOriginal = window.selecionarTitulo;
-
-  if (typeof selecionarTituloOriginal === "function") {
+  if (typeof selecionarOriginal === "function") {
     window.selecionarTitulo = function (...args) {
-      const resultado = selecionarTituloOriginal.apply(this, args);
-      atualizarEmotes();
+      const resultado = selecionarOriginal.apply(this, args);
+      marcarTitulosVisualizados();
       return resultado;
     };
   }
 
-  const coletarConquistaOriginal = window.coletarConquista;
+  // Atualiza depois de coletar conquistas.
+  const conquistaOriginal = window.coletarConquista;
 
-  if (typeof coletarConquistaOriginal === "function") {
+  if (typeof conquistaOriginal === "function") {
     window.coletarConquista = function (...args) {
-      const resultado = coletarConquistaOriginal.apply(this, args);
+      const resultado = conquistaOriginal.apply(this, args);
       atualizarEmotes();
       return resultado;
     };
   }
 
-  // Recalcula notificações periodicamente para refletir desbloqueios
-  // sem depender de recarregar a página.
+  // Atualiza depois de coletar missões.
+  const missaoOriginal = window.coletarMissao;
+
+  if (typeof missaoOriginal === "function") {
+    window.coletarMissao = function (...args) {
+      const resultado = missaoOriginal.apply(this, args);
+      atualizarEmotes();
+      return resultado;
+    };
+  }
+
+  // Atualização periódica para detectar novos desbloqueios.
   setInterval(atualizarEmotes, 1000);
 
   atualizarEmotes();
-
 })();
