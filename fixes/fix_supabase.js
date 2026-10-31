@@ -37,7 +37,6 @@
   const campoSenha = document.getElementById('loginPass');
   const botaoLogin = modal.querySelector('.btn.amarelo');
 
-  // Adiciona campo de e-mail
   if (!document.getElementById('loginEmail')) {
     const email = document.createElement('input');
     email.id = 'loginEmail';
@@ -57,7 +56,6 @@
   campoSenha.placeholder = 'Senha (mínimo 6 caracteres)';
   botaoLogin.textContent = 'ENTRAR';
 
-  // Botão de cadastro
   let botaoCadastro = document.getElementById('botaoCadastroSupabase');
 
   if (!botaoCadastro) {
@@ -87,7 +85,6 @@
     document.getElementById('menuUser').innerText = nomeJogador || '-';
   }
 
-  // Captura todos os dados do jogo e da lojinha
   function dadosDoJogo() {
     return {
       day,
@@ -113,7 +110,6 @@
     };
   }
 
-  // Envia o progresso para a nuvem
   async function salvarNuvem() {
     if (!usuarioId || !carregamentoConcluido) return;
 
@@ -141,7 +137,6 @@
     }
   }
 
-  // Agenda o envio para evitar muitas gravações seguidas
   function agendarSalvamentoNuvem() {
     if (!usuarioId || !carregamentoConcluido) return;
 
@@ -149,7 +144,6 @@
     saveTimer = setTimeout(salvarNuvem, 1500);
   }
 
-  // Preserva o salvamento anterior, inclusive o da lojinha
   const salvarJogoAnterior = window.saveGame;
 
   window.saveGame = function () {
@@ -175,20 +169,17 @@
     agendarSalvamentoNuvem();
   };
 
-  // Detecta compras da lojinha e agenda sincronização
   if (typeof window.comprarItem === 'function') {
     const comprarItemAnterior = window.comprarItem;
 
     window.comprarItem = function () {
       const resultado = comprarItemAnterior.apply(this, arguments);
-
       agendarSalvamentoNuvem();
-
       return resultado;
     };
   }
 
-  // Carrega os dados da conta
+  // CARREGAR JOGO E RECUPERAR INVENTARIO
   async function abrirJogo(usuario, nome) {
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
@@ -216,28 +207,53 @@
     if (data?.game_data) {
       const progresso = data.game_data;
 
-      // Recupera o inventário permanente da lojinha
-      if (
-        progresso.lojinhaPermanente !== undefined &&
-        progresso.lojinhaPermanente !== null
-      ) {
-        localStorage.setItem(
-          'lojinha_permanente_' + currentUser,
-          progresso.lojinhaPermanente
-        );
-      }
-
       localStorage.setItem(
         'save_' + currentUser,
         JSON.stringify(progresso)
       );
 
-      // O fix_home e o fix_lojinha carregam os dados
+      // Primeiro carrega o progresso normal
       if (typeof carregarSave === 'function') {
         carregarSave();
       }
+
+      // Depois recupera os itens diretamente da nuvem
+      try {
+        let inventarioNuvem = progresso.lojinhaPermanente;
+
+        if (typeof inventarioNuvem === 'string') {
+          inventarioNuvem = JSON.parse(inventarioNuvem || '{}');
+        }
+
+        if (
+          inventarioNuvem &&
+          typeof inventarioNuvem === 'object'
+        ) {
+          if (typeof inv !== 'object' || inv === null) {
+            inv = [];
+          }
+
+          Object.assign(inv, inventarioNuvem);
+
+          localStorage.setItem(
+            'lojinha_permanente_' + currentUser,
+            JSON.stringify({ ...inv })
+          );
+
+          if (typeof renderSlots === 'function') {
+            renderSlots();
+          }
+
+          console.log(
+            'INVENTÁRIO DA NUVEM RECUPERADO:',
+            inv
+          );
+        }
+      } catch (erro) {
+        console.error('Erro ao recuperar inventário da nuvem:', erro);
+      }
+
     } else {
-      // Conta nova
       if (typeof novo === 'function') novo();
       if (typeof check === 'function') check();
     }
@@ -253,7 +269,7 @@
     console.log('Jogador conectado:', nomeJogador);
   }
 
-  // Entrar
+  // ENTRAR
   window.fazerLogin = async function () {
     limparMensagem();
 
@@ -293,7 +309,7 @@
     );
   };
 
-  // Criar conta
+  // CRIAR CONTA
   botaoCadastro.onclick = async function () {
     limparMensagem();
 
@@ -344,7 +360,7 @@
     }
   };
 
-  // Sair
+  // SAIR
   window.logout = async function () {
     if (saveTimer) clearTimeout(saveTimer);
     await salvarNuvem();
@@ -367,12 +383,12 @@
     if (typeof closeMenu === 'function') closeMenu();
   };
 
-  // Desconsidera o login antigo do navegador
+  // IGNORA LOGIN ANTIGO
   currentUser = null;
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
-  // Verifica sessão existente
+  // VERIFICA SESSAO EXISTENTE
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
