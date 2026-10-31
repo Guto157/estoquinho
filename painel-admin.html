@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PEGA 1 PAGA 2 | Painel administrativo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#101114;--panel:#1b1d22;--line:#343740;--text:#f4f4f5;--muted:#a1a1aa;--yellow:#facc15;--red:#ef4444;--green:#22c55e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px Arial,sans-serif}header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1{font-size:20px;margin:0}main{max-width:1200px;margin:24px auto;padding:0 16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}.login{max-width:420px;margin:8vh auto}input,textarea,button{font:inherit;border-radius:8px;padding:11px;border:1px solid var(--line);background:#111318;color:var(--text);width:100%;margin:5px 0}textarea{min-height:260px;font:13px monospace}button{width:auto;cursor:pointer;background:var(--yellow);color:#171717;border:0;font-weight:bold;padding:10px 14px}button.secondary{background:#343740;color:white}button.danger{background:var(--red);color:white}button.good{background:var(--green);color:#07140b}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row input{flex:1;min-width:220px}.muted{color:var(--muted)}.status{padding:10px;border-radius:8px;background:#272a31;margin:10px 0;white-space:pre-wrap}.hidden{display:none!important}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line);font-size:13px}tr:hover{background:#252830}.actions{display:flex;gap:6px;flex-wrap:wrap}small{color:var(--muted)}.tag{color:var(--yellow)}
+</style></head>
+<body>
+<header><h1>PEGA 1 PAGA 2 <span class="tag">/ ADMIN</span></h1><div class="row"><span id="who" class="muted"></span><button id="logout" class="secondary hidden">Sair</button></div></header>
+<main>
+<section id="login" class="panel login"><h2>Entrar como administrador</h2><p class="muted">Use a conta cadastrada na lista de administradores do Supabase.</p><input id="email" type="email" placeholder="E-mail" autocomplete="username"><input id="password" type="password" placeholder="Senha" autocomplete="current-password"><button id="loginBtn">Entrar</button><div id="loginMsg" class="status hidden"></div></section>
+<section id="app" class="hidden">
+<div class="panel"><div class="row"><div style="flex:1"><h2 style="margin:0 0 5px">Jogadores</h2><small>Selecione um jogador para consultar ou administrar o progresso.</small></div><button id="refresh" class="secondary">Atualizar lista</button></div><div id="msg" class="status hidden"></div><div class="tablewrap"><table><thead><tr><th>ID do usuário</th><th>Versão</th><th>Última atualização</th><th>Ação</th></tr></thead><tbody id="players"></tbody></table></div></div>
+<div id="details" class="panel hidden"><div class="row"><div style="flex:1"><h2 style="margin:0">Dados do jogador</h2><small id="selectedId"></small></div><button id="closeDetails" class="secondary">Fechar</button></div>
+<textarea id="gameData" spellcheck="false" aria-label="Dados JSON do jogador"></textarea>
+<div class="row"><button id="save">Salvar edição</button><button id="reset" class="danger">Zerar progresso</button><button id="deleteProgress" class="danger">Excluir progresso</button><button id="block" class="danger">Bloquear jogador</button><button id="unblock" class="good">Desbloquear jogador</button></div>
+<small>As ações são individuais e usam exclusivamente o ID selecionado. Confira o JSON antes de salvar.</small></div>
+</section></main>
+<script>
+const SUPABASE_URL='https://zhcckqekuzatugimezlk.supabase.co';
+const SUPABASE_KEY='sb_publishable_Bd-vtxSYz23BH0L8k744SA_9t12A4dv';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);let selected=null;
+function show(el,on){$(el).classList.toggle('hidden',!on)}
+function message(id,text){$(id).textContent=text;show(id,true)}
+async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw error;return data}
+async function enter(){message('loginMsg','Verificando acesso...');try{const {data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await authorize(data.user)}catch(e){message('loginMsg','Erro: '+e.message)}}
+async function authorize(user){try{const ok=await rpc('admin_panel_check');if(ok!==true)throw new Error('Esta conta não está autorizada como administradora.');show('login',false);show('app',true);show('logout',true);$('who').textContent=user.email;await loadPlayers()}catch(e){await sb.auth.signOut();show('login',true);show('app',false);message('loginMsg',e.message)}}
+async function loadPlayers(){try{message('msg','Carregando jogadores...');const rows=await rpc('admin_panel_list_players');$('players').innerHTML='';(rows||[]).forEach(p=>{const tr=document.createElement('tr');for(const val of [p.user_id,p.version??0,p.updated_at?new Date(p.updated_at).toLocaleString('pt-BR'):'Sem registro']){const td=document.createElement('td');td.textContent=val;tr.appendChild(td)}const td=document.createElement('td'),b=document.createElement('button');b.textContent='Abrir';b.onclick=()=>openPlayer(p.user_id);td.appendChild(b);tr.appendChild(td);$('players').appendChild(tr)});message('msg',(rows||[]).length+' jogador(es) encontrado(s).')}catch(e){message('msg','Falha ao listar: '+e.message)}}
+async function openPlayer(id){try{selected=id;const data=await rpc('admin_panel_get_player',{p_user_id:id});$('selectedId').textContent=id;$('gameData').value=JSON.stringify(data,null,2);show('details',true);$('details').scrollIntoView({behavior:'smooth'})}catch(e){message('msg','Falha ao abrir jogador: '+e.message)}}
+async function act(name,args,confirmText){if(!selected)return;if(!confirm(confirmText))return;try{await rpc(name,args);message('msg','Ação concluída.');await loadPlayers();if(name==='admin_panel_delete_progress'){show('details',false);selected=null}else if(name==='admin_panel_reset_player'){await openPlayer(selected)}}catch(e){message('msg','Erro na ação: '+e.message)}}
+$('loginBtn').onclick=enter;$('password').addEventListener('keydown',e=>{if(e.key==='Enter')enter()});$('refresh').onclick=loadPlayers;$('closeDetails').onclick=()=>show('details',false);
+$('save').onclick=async()=>{try{const parsed=JSON.parse($('gameData').value);if(!confirm('Salvar as alterações deste jogador?'))return;await rpc('admin_panel_update_player',{p_user_id:selected,p_game_data:parsed});message('msg','Dados atualizados.');await loadPlayers()}catch(e){message('msg','JSON inválido ou erro ao salvar: '+e.message)}};
+$('reset').onclick=()=>act('admin_panel_reset_player',{p_user_id:selected},'Zerar TODO o progresso e inventário deste jogador?');
+$('deleteProgress').onclick=()=>act('admin_panel_delete_progress',{p_user_id:selected},'Excluir o registro de progresso deste jogador? A conta continuará existindo.');
+$('block').onclick=()=>{const reason=prompt('Motivo do bloqueio:','Bloqueio administrativo');if(reason===null)return;act('admin_panel_block_player',{p_user_id:selected,p_reason:reason||'Bloqueio administrativo'},'Bloquear este jogador e impedir o acesso ao jogo?')};
+$('unblock').onclick=()=>act('admin_panel_unblock_player',{p_user_id:selected},'Desbloquear este jogador?');
+$('logout').onclick=async()=>{await sb.auth.signOut();show('app',false);show('login',true);show('logout',false);$('who').textContent='';$('password').value=''};
+sb.auth.getSession().then(({data})=>{if(data.session)authorize(data.session.user)});
+</script></body></html>
