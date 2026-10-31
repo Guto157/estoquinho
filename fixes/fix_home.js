@@ -460,3 +460,239 @@ window.restartFull=function(){
 // =====================================================
 
 novo();
+
+
+// PROGRESSAO DE NIVEL E XP - ADICIONADA SEM ALTERAR O INDEX
+(function(){
+  const marcos=[
+    {l:1,n:"MOLEQUE"},
+    {l:5,n:"FREGUÊS"},
+    {l:10,n:"PATRÃO"},
+    {l:20,n:"DONO DA LAJE"},
+    {l:35,n:"REI DA QUEBRADA"},
+    {l:50,n:"PATRÃO DA FAVELA"},
+    {l:100,n:"CHEFÃO"},
+    {l:150,n:"CHEFE DO ESQUEMA"},
+    {l:200,n:"BARÃO DO MORRO"},
+    {l:250,n:"MAGNATA DA QUEBRADA"},
+    {l:300,n:"COMANDANTE DA LAJE"},
+    {l:350,n:"SENHOR DO FLUXO"},
+    {l:400,n:"TITÃ DO MORRO"},
+    {l:450,n:"IMPERADOR DO ASFALTO"},
+    {l:500,n:"LENDA DA CIDADE"},
+    {l:550,n:"CHEFE SUPREMO"},
+    {l:600,n:"DONO DO IMPÉRIO"},
+    {l:650,n:"MAGNATA SUPREMO"},
+    {l:700,n:"SOBERANO DA QUEBRADA"},
+    {l:750,n:"LENDÁRIO DO CRIME"},
+    {l:800,n:"MITO DO SUBMUNDO"},
+    {l:850,n:"PATRÃO ABSOLUTO"},
+    {l:900,n:"REI DO IMPÉRIO"},
+    {l:950,n:"LENDA IMORTAL"},
+    {l:1000,n:"CONCIERGE DO CRIME"}
+  ];
+
+  // Mantém os títulos originais e acrescenta apenas os novos marcos.
+  if(Array.isArray(titulosLevel)){
+    marcos.forEach(novo=>{
+      if(!titulosLevel.some(atual=>atual.l===novo.l)){
+        titulosLevel.push(novo);
+      }
+    });
+    titulosLevel.sort((a,b)=>a.l-b.l);
+  }
+
+  window.levelXP=Math.max(1,Math.min(1000,Number(window.levelXP)||Number(level)||1));
+  window.xpAtual=Math.max(0,Number(window.xpAtual)||0);
+
+  function xpNecessario(lvl){
+    return 5*lvl*(lvl+1)/2;
+  }
+
+  function salvarXP(){
+    if(!currentUser)return;
+    try{
+      const chave='save_'+currentUser;
+      const dados=JSON.parse(localStorage.getItem(chave)||'{}');
+      dados.level=window.levelXP;
+      dados.levelXP=window.levelXP;
+      dados.xpAtual=window.xpAtual;
+      localStorage.setItem(chave,JSON.stringify(dados));
+    }catch(erro){
+      console.error('Erro ao salvar XP:',erro);
+    }
+    if(typeof window.saveGame==='function'){
+      window.saveGame();
+    }
+  }
+
+  function desenharBarra(){
+    const nivelEl=document.getElementById('lvl');
+    if(!nivelEl)return;
+
+    let barra=document.getElementById('barraXPNivel');
+    if(!barra){
+      barra=document.createElement('span');
+      barra.id='barraXPNivel';
+      barra.style.cssText='display:inline-flex;flex-direction:column;vertical-align:middle;width:54px;margin-left:5px;gap:2px;font-size:7px;line-height:1;color:#FFD600';
+      barra.innerHTML='<span id="textoXPNivel" style="white-space:nowrap;text-align:right">0/5 XP</span><span style="height:3px;background:#555;border-radius:4px;overflow:hidden;width:100%;display:block"><span id="preenchimentoXPNivel" style="height:3px;width:0%;background:#FFD600;display:block;border-radius:4px"></span></span>';
+      nivelEl.insertAdjacentElement('afterend',barra);
+    }
+
+    const texto=document.getElementById('textoXPNivel');
+    const preenchimento=document.getElementById('preenchimentoXPNivel');
+    if(window.levelXP>=1000){
+      texto.textContent='NÍVEL MÁXIMO';
+      preenchimento.style.width='100%';
+    }else{
+      const necessario=xpNecessario(window.levelXP);
+      texto.textContent=window.xpAtual+'/'+necessario+' XP';
+      preenchimento.style.width=Math.min(100,window.xpAtual/necessario*100)+'%';
+    }
+  }
+
+  window.atualizarNivelXP=function(){
+    window.levelXP=Math.max(1,Math.min(1000,Math.floor(Number(window.levelXP)||1)));
+    window.xpAtual=Math.max(0,Math.floor(Number(window.xpAtual)||0));
+
+    while(window.levelXP<1000 && window.xpAtual>=xpNecessario(window.levelXP)){
+      window.xpAtual-=xpNecessario(window.levelXP);
+      window.levelXP++;
+    }
+
+    if(window.levelXP>=1000){
+      window.levelXP=1000;
+      window.xpAtual=0;
+    }
+
+    level=window.levelXP;
+    const nivelEl=document.getElementById('lvl');
+    if(nivelEl)nivelEl.textContent=window.levelXP;
+
+    const titulo=document.getElementById('patrao');
+    if(titulo)titulo.textContent=getTituloLevel(window.levelXP);
+
+    desenharBarra();
+  };
+
+  window.adicionarXP=function(valor){
+    valor=Math.trunc(Number(valor)||0);
+    if(!valor || window.levelXP>=1000)return;
+
+    if(valor>0){
+      window.xpAtual+=valor;
+      window.atualizarNivelXP();
+    }else{
+      let perda=Math.abs(valor);
+      while(perda>0){
+        if(window.xpAtual>0){
+          const usado=Math.min(perda,window.xpAtual);
+          window.xpAtual-=usado;
+          perda-=usado;
+        }else if(window.levelXP>1){
+          window.levelXP--;
+          window.xpAtual=xpNecessario(window.levelXP)-1;
+          perda--;
+        }else{
+          window.xpAtual=0;
+          break;
+        }
+      }
+      window.atualizarNivelXP();
+    }
+
+    salvarXP();
+    if(typeof atualizarNotificacoes==='function')atualizarNotificacoes();
+  };
+
+  // Migra o save local sem apagar os demais dados.
+  const carregarAnterior=window.carregarSave;
+  if(typeof carregarAnterior==='function'){
+    window.carregarSave=function(){
+      const retorno=carregarAnterior.apply(this,arguments);
+      try{
+        const dados=JSON.parse(localStorage.getItem('save_'+currentUser)||'{}');
+        window.levelXP=Math.max(1,Math.min(1000,Number(dados.levelXP??dados.level)||1));
+        window.xpAtual=Math.max(0,Number(dados.xpAtual)||0);
+      }catch(e){
+        window.levelXP=1;
+        window.xpAtual=0;
+      }
+      window.atualizarNivelXP();
+      return retorno;
+    };
+  }
+
+  // O check original continua cuidando de caixa, dia, missões e notificações.
+  const checkAnterior=window.check;
+  if(typeof checkAnterior==='function'){
+    window.check=function(){
+      const retorno=checkAnterior.apply(this,arguments);
+      window.atualizarNivelXP();
+      if(typeof atualizarTituloAvatar==='function')atualizarTituloAvatar();
+      return retorno;
+    };
+  }
+
+  // Acrescenta os campos de XP ao save local original.
+  const salvarAnterior=window.saveGame;
+  if(typeof salvarAnterior==='function'){
+    window.saveGame=function(){
+      const retorno=salvarAnterior.apply(this,arguments);
+      if(currentUser){
+        try{
+          const chave='save_'+currentUser;
+          const dados=JSON.parse(localStorage.getItem(chave)||'{}');
+          dados.level=window.levelXP;
+          dados.levelXP=window.levelXP;
+          dados.xpAtual=window.xpAtual;
+          localStorage.setItem(chave,JSON.stringify(dados));
+        }catch(e){
+          console.error('Erro ao incluir XP no save:',e);
+        }
+      }
+      return retorno;
+    };
+  }
+
+  // Conta XP uma única vez conforme o resultado real da ação.
+  const jogarAnterior=window.jogar;
+  if(typeof jogarAnterior==='function'){
+    window.jogar=function(tipo){
+      const empAntes=Number(totalEmp)||0;
+      const policiaAntes=Number(usado._policia)||0;
+      const negarAntes=Number(negarCount)||0;
+      const perdaAntes=Number(pendentePerda)||0;
+
+      const retorno=jogarAnterior.apply(this,arguments);
+
+      if((Number(negarCount)||0)>negarAntes){
+        window.adicionarXP(-1);
+      }else if((Number(usado._policia)||0)>policiaAntes){
+        window.adicionarXP(-2);
+      }else if((Number(totalEmp)||0)>empAntes){
+        window.adicionarXP(tipo==='juros'?5:3);
+      }else if((Number(pendentePerda)||0)>perdaAntes || (Number(pendentePerda)||0)>0){
+        window.adicionarXP(-1);
+      }
+
+      return retorno;
+    };
+  }
+
+  // Reinício completo também reinicia nível e XP, sem tocar na fama.
+  const reiniciarAnterior=window.restartFull;
+  if(typeof reiniciarAnterior==='function'){
+    window.restartFull=function(){
+      const retorno=reiniciarAnterior.apply(this,arguments);
+      window.levelXP=1;
+      window.xpAtual=0;
+      window.atualizarNivelXP();
+      salvarXP();
+      return retorno;
+    };
+  }
+
+  window.atualizarNivelXP();
+  console.log('PROGRESSÃO XP ATIVA: níveis 1 a 1000.');
+})();
