@@ -29,6 +29,7 @@
   let usuarioId = null;
   let nomeJogador = null;
   let saveTimer = null;
+  let verificacaoBloqueioTimer = null;
   let carregamentoConcluido = false;
   let salvamentoEmAndamento = false;
 
@@ -181,6 +182,12 @@
 
   function limparMensagem() {
     document.getElementById('loginErro').style.display = 'none';
+  }
+
+  async function verificarAcessoJogo() {
+    const { data, error } = await sb.rpc('check_my_game_access');
+    if (error) throw error;
+    return data === true;
   }
 
   function atualizarMenu() {
@@ -737,6 +744,20 @@
   // =====================================================
 
   async function abrirJogo(usuario, nome) {
+    try {
+      const acessoPermitido = await verificarAcessoJogo();
+      if (!acessoPermitido) {
+        await sb.auth.signOut();
+        mensagem('Esta conta está bloqueada e não pode acessar o jogo.');
+        modal.style.display = 'flex';
+        return;
+      }
+    } catch (erro) {
+      console.error('Erro ao verificar bloqueio:', erro);
+      mensagem('Não foi possível verificar a autorização da conta. Tente novamente.');
+      return;
+    }
+
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
     currentUser = nomeJogador;
@@ -935,6 +956,42 @@
 
     configurarRealtime();
 
+    if (verificacaoBloqueioTimer) {
+      clearInterval(verificacaoBloqueioTimer);
+    }
+
+    verificacaoBloqueioTimer = setInterval(async () => {
+      if (!usuarioId || !carregamentoConcluido) return;
+
+      try {
+        const acessoPermitido = await verificarAcessoJogo();
+        if (acessoPermitido) return;
+
+        clearInterval(verificacaoBloqueioTimer);
+        verificacaoBloqueioTimer = null;
+        carregamentoConcluido = false;
+
+        if (saveTimer) {
+          clearTimeout(saveTimer);
+          saveTimer = null;
+        }
+
+        if (canalRealtime) {
+          await sb.removeChannel(canalRealtime);
+          canalRealtime = null;
+        }
+
+        usuarioId = null;
+        currentUser = null;
+        nomeJogador = null;
+        await sb.auth.signOut();
+        modal.style.display = 'flex';
+        mensagem('Esta conta foi bloqueada. O acesso ao jogo foi encerrado.');
+      } catch (erro) {
+        console.error('Erro ao verificar bloqueio da conta:', erro);
+      }
+    }, 10000);
+
     console.log('JOGO CARREGADO:', {
       jogador: nomeJogador,
       money,
@@ -1050,6 +1107,11 @@
   // =====================================================
 
   window.logout = async function () {
+    if (verificacaoBloqueioTimer) {
+      clearInterval(verificacaoBloqueioTimer);
+      verificacaoBloqueioTimer = null;
+    }
+
     if (saveTimer) {
       clearTimeout(saveTimer);
       saveTimer = null;
@@ -1119,6 +1181,10 @@
 
   sb.auth.onAuthStateChange((evento) => {
     if (evento === 'SIGNED_OUT') {
+      if (verificacaoBloqueioTimer) {
+        clearInterval(verificacaoBloqueioTimer);
+        verificacaoBloqueioTimer = null;
+      }
       usuarioId = null;
       nomeJogador = null;
       carregamentoConcluido = false;
