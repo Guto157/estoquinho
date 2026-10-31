@@ -1,5 +1,5 @@
 
-// fixes/fix_missoes.js - DESCRIÇÃO NOVA + CONTADOR + REPOSIÇÃO APÓS RESET
+// fixes/fix_missoes.js - DESCRIÇÃO NOVA + CONTADOR + RECUPERAÇÃO DAS MISSÕES
 
 console.log("FIX MISSOES CARREGADO");
 
@@ -16,23 +16,37 @@ function formatarDescricaoMissao(m) {
   return m.t;
 }
 
-// Garante que a geração original seja chamada quando a lista estiver vazia.
+// Recupera as missões caso a lista ativa esteja vazia.
 window.garantirMissoesIniciais = function () {
+  if (!Array.isArray(todasMissoes) || todasMissoes.length === 0) {
+    todasMissoes = gerarMissoes();
+  }
+
   if (!Array.isArray(ativasMissoes)) {
     ativasMissoes = [];
   }
 
   if (ativasMissoes.length > 0) return;
 
-  if (typeof gerarMissoes === "function") {
-    gerarMissoes();
+  let proxima = Number(proxMissaoIdx);
+
+  if (!Number.isFinite(proxima) || proxima <= 0) {
+    proxima = 3;
+    proxMissaoIdx = 3;
   }
 
-  if (!Array.isArray(ativasMissoes)) {
-    ativasMissoes = [];
+  // Recupera as três últimas missões que já haviam sido disponibilizadas.
+  let inicio = Math.max(0, proxima - 3);
+
+  ativasMissoes = todasMissoes.slice(inicio, proxima);
+
+  // Se ainda não houver missões, inicia com as três primeiras.
+  if (ativasMissoes.length === 0) {
+    ativasMissoes = todasMissoes.slice(0, 3);
+    proxMissaoIdx = Math.max(Number(proxMissaoIdx) || 0, 3);
   }
 
-  console.log("MISSÕES INICIAIS:", ativasMissoes.length);
+  console.log("MISSÕES RECUPERADAS:", ativasMissoes.length);
 };
 
 window.openMissoes = function () {
