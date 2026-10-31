@@ -164,8 +164,6 @@ window.novo=function(){
  cur.falaAtual=cur.falas[Math.floor(Math.random()*cur.falas.length)];
 
  window.renderizarClienteAtual();
-
- // Persiste o cliente recém-gerado para impedir troca por atualização.
  window.persistirClienteAtual();
 };
 
@@ -208,8 +206,6 @@ window.jogar=function(tipo){
 
   window.vezNegar++;
   fame=Math.max(0,fame-0.5);
-
-  // NEGAR NÃO ZERA A SEQUÊNCIA
   day++;
 
   log('❌ Negou '+cur.n+' -'+(desc==0?'Grátis':'R$'+desc));
@@ -239,8 +235,6 @@ window.jogar=function(tipo){
   log('🚨 POLÍCIA! -R$'+fi);
 
   fame=Math.max(0,fame-0.5);
-
-  // POLICIAL: EMPRESTAR OU JUROS ZERA A SEQUÊNCIA
   seq=0;
 
   day++;
@@ -292,7 +286,6 @@ window.jogar=function(tipo){
   novo();
 
  }else{
-  // CALOTE CONTINUA ZERANDO A SEQUÊNCIA
   fame=Math.max(0,fame-0.5);
   seq=0;
 
@@ -313,7 +306,6 @@ window.jogar=function(tipo){
   window.travado=false;
   if(c)c.style.pointerEvents='auto';
 
-  // Não gera outro cliente durante a recuperação.
   window.persistirClienteAtual();
  }
 };
@@ -356,6 +348,15 @@ window.restartFull=function(){
  window.vezNegar=0;
  valorNegar=25;
 
+ // ZERA TODOS OS ITENS E MELHORIAS DA LOJINHA
+ inv={};
+
+ if(typeof window.resetarInventarioLojinha==='function'){
+  window.resetarInventarioLojinha();
+ }else if(currentUser){
+  localStorage.setItem('lojinha_permanente_'+currentUser,'{}');
+ }
+
  let c=document.getElementById('choices');
  if(c)c.style.pointerEvents='auto';
 
@@ -363,13 +364,15 @@ window.restartFull=function(){
 
  check();
  novo();
+
+ // Garante que o estado reiniciado seja salvo.
+ if(typeof window.saveGame==='function'){
+  window.saveGame();
+ }
 };
 
 // =====================================================
 // INICIALIZAÇÃO
 // =====================================================
 
-// Mantém o comportamento inicial do jogo.
-// O Supabase poderá substituir este cliente pelo cliente salvo
-// assim que terminar o carregamento da conta.
 novo();
