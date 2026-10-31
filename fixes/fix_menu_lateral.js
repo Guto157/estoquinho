@@ -178,7 +178,6 @@
 
   // ============================================
   // 4. MUSICA AMBIENTE ORIGINAL
-  // Instrumental sintetizado, discreto e continuo
   // ============================================
 
   const acordes = [
@@ -198,7 +197,6 @@
       tom(n, 3.7, 'sine', 0.12, masterMusica, inicio + i * 0.035);
     });
 
-    // Melodia suave
     const melodia = [261.63, 293.66, 329.63, 392.00, 329.63, 293.66];
     const m = melodia[notaAtual % melodia.length];
 
@@ -231,6 +229,7 @@
 
   function somClique() {
     if (!iniciarAudio() || !config.efeitosAtivos) return;
+
     const t = audioCtx.currentTime;
     tom(650, 0.08, 'sine', 0.22, masterEfeitos, t);
     tom(880, 0.07, 'sine', 0.12, masterEfeitos, t + 0.045);
@@ -238,6 +237,7 @@
 
   function somConfirmacao() {
     if (!iniciarAudio() || !config.efeitosAtivos) return;
+
     const t = audioCtx.currentTime;
     tom(523.25, 0.13, 'triangle', 0.25, masterEfeitos, t);
     tom(659.25, 0.16, 'triangle', 0.25, masterEfeitos, t + 0.11);
@@ -246,6 +246,7 @@
 
   function somErro() {
     if (!iniciarAudio() || !config.efeitosAtivos) return;
+
     const t = audioCtx.currentTime;
     tom(240, 0.18, 'sawtooth', 0.16, masterEfeitos, t);
     tom(180, 0.22, 'sawtooth', 0.13, masterEfeitos, t + 0.13);
@@ -290,14 +291,55 @@
     }, 3100);
   }
 
-  // Conecta o som à sirene visual que já existe no fix_home.js.
-  if (typeof window.alertaPolicia === 'function') {
-    const alertaOriginal = window.alertaPolicia;
+  // Disponibiliza a sirene para a funcao alertaPolicia.
+  window.tocarSirenePolicial = tocarSirene;
 
-    window.alertaPolicia = function () {
-      alertaOriginal.apply(this, arguments);
-      tocarSirene();
-    };
+  // Intercepta a criacao posterior de alertaPolicia.
+  // Isso resolve a ordem de carregamento dos arquivos.
+  let alertaPoliciaOriginal = null;
+  let alertaPoliciaComSom = null;
+
+  try {
+    const descritor = Object.getOwnPropertyDescriptor(
+      window,
+      'alertaPolicia'
+    );
+
+    if (!descritor || descritor.configurable) {
+      Object.defineProperty(window, 'alertaPolicia', {
+        configurable: true,
+        enumerable: true,
+
+        get: function () {
+          return alertaPoliciaComSom || alertaPoliciaOriginal;
+        },
+
+        set: function (funcao) {
+          if (typeof funcao !== 'function') {
+            alertaPoliciaOriginal = funcao;
+            alertaPoliciaComSom = null;
+            return;
+          }
+
+          alertaPoliciaOriginal = funcao;
+
+          alertaPoliciaComSom = function () {
+            const resultado = alertaPoliciaOriginal.apply(this, arguments);
+
+            tocarSirene();
+
+            return resultado;
+          };
+        }
+      });
+
+      // Caso a funcao ja exista, tambem conecta o som.
+      if (descritor && typeof descritor.value === 'function') {
+        window.alertaPolicia = descritor.value;
+      }
+    }
+  } catch (e) {
+    console.warn('Nao foi possivel conectar automaticamente a sirene:', e);
   }
 
   // ============================================
@@ -478,9 +520,7 @@
 
     iniciarAudio();
 
-    if (
-      /NEGAR|FECHAR|SAIR|CANCELAR|ERRO/i.test(alvo.textContent)
-    ) {
+    if (/NEGAR|FECHAR|SAIR|CANCELAR|ERRO/i.test(alvo.textContent)) {
       somErro();
     } else {
       somClique();
@@ -508,7 +548,6 @@
       attributeFilter: ['style', 'class']
     });
 
-    // O navegador libera o audio apos a primeira interacao.
     document.addEventListener('pointerdown', function primeiraInteracao() {
       iniciarAudio();
     }, { once: true });
