@@ -1,4 +1,3 @@
-
 // ATUALIZADOR CENTRAL DO JOGO
 (function () {
   const fixes = [
@@ -7,7 +6,8 @@
     'fixes/fix_home.js',
     'fixes/fix_missoes.js',
     'fixes/fix_desafios.js',
-    'fixes/fix_lojinha.js'
+    'fixes/fix_lojinha.js',
+    'fixes/fix_supabase.js'
   ];
 
   async function carregarAtualizacoes() {
