@@ -87,9 +87,9 @@
     document.getElementById('menuUser').innerText = nomeJogador || '-';
   }
 
-  // Captura o progresso do jogo e os itens permanentes
+  // Captura o progresso e os itens permanentes da lojinha
   function dadosDoJogo() {
-    const dados = {
+    return {
       day,
       money,
       fame,
@@ -106,16 +106,14 @@
       proxMissaoIdx,
       proxDesafioIdx,
       ativasMissoes,
-      ativasDesafios
+      ativasDesafios,
+      lojinhaPermanente: localStorage.getItem(
+        'lojinha_permanente_' + currentUser
+      )
     };
-
-    // A lojinha mantém seus itens em uma chave separada
-    dados.lojinhaPermanente =
-      localStorage.getItem('lojinha_permanente_' + currentUser);
-
-    return dados;
   }
 
+  // Salva o progresso no Supabase
   async function salvarNuvem() {
     if (!usuarioId || !carregamentoConcluido) return;
 
@@ -143,10 +141,18 @@
     }
   }
 
-  // Salvamento local e sincronização automática
+  // Preserva a função anterior, inclusive a integração da lojinha
+  const salvarJogoAnterior = window.saveGame;
+
   window.saveGame = function () {
     if (!currentUser) return;
 
+    // Executa primeiro o salvamento anterior
+    if (typeof salvarJogoAnterior === 'function') {
+      salvarJogoAnterior();
+    }
+
+    // Atualiza o salvamento local
     try {
       const dados = dadosDoJogo();
 
@@ -160,10 +166,12 @@
       console.error('Erro no salvamento local:', erro);
     }
 
+    // Agenda a sincronização com a nuvem
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(salvarNuvem, 1500);
   };
 
+  // Carrega a conta e o progresso do jogador
   async function abrirJogo(usuario, nome) {
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
@@ -191,9 +199,11 @@
     if (data?.game_data) {
       const progresso = data.game_data;
 
-      // Restaura os itens permanentes antes de carregar o jogo
-      if (progresso.lojinhaPermanente !== undefined &&
-          progresso.lojinhaPermanente !== null) {
+      // Restaura os itens permanentes da lojinha
+      if (
+        progresso.lojinhaPermanente !== undefined &&
+        progresso.lojinhaPermanente !== null
+      ) {
         localStorage.setItem(
           'lojinha_permanente_' + currentUser,
           progresso.lojinhaPermanente
@@ -205,7 +215,6 @@
         JSON.stringify(progresso)
       );
 
-      // Usa o carregador já existente no jogo
       if (typeof carregarSave === 'function') {
         carregarSave();
       }
@@ -219,12 +228,14 @@
     modal.style.display = 'none';
     limparMensagem();
 
-    if (!data?.game_data) await salvarNuvem();
+    if (!data?.game_data) {
+      await salvarNuvem();
+    }
 
     console.log('Jogador conectado:', nomeJogador);
   }
 
-  // Entrar
+  // Entrar na conta
   window.fazerLogin = async function () {
     limparMensagem();
 
@@ -264,7 +275,7 @@
     );
   };
 
-  // Criar conta
+  // Criar uma nova conta
   botaoCadastro.onclick = async function () {
     limparMensagem();
 
@@ -315,7 +326,7 @@
     }
   };
 
-  // Sair
+  // Sair da conta
   window.logout = async function () {
     if (saveTimer) clearTimeout(saveTimer);
     await salvarNuvem();
@@ -343,7 +354,7 @@
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
-  // Recupera sessão existente
+  // Verifica se existe sessão ativa
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
