@@ -30,13 +30,13 @@
   let nomeJogador = null;
   let saveTimer = null;
   let carregamentoConcluido = false;
+  let salvamentoEmAndamento = false;
 
   const modal = document.getElementById('loginModal');
   const campoNome = document.getElementById('loginUser');
   const campoSenha = document.getElementById('loginPass');
   const botaoLogin = modal.querySelector('.btn.amarelo');
 
-  // ITENS PERMANENTES DA LOJINHA
   const IDs_LOJINHA = [
     'bone',
     'cordao',
@@ -46,7 +46,6 @@
     'moto'
   ];
 
-  // CONVERTE O INVENTÁRIO PARA OBJETO
   function converterInventario(dados) {
     if (!dados) return {};
 
@@ -80,7 +79,6 @@
     return resultado;
   }
 
-  // JUNTA INVENTÁRIOS SEM PERDER NÍVEIS
   function mesclarInventarios(...inventarios) {
     const resultado = {};
 
@@ -103,34 +101,24 @@
   }
 
   function chaveInventario() {
-    if (!currentUser) return null;
-    return 'lojinha_permanente_' + currentUser;
+    return currentUser
+      ? 'lojinha_permanente_' + currentUser
+      : null;
   }
 
-  // RECUPERA E JUNTA INVENTÁRIO ATUAL E LOCAL
   function obterInventarioAtual() {
     const chave = chaveInventario();
 
-    let inventarioLocal = {};
+    const local = chave
+      ? converterInventario(localStorage.getItem(chave))
+      : {};
 
-    if (chave) {
-      inventarioLocal = converterInventario(
-        localStorage.getItem(chave)
-      );
-    }
-
-    const inventario = mesclarInventarios(
-      inv,
-      inventarioLocal
-    );
+    const inventario = mesclarInventarios(inv, local);
 
     inv = inventario;
 
     if (chave) {
-      localStorage.setItem(
-        chave,
-        JSON.stringify(inventario)
-      );
+      localStorage.setItem(chave, JSON.stringify(inventario));
     }
 
     return inventario;
@@ -182,16 +170,11 @@
     botaoCadastro.id = 'botaoCadastroSupabase';
     botaoCadastro.className = 'btn preto';
     botaoCadastro.textContent = 'CRIAR CONTA';
-    botaoCadastro.style.cssText =
-      'width:100%;margin-top:8px';
-
-    botaoLogin.insertAdjacentElement(
-      'afterend',
-      botaoCadastro
-    );
+    botaoCadastro.style.cssText = 'width:100%;margin-top:8px';
+    botaoLogin.insertAdjacentElement('afterend', botaoCadastro);
   }
 
-  // DADOS DO JOGO
+  // MONTA OS DADOS ATUAIS DO JOGO
   function dadosDoJogo() {
     const inventario = obterInventarioAtual();
 
@@ -213,15 +196,74 @@
       proxDesafioIdx,
       ativasMissoes,
       ativasDesafios,
-
-      // Agora fica salvo como objeto, não como texto.
       lojinhaPermanente: inventario
     };
   }
 
-  // SALVAR NA NUVEM SEM APAGAR ITENS EXISTENTES
+  // APLICA DIRETAMENTE O PROGRESSO RECEBIDO DA NUVEM
+  function aplicarProgresso(progresso, inventarioFinal) {
+    day = progresso.day ?? 1;
+    money = progresso.money ?? 500;
+    fame = progresso.fame ?? 1;
+    level = progresso.level ?? 1;
+    dolar = progresso.dolar ?? 0;
+
+    inv = inventarioFinal;
+
+    usado = progresso.usado ?? {};
+    totalEmp = progresso.totalEmp ?? 0;
+    totalLucro = progresso.totalLucro ?? 0;
+    jurosCount = progresso.jurosCount ?? 0;
+    negarCount = progresso.negarCount ?? 0;
+
+    conquistasColetadas = progresso.conquistasColetadas ?? {};
+    tituloEscolhido = progresso.tituloEscolhido ?? null;
+
+    proxMissaoIdx = progresso.proxMissaoIdx ?? 3;
+    proxDesafioIdx = progresso.proxDesafioIdx ?? 3;
+
+    if (progresso.ativasMissoes !== undefined) {
+      ativasMissoes = progresso.ativasMissoes;
+    }
+
+    if (progresso.ativasDesafios !== undefined) {
+      ativasDesafios = progresso.ativasDesafios;
+    }
+
+    // Atualiza a interface sem chamar carregarSave() ou novo().
+    if (typeof renderSlots === 'function') {
+      renderSlots();
+    }
+
+    if (typeof atualizarTituloAvatar === 'function') {
+      atualizarTituloAvatar();
+    }
+
+    if (typeof check === 'function') {
+      check();
+    }
+
+    console.log('PROGRESSO APLICADO DIRETAMENTE:', {
+      day,
+      money,
+      level,
+      fame,
+      dolar,
+      inv
+    });
+  }
+
+  // SALVAR NA NUVEM
   async function salvarNuvem() {
-    if (!usuarioId || !carregamentoConcluido) return;
+    if (
+      !usuarioId ||
+      !carregamentoConcluido ||
+      salvamentoEmAndamento
+    ) {
+      return;
+    }
+
+    salvamentoEmAndamento = true;
 
     try {
       const { data: registro, error: erroLeitura } = await sb
@@ -232,10 +274,13 @@
 
       if (erroLeitura) throw erroLeitura;
 
+      // Confere se o usuário continua sendo o mesmo.
+      if (!usuarioId || !currentUser) return;
+
       const dadosAtuais = dadosDoJogo();
       const dadosNuvem = registro?.game_data || {};
 
-      // Junta o inventário do dispositivo com o da nuvem.
+      // Protege os itens permanentes.
       const inventarioFinal = mesclarInventarios(
         dadosNuvem.inv,
         dadosNuvem.lojinhaPermanente,
@@ -243,7 +288,6 @@
         dadosAtuais.lojinhaPermanente
       );
 
-      // Atualiza o inventário global e o armazenamento local.
       inv = inventarioFinal;
 
       const chave = chaveInventario();
@@ -275,17 +319,17 @@
         JSON.stringify(dadosAtuais)
       );
 
-      if (typeof renderSlots === 'function') {
-        renderSlots();
-      }
-
-      console.log(
-        'PROGRESSO SINCRONIZADO. INVENTÁRIO PRESERVADO:',
-        inventarioFinal
-      );
+      console.log('SALVAMENTO NA NUVEM CONCLUÍDO:', {
+        money: dadosAtuais.money,
+        day: dadosAtuais.day,
+        level: dadosAtuais.level,
+        inventario: inventarioFinal
+      });
 
     } catch (erro) {
       console.error('Erro ao salvar na nuvem:', erro);
+    } finally {
+      salvamentoEmAndamento = false;
     }
   }
 
@@ -297,7 +341,7 @@
     saveTimer = setTimeout(salvarNuvem, 1500);
   }
 
-  // SALVAMENTO LOCAL E NA NUVEM
+  // INTERCEPTA O SALVAMENTO ORIGINAL
   const salvarJogoAnterior = window.saveGame;
 
   window.saveGame = function () {
@@ -324,7 +368,7 @@
     agendarSalvamentoNuvem();
   };
 
-  // SINCRONIZAÇÃO APÓS COMPRAR ITEM
+  // SINCRONIZA APÓS COMPRAR ITEM
   if (typeof window.comprarItem === 'function') {
     const comprarItemAnterior = window.comprarItem;
 
@@ -340,18 +384,25 @@
     };
   }
 
-  // ABRIR JOGO
+  // CARREGAMENTO PRINCIPAL
   async function abrirJogo(usuario, nome) {
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
     currentUser = nomeJogador;
+
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+
+    carregamentoConcluido = false;
+    salvamentoEmAndamento = false;
 
     localStorage.setItem('currentUser', currentUser);
 
     campoNome.value = nomeJogador;
     atualizarMenu();
 
-    carregamentoConcluido = false;
     mensagem('Carregando seu progresso...');
 
     const { data, error } = await sb
@@ -368,12 +419,11 @@
 
     const chave = chaveInventario();
 
-    // INVENTÁRIO QUE JÁ EXISTE NESTE DISPOSITIVO
+    // LÊ O INVENTÁRIO LOCAL SEM USÁ-LO PARA SUBSTITUIR O PROGRESSO.
     const inventarioLocal = chave
       ? converterInventario(localStorage.getItem(chave))
       : {};
 
-    // INVENTÁRIO QUE JÁ EXISTE NO SAVE LOCAL
     let saveLocal = {};
 
     try {
@@ -390,23 +440,20 @@
     );
 
     if (data?.game_data) {
+      // A NUVEM É A FONTE DO PROGRESSO.
       const progresso = data.game_data;
 
-      // INVENTÁRIO DA NUVEM
       const inventarioNuvem = mesclarInventarios(
         progresso.inv,
         progresso.lojinhaPermanente
       );
 
-      // JUNTA OS TRÊS INVENTÁRIOS
+      // Mescla somente o inventário permanente.
       const inventarioFinal = mesclarInventarios(
         inventarioNuvem,
         inventarioSaveLocal,
-        inventarioLocal,
-        inv
+        inventarioLocal
       );
-
-      inv = inventarioFinal;
 
       if (chave) {
         localStorage.setItem(
@@ -415,73 +462,71 @@
         );
       }
 
-      // Corrige os dados antes de carregar o save.
-      progresso.inv = inventarioFinal;
-      progresso.lojinhaPermanente = inventarioFinal;
+      // NÃO CHAMA carregarSave() AQUI.
+      // Aplica os valores remotos diretamente.
+      aplicarProgresso(progresso, inventarioFinal);
+
+      // Grava localmente exatamente o progresso carregado.
+      const dadosCarregados = dadosDoJogo();
 
       localStorage.setItem(
         'save_' + currentUser,
-        JSON.stringify(progresso)
+        JSON.stringify(dadosCarregados)
       );
-
-      if (typeof carregarSave === 'function') {
-        carregarSave();
-      }
-
-      // Garante que o carregamento não apagou os itens.
-      inv = mesclarInventarios(
-        inv,
-        inventarioFinal,
-        obterInventarioAtual()
-      );
-
-      if (chave) {
-        localStorage.setItem(
-          chave,
-          JSON.stringify(inv)
-        );
-      }
 
       if (typeof renderSlots === 'function') {
         renderSlots();
       }
 
-      console.log(
-        'INVENTÁRIO CARREGADO:',
-        inv
-      );
-
     } else {
-      // CONTA SEM SAVE NA NUVEM
-      inv = mesclarInventarios(
-        inventarioSaveLocal,
-        inventarioLocal,
-        inv
-      );
+      // CONTA SEM PROGRESSO NA NUVEM.
+      // Nesse caso, aproveita o save local, se existir.
+      if (saveLocal && Object.keys(saveLocal).length > 0) {
+        const inventarioFinal = mesclarInventarios(
+          inventarioSaveLocal,
+          inventarioLocal
+        );
+
+        aplicarProgresso(saveLocal, inventarioFinal);
+      } else {
+        inv = mesclarInventarios(
+          inventarioLocal,
+          inventarioSaveLocal
+        );
+
+        if (typeof novo === 'function') {
+          novo();
+        }
+
+        if (typeof check === 'function') {
+          check();
+        }
+      }
 
       if (chave) {
         localStorage.setItem(
           chave,
-          JSON.stringify(inv)
+          JSON.stringify(obterInventarioAtual())
         );
       }
-
-      if (typeof novo === 'function') novo();
-      if (typeof check === 'function') check();
     }
 
+    // SÓ LIBERA O SALVAMENTO DEPOIS DE TERMINAR O CARREGAMENTO.
     carregamentoConcluido = true;
 
     modal.style.display = 'none';
     limparMensagem();
 
-    // Envia o progresso inicial ou o inventário recuperado.
-    await salvarNuvem();
-
-    console.log('Jogador conectado:', nomeJogador);
+    console.log('JOGO CARREGADO:', {
+      jogador: nomeJogador,
+      money,
+      day,
+      level,
+      inv
+    });
   }
 
-  // ENTRAR
+  // LOGIN
   window.fazerLogin = async function () {
     limparMensagem();
 
@@ -608,7 +653,7 @@
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
-  // VERIFICA SESSÃO EXISTENTE
+  // VERIFICA SESSÃO
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
