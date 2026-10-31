@@ -185,8 +185,12 @@
       day,
       money,
       fame,
-      level,
+
+      // LEVEL CONTROLADO PELO XP
+      level: window.levelXP || level || 1,
+      levelXP: window.levelXP || level || 1,
       xpAtual: Number(window.xpAtual) || 0,
+
       dolar,
       inv: inventario,
       usado,
@@ -205,7 +209,7 @@
   }
 
   // =====================================================
-  // APLICAR PROGRESSO, INCLUINDO XP
+  // APLICAR PROGRESSO
   // =====================================================
 
   function aplicarProgresso(progresso, inventarioFinal) {
@@ -215,8 +219,16 @@
       day = progresso.day ?? 1;
       money = progresso.money ?? 500;
       fame = progresso.fame ?? 1;
-      level = progresso.level ?? 1;
+
+      window.levelXP = progresso.levelXP ?? progresso.level ?? 1;
       window.xpAtual = progresso.xpAtual ?? 0;
+
+      if (typeof window.atualizarNivelXP === 'function') {
+        window.atualizarNivelXP();
+      } else {
+        level = window.levelXP;
+      }
+
       dolar = progresso.dolar ?? 0;
 
       inv = inventarioFinal;
@@ -241,13 +253,16 @@
         ativasDesafios = progresso.ativasDesafios;
       }
 
-      if (typeof window.atualizarNivelXP === 'function') {
-        window.atualizarNivelXP();
-      }
-
       if (typeof renderSlots === 'function') renderSlots();
       if (typeof atualizarTituloAvatar === 'function') atualizarTituloAvatar();
+
       if (typeof check === 'function') check();
+
+      // Reafirma o nível após o check original.
+      level = window.levelXP;
+
+      const elementoNivel = document.getElementById('lvl');
+      if (elementoNivel) elementoNivel.innerText = window.levelXP;
 
       if (typeof window.atualizarBarraXP === 'function') {
         window.atualizarBarraXP();
@@ -257,15 +272,21 @@
         day,
         money,
         level,
-        xpAtual: window.xpAtual,
         fame,
+        xpAtual: window.xpAtual,
+        levelXP: window.levelXP,
         dolar,
         inv
       });
+
     } finally {
       aplicandoProgresso = false;
     }
   }
+
+  // =====================================================
+  // CONFLITO DE VERSÃO
+  // =====================================================
 
   function bloquearPorConflito(motivo) {
     sincronizacaoBloqueada = true;
@@ -347,7 +368,7 @@
       }
 
       localStorage.setItem(
-        'save_' + nomeJogador,
+        'save_' + currentUser,
         JSON.stringify(dadosAtuais)
       );
 
@@ -359,6 +380,7 @@
         money: dadosAtuais.money,
         day: dadosAtuais.day,
         level: dadosAtuais.level,
+        levelXP: dadosAtuais.levelXP,
         xpAtual: dadosAtuais.xpAtual,
         version: versaoNuvem,
         inventario: inventarioFinal
@@ -366,6 +388,7 @@
 
     } catch (erro) {
       console.error('Erro ao salvar na nuvem:', erro);
+
     } finally {
       salvamentoEmAndamento = false;
 
@@ -403,7 +426,7 @@
   }
 
   // =====================================================
-  // RECEBER ALTERACOES DE OUTROS DISPOSITIVOS
+  // ATUALIZAÇÕES REMOTAS
   // =====================================================
 
   async function processarAtualizacaoRemota() {
@@ -476,12 +499,14 @@
         money,
         day,
         level,
+        levelXP: window.levelXP,
         xpAtual: window.xpAtual,
         inv
       });
 
     } catch (erro) {
       console.error('Erro ao receber atualização remota:', erro);
+
     } finally {
       processandoEvento = false;
 
@@ -491,6 +516,10 @@
       }
     }
   }
+
+  // =====================================================
+  // REALTIME
+  // =====================================================
 
   function configurarRealtime() {
     if (!usuarioId || !carregamentoConcluido) return;
@@ -571,7 +600,7 @@
   }
 
   // =====================================================
-  // CARREGAMENTO PRINCIPAL
+  // ABRIR JOGO
   // =====================================================
 
   async function abrirJogo(usuario, nome) {
@@ -677,9 +706,12 @@
         );
 
         aplicarProgresso(saveLocal, inventarioFinal);
+
       } else {
         inv = mesclarInventarios(inventarioLocal, inventarioSaveLocal);
 
+        // Novo jogador ou primeiro acesso.
+        window.levelXP = 1;
         window.xpAtual = 0;
         level = 1;
 
@@ -707,6 +739,7 @@
       money,
       day,
       level,
+      levelXP: window.levelXP,
       xpAtual: window.xpAtual,
       version: versaoNuvem,
       inv
@@ -856,7 +889,7 @@
   modal.style.display = 'flex';
 
   // =====================================================
-  // VERIFICA SESSAO
+  // VERIFICA SESSÃO
   // =====================================================
 
   const { data: sessao, error: erroSessao } =
@@ -875,6 +908,7 @@
       usuario,
       usuario.user_metadata?.username
     );
+
   } else {
     console.log('Aguardando login do jogador.');
   }
