@@ -1,3 +1,4 @@
+
 // fixes/fix_home.js - SEQUÊNCIA CORRIGIDA + CLIENTE PERSISTENTE
 console.log("FIX HOME - SEQUÊNCIA CORRIGIDA + CLIENTE PERSISTENTE");
 
@@ -14,6 +15,84 @@ function fb(v,t){
 }
 
 window.taxaNegarAtual=0;window.incNegar=5;window.vezNegar=0;window.travado=false;
+
+// =====================================================
+// ALERTA VISUAL DA POLÍCIA
+// =====================================================
+
+window.alertaPolicia=function(){
+ let anterior=document.getElementById('alertaPoliciaVisual');
+ if(anterior)anterior.remove();
+
+ let alerta=document.createElement('div');
+ alerta.id='alertaPoliciaVisual';
+
+ alerta.style.cssText=`
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  pointer-events:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.15);
+  animation:policiaPisca 0.35s infinite alternate;
+ `;
+
+ alerta.innerHTML=`
+  <div style="
+   position:absolute;
+   inset:0;
+   border:12px solid #1565FF;
+   box-shadow:inset 0 0 55px #1565FF,0 0 35px #1565FF;
+  "></div>
+  <div style="
+   position:relative;
+   background:#111;
+   color:#fff;
+   border:4px solid #FF1744;
+   border-radius:18px;
+   padding:22px 35px;
+   font-size:clamp(25px,7vw,48px);
+   font-weight:1000;
+   text-align:center;
+   text-shadow:0 0 12px #FF1744;
+   box-shadow:0 0 35px #FF1744;
+  ">
+   🚨 POLÍCIA! 🚨
+  </div>
+ `;
+
+ let estilo=document.getElementById('estiloAlertaPolicia');
+
+ if(!estilo){
+  estilo=document.createElement('style');
+  estilo.id='estiloAlertaPolicia';
+  estilo.textContent=`
+   @keyframes policiaPisca{
+    0%{
+     background:rgba(0,60,255,0.42);
+     box-shadow:inset 0 0 100px #0055ff;
+    }
+    50%{
+     background:rgba(255,0,30,0.42);
+     box-shadow:inset 0 0 100px #ff002f;
+    }
+    100%{
+     background:rgba(0,60,255,0.42);
+     box-shadow:inset 0 0 100px #0055ff;
+    }
+   }
+  `;
+  document.head.appendChild(estilo);
+ }
+
+ document.body.appendChild(alerta);
+
+ setTimeout(function(){
+  if(alerta.parentNode)alerta.remove();
+ },3000);
+};
 
 // =====================================================
 // SALVA O CLIENTE ATUAL SEM ALTERAR O RESTANTE DO SAVE
@@ -214,17 +293,12 @@ window.jogar=function(tipo){
   return;
  }
 
- if(window.taxaNegarAtual>0){
-  window.taxaNegarAtual=Math.max(0,window.taxaNegarAtual-5);
-  window.incNegar=Math.max(5,window.incNegar-5);
-
-  if(window.taxaNegarAtual===0){
-   window.vezNegar=0;
-   window.incNegar=5;
-  }
- }
-
  if(cur.policia){
+  // Mantém o alerta somente para emprestar ou cobrar juros.
+  if(typeof window.alertaPolicia==='function'){
+   window.alertaPolicia();
+  }
+
   usado._policia=(usado._policia||0)+1;
 
   let fi=Math.floor(money*0.5);
@@ -241,6 +315,16 @@ window.jogar=function(tipo){
   check();
   novo();
   return;
+ }
+
+ if(window.taxaNegarAtual>0){
+  window.taxaNegarAtual=Math.max(0,window.taxaNegarAtual-5);
+  window.incNegar=Math.max(5,window.incNegar-5);
+
+  if(window.taxaNegarAtual===0){
+   window.vezNegar=0;
+   window.incNegar=5;
+  }
  }
 
  let peBase=cur.pedeAtual;
