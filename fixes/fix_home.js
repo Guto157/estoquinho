@@ -1,6 +1,6 @@
 
-// fixes/fix_home.js - XP + REGRESSAO + ALERTA POLICIA
-console.log("FIX HOME - XP, REGRESSAO E ALERTA POLICIA");
+// fixes/fix_home.js - XP + REGRESSAO + ALERTA POLICIA + CLIENTE PERSISTENTE
+console.log("FIX HOME - XP, REGRESSAO, ALERTA POLICIA E CLIENTE PERSISTENTE");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -142,7 +142,6 @@ window.alertaPolicia=function(){
 
  var overlay=document.createElement('div');
  overlay.id='alertaPolicia';
-
  overlay.style.cssText='position:fixed;inset:0;z-index:99998;pointer-events:none;animation:sirenePolicia 0.22s infinite alternate;';
 
  var estilo=document.createElement('style');
@@ -158,8 +157,7 @@ window.alertaPolicia=function(){
    background:rgba(255,0,0,0.38);
    box-shadow:inset 0 0 100px 35px rgba(255,0,0,0.9);
   }
- }
- `;
+ }`;
 
  document.head.appendChild(estilo);
  document.body.appendChild(overlay);
@@ -178,6 +176,113 @@ window.taxaNegarAtual=0;
 window.incNegar=5;
 window.vezNegar=0;
 window.travado=false;
+
+// =====================================
+// CLIENTE ATUAL: PERSISTENCIA
+// =====================================
+
+// Faz uma copia independente do objeto para salvar todos os campos.
+window.copiarClienteAtual=function(cliente){
+ if(!cliente)return null;
+
+ try{
+  return JSON.parse(JSON.stringify(cliente));
+ }catch(e){
+  console.error('Erro ao copiar cliente:',e);
+  return null;
+ }
+};
+
+// Restaura e exibe um cliente sem sortear outro.
+window.renderizarClienteAtual=function(){
+ if(!cur)return false;
+
+ window.travado=false;
+
+ let c=document.getElementById('choices');
+ if(c)c.style.pointerEvents='auto';
+
+ document.getElementById('clienteAvatar').innerText=cur.sig;
+ document.getElementById('clienteAvatar').style.background=cur.cor;
+
+ let cb=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
+
+ document.getElementById('clienteBox').style.borderColor=cb;
+ document.getElementById('nome').innerText=cur.n;
+ document.getElementById('tag').innerText=cur.r;
+ document.getElementById('tag').style.background=cb;
+
+ let f=cur.falaAtual;
+
+ if(!f){
+  f=cur.falas[Math.floor(Math.random()*cur.falas.length)];
+  cur.falaAtual=f;
+ }
+
+ document.getElementById('hist').innerText=f;
+ document.getElementById('bubble').innerText=cur.n+': "'+f+'"';
+
+ document.getElementById('pede').innerText='R$'+cur.pedeAtual;
+ document.getElementById('volta').innerText='R$'+cur.voltaAtual;
+ document.getElementById('chance').innerText=cur.chanceAtual+'%';
+
+ let div=document.getElementById('choices');
+ div.innerHTML='';
+
+ let tn=window.vezNegar===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
+
+ let ops=[
+  {t:'💵 EMPRESTAR R$'+cur.pedeAtual,d:'Recebe R$'+cur.voltaAtual,c:'amarelo',a:'emprestar'},
+  {t:tn,d:'Evita calote',c:'branco',a:'negar'},
+  {t:'😈 JUROS R$'+cur.voltaJurosAtual,d:'Recebe R$'+cur.voltaJurosAtual,c:'preto',a:'juros'}
+ ];
+
+ ops.forEach(o=>{
+  let b=document.createElement('button');
+  b.className='btn '+o.c;
+  b.innerHTML=o.t+'<small>'+o.d+'</small>';
+  b.onclick=()=>{jogar(o.a)};
+  div.appendChild(b);
+ });
+
+ return true;
+};
+
+// Salva o jogo depois que o cliente já está completamente montado.
+window.salvarClienteAtual=function(){
+ if(!cur)return;
+
+ if(typeof window.saveGame==='function'){
+  window.saveGame();
+ }
+};
+
+// Restaura o cliente salvo no armazenamento local antes do login.
+window.restaurarClienteLocal=function(){
+ try{
+  let usuario=localStorage.getItem('currentUser')||window.currentUser;
+  let dados=null;
+
+  if(usuario){
+   dados=JSON.parse(localStorage.getItem('save_'+usuario)||'null');
+  }
+
+  if(!dados){
+   dados=JSON.parse(localStorage.getItem('save_local')||'null');
+  }
+
+  let cliente=dados&&(dados.clienteAtual||dados.cur);
+
+  if(cliente){
+   cur=window.copiarClienteAtual(cliente);
+   return window.renderizarClienteAtual();
+  }
+ }catch(e){
+  console.warn('Nao foi possivel restaurar o cliente local:',e);
+ }
+
+ return false;
+};
 
 // =====================================
 // NOVO CLIENTE
@@ -207,24 +312,13 @@ window.novo=function(){
   }
  }
 
- cur=np;
+ cur=window.copiarClienteAtual(np);
+
  usado[cur.n]=(usado[cur.n]||0)+1;
  usado._ultimo=cur.n;
 
- document.getElementById('clienteAvatar').innerText=cur.sig;
- document.getElementById('clienteAvatar').style.background=cur.cor;
-
- let cb=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
-
- document.getElementById('clienteBox').style.borderColor=cb;
- document.getElementById('nome').innerText=cur.n;
- document.getElementById('tag').innerText=cur.r;
- document.getElementById('tag').style.background=cb;
-
  let f=cur.falas[Math.floor(Math.random()*cur.falas.length)];
-
- document.getElementById('hist').innerText=f;
- document.getElementById('bubble').innerText=cur.n+': "'+f+'"';
+ cur.falaAtual=f;
 
  let base=40+(level*18)+(day*2);
  let rm=cur.r=='BAIXO'?0.9:cur.r=='MÉDIO'?1.15:1.35;
@@ -249,28 +343,8 @@ window.novo=function(){
  cur.voltaJurosAtual=vcJuros;
  cur.chanceAtual=cc;
 
- document.getElementById('pede').innerText='R$'+pc;
- document.getElementById('volta').innerText='R$'+vc;
- document.getElementById('chance').innerText=cc+'%';
-
- let div=document.getElementById('choices');
- div.innerHTML='';
-
- let tn=window.vezNegar===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
-
- let ops=[
-  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc,c:'amarelo',a:'emprestar'},
-  {t:tn,d:'Evita calote',c:'branco',a:'negar'},
-  {t:'😈 JUROS R$'+vcJuros,d:'Recebe R$'+vcJuros,c:'preto',a:'juros'}
- ];
-
- ops.forEach(o=>{
-  let b=document.createElement('button');
-  b.className='btn '+o.c;
-  b.innerHTML=o.t+'<small>'+o.d+'</small>';
-  b.onclick=()=>{jogar(o.a)};
-  div.appendChild(b);
- });
+ window.renderizarClienteAtual();
+ window.salvarClienteAtual();
 };
 
 // =====================================
@@ -381,10 +455,6 @@ window.jogar=function(tipo){
 
  if(ch<5)ch=5;
 
- // O principal nao e descontado antes do resultado.
- // No sucesso, entra apenas o lucro liquido.
- // No calote, a perda e tratada pelas funcoes originais do index.
-
  let pagou=Math.random()*100<ch;
 
  if(pagou){
@@ -430,7 +500,7 @@ window.jogar=function(tipo){
 
   check();
 
-  // Mantem a tela de recuperacao aberta.
+  // O cliente permanece durante a recuperacao.
   window.travado=false;
   if(c)c.style.pointerEvents='auto';
  }
@@ -496,6 +566,14 @@ window.restartFull=function(){
  novo();
 };
 
+// =====================================
+// INICIALIZACAO
+// =====================================
+
 window.atualizarNivelXP();
 
-novo();
+// Primeiro tenta recuperar o cliente salvo.
+// Só sorteia um novo se não existir cliente persistido.
+if(!window.restaurarClienteLocal()){
+ window.novo();
+}
