@@ -1,9 +1,8 @@
-
 (function () {
   if (window.fixDesafios500Ativo) return;
   window.fixDesafios500Ativo = true;
 
-  console.log("FIX DESAFIOS 500 - CORRIGIDO");
+  console.log("FIX DESAFIOS 500 - ATUALIZAÇÃO EM SEGUNDO PLANO");
 
   const categorias = [
     {
@@ -93,7 +92,7 @@
           id: nivel * 100 + etapa + 1,
           t: `${categoria.nome} ${String(indice + 1).padStart(2, "0")}`,
           objetivo: categoria.descricao(meta),
-          meta: meta,
+          meta,
           premioDolar: dificuldade.estrelas,
           estrelas: dificuldade.estrelas,
           dif: dificuldade.nome,
@@ -148,25 +147,18 @@
 
     const categoria = categorias.find(c => c.tipo === d.tipo);
 
-    if (categoria) {
-      return categoria.descricao(d.meta);
-    }
+    if (categoria) return categoria.descricao(d.meta);
 
     return d.t || "Complete este desafio";
   }
 
   const novosDesafios = gerarDesafios();
 
-  // Preserva os IDs dos desafios que já estavam ativos.
   const idsAntigos = Array.isArray(ativasDesafios)
     ? ativasDesafios.map(d => Number(d.id))
     : [];
 
-  todosDesafios.splice(
-    0,
-    todosDesafios.length,
-    ...novosDesafios
-  );
+  todosDesafios.splice(0, todosDesafios.length, ...novosDesafios);
 
   ativasDesafios = idsAntigos
     .map(id => novosDesafios.find(d => d.id === id))
@@ -185,38 +177,8 @@
     proxDesafioIdx = 500;
   }
 
-  // Atualiza progresso e notificações sem abrir a tela.
-  function atualizarDesafios() {
-    if (!Array.isArray(ativasDesafios)) return;
+  let ultimaAssinatura = "";
 
-    ativasDesafios.forEach(d => {
-      d.prog = obterProgresso(d);
-      d.objetivo = obterDescricao(d);
-    });
-
-    desafiosParaColetar = ativasDesafios.filter(
-      d => d.prog >= d.meta
-    );
-
-    // Atualiza somente os avisos do Dolinha.
-    if (typeof atualizarNotificacoes === "function") {
-      atualizarNotificacoes();
-    }
-
-    // Mantém a área de coleta atualizada.
-    if (typeof renderColeta === "function") {
-      renderColeta();
-    }
-
-    // Só redesenha os cartões se o jogador já abriu o modal.
-    const modal = document.getElementById("desafiosModal");
-
-    if (modal && modal.style.display === "flex") {
-      renderizarLista();
-    }
-  }
-
-  // Layout dos desafios seguindo o padrão das conquistas.
   function renderizarLista() {
     let html = `
       <div class="conquistaCard">
@@ -255,21 +217,60 @@
 
     const lista = document.getElementById("listaDesafios");
 
-    if (lista) {
-      lista.innerHTML = html;
+    if (lista) lista.innerHTML = html;
+  }
+
+  // Atualiza os dados sem abrir o modal.
+  function atualizarDesafios() {
+    if (!Array.isArray(ativasDesafios)) return;
+
+    ativasDesafios.forEach(d => {
+      d.prog = obterProgresso(d);
+      d.objetivo = obterDescricao(d);
+    });
+
+    const prontos = ativasDesafios.filter(d => d.prog >= d.meta);
+
+    const assinatura = ativasDesafios
+      .map(d => `${d.id}:${d.prog}:${d.prog >= d.meta}`)
+      .join("|");
+
+    const mudou = assinatura !== ultimaAssinatura;
+    ultimaAssinatura = assinatura;
+
+    desafiosParaColetar = prontos;
+
+    // Atualiza o Dolinha.
+    if (typeof atualizarNotificacoes === "function") {
+      atualizarNotificacoes();
+    }
+
+    // Atualiza a área de coleta apenas quando necessário.
+    if (mudou && typeof renderColeta === "function") {
+      renderColeta();
+    }
+
+    // Atualiza as barras somente se o modal já estiver aberto.
+    const modal = document.getElementById("desafiosModal");
+
+    if (mudou && modal && modal.style.display === "flex") {
+      renderizarLista();
     }
   }
 
-  // Só abre quando o jogador clicar no botão Desafios.
+  // O modal só abre quando o jogador clicar no botão.
   window.openDesafios = function () {
     atualizarDesafios();
     renderizarLista();
 
-    document.getElementById("desafiosModal").style.display = "flex";
+    const modal = document.getElementById("desafiosModal");
+
+    if (modal) modal.style.display = "flex";
   };
 
-  // Coleta a recompensa e libera o próximo desafio.
   window.coletarDesafio = function (id) {
+    atualizarDesafios();
+
     const idx = ativasDesafios.findIndex(
       d => Number(d.id) === Number(id)
     );
@@ -277,8 +278,6 @@
     if (idx < 0) return;
 
     const d = ativasDesafios[idx];
-
-    d.prog = obterProgresso(d);
 
     if (d.prog < d.meta) return;
 
@@ -291,6 +290,8 @@
       proxDesafioIdx++;
     }
 
+    // Recalcula imediatamente os avisos.
+    ultimaAssinatura = "";
     atualizarDesafios();
 
     if (typeof check === "function") {
@@ -304,7 +305,7 @@
     renderizarLista();
   };
 
-  // Atualização automática depois das ações do jogo.
+  // Atualiza depois das ações normais do jogo.
   const checkOriginal = window.check;
 
   if (typeof checkOriginal === "function") {
@@ -325,7 +326,7 @@
     };
   }
 
-  // Conta vídeos somente quando a recompensa é liberada.
+  // Conta somente recompensas efetivamente liberadas pelo jogo.
   const recompensaOriginal = window.recompensaLiberada;
 
   if (typeof recompensaOriginal === "function") {
@@ -337,7 +338,7 @@
 
       if (tipo) {
         usado._videosAssistidos =
-          (usado._videosAssistidos || 0) + 1;
+          (Number(usado._videosAssistidos) || 0) + 1;
 
         const ganho = Math.max(
           0,
@@ -346,7 +347,7 @@
 
         if (ganho > 0) {
           usado._dinheiroAnuncios =
-            (usado._dinheiroAnuncios || 0) + ganho;
+            (Number(usado._dinheiroAnuncios) || 0) + ganho;
         }
 
         atualizarDesafios();
@@ -360,7 +361,10 @@
     };
   }
 
-  // Primeira atualização, sem abrir qualquer modal.
+  // Verificação independente em segundo plano.
+  // Não abre modal nem interrompe o jogo.
+  setInterval(atualizarDesafios, 1000);
+
   atualizarDesafios();
 
 })();
