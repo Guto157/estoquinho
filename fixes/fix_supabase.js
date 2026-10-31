@@ -1,9 +1,9 @@
+
 // SUPABASE: LOGIN E SALVAMENTO NA NUVEM
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_Bd-vtxSYz23BH0L8k744SA_9t12A4dv';
 
-  // Carrega a biblioteca do Supabase
   function carregarBiblioteca() {
     return new Promise((resolve, reject) => {
       if (window.supabase?.createClient) return resolve();
@@ -11,7 +11,7 @@
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
       script.onload = resolve;
-      script.onerror = () => reject(new Error('Não foi possível carregar o Supabase.'));
+      script.onerror = () => reject(new Error('Falha ao carregar Supabase'));
       document.head.appendChild(script);
     });
   }
@@ -37,7 +37,7 @@
   const campoSenha = document.getElementById('loginPass');
   const botaoLogin = modal.querySelector('.btn.amarelo');
 
-  // Adiciona o campo de e-mail sem precisar alterar o index.html
+  // Campo de e-mail
   if (!document.getElementById('loginEmail')) {
     const email = document.createElement('input');
     email.id = 'loginEmail';
@@ -55,10 +55,9 @@
   campoNome.placeholder = 'Seu nome de jogador';
   campoNome.autocomplete = 'nickname';
   campoSenha.placeholder = 'Senha (mínimo 6 caracteres)';
-  campoSenha.autocomplete = 'current-password';
   botaoLogin.textContent = 'ENTRAR';
 
-  // Botão separado para criar conta
+  // Botão de cadastro
   let botaoCadastro = document.getElementById('botaoCadastroSupabase');
 
   if (!botaoCadastro) {
@@ -88,49 +87,33 @@
     document.getElementById('menuUser').innerText = nomeJogador || '-';
   }
 
+  // Captura o progresso do jogo e os itens permanentes
   function dadosDoJogo() {
-    return {
-      day, money, fame, level, dolar, inv, usado,
-      totalEmp, totalLucro, jurosCount, negarCount,
-      conquistasColetadas, tituloEscolhido,
-      proxMissaoIdx, proxDesafioIdx,
-      ativasMissoes, ativasDesafios
+    const dados = {
+      day,
+      money,
+      fame,
+      level,
+      dolar,
+      inv,
+      usado,
+      totalEmp,
+      totalLucro,
+      jurosCount,
+      negarCount,
+      conquistasColetadas,
+      tituloEscolhido,
+      proxMissaoIdx,
+      proxDesafioIdx,
+      ativasMissoes,
+      ativasDesafios
     };
-  }
 
-  function aplicarDados(dados) {
-    if (!dados) return;
+    // A lojinha mantém seus itens em uma chave separada
+    dados.lojinhaPermanente =
+      localStorage.getItem('lojinha_permanente_' + currentUser);
 
-    try {
-      if (dados.day !== undefined) day = dados.day;
-      if (dados.money !== undefined) money = dados.money;
-      if (dados.fame !== undefined) fame = dados.fame;
-      if (dados.level !== undefined) level = dados.level;
-      if (dados.dolar !== undefined) dolar = dados.dolar;
-      if (dados.inv !== undefined) inv = dados.inv;
-      if (dados.usado !== undefined) usado = dados.usado;
-      if (dados.totalEmp !== undefined) totalEmp = dados.totalEmp;
-      if (dados.totalLucro !== undefined) totalLucro = dados.totalLucro;
-      if (dados.jurosCount !== undefined) jurosCount = dados.jurosCount;
-      if (dados.negarCount !== undefined) negarCount = dados.negarCount;
-      if (dados.conquistasColetadas !== undefined) conquistasColetadas = dados.conquistasColetadas;
-      if (dados.tituloEscolhido !== undefined) tituloEscolhido = dados.tituloEscolhido;
-      if (dados.proxMissaoIdx !== undefined) proxMissaoIdx = dados.proxMissaoIdx;
-      if (dados.proxDesafioIdx !== undefined) proxDesafioIdx = dados.proxDesafioIdx;
-      if (dados.ativasMissoes !== undefined) ativasMissoes = dados.ativasMissoes;
-      if (dados.ativasDesafios !== undefined) ativasDesafios = dados.ativasDesafios;
-    } catch (erro) {
-      console.error('Erro ao aplicar o progresso:', erro);
-    }
-
-    try {
-      if (typeof renderSlots === 'function') renderSlots();
-      if (typeof atualizarTituloAvatar === 'function') atualizarTituloAvatar();
-      if (typeof novo === 'function') novo();
-      if (typeof check === 'function') check();
-    } catch (erro) {
-      console.error('Erro ao atualizar a tela:', erro);
-    }
+    return dados;
   }
 
   async function salvarNuvem() {
@@ -149,20 +132,29 @@
 
       if (error) throw error;
 
-      localStorage.setItem('save_' + nomeJogador, JSON.stringify(dados));
-      console.log('Progresso sincronizado com a nuvem.');
+      localStorage.setItem(
+        'save_' + nomeJogador,
+        JSON.stringify(dados)
+      );
+
+      console.log('Progresso e lojinha sincronizados com a nuvem.');
     } catch (erro) {
       console.error('Erro ao salvar na nuvem:', erro);
     }
   }
 
-  // Substitui o salvamento local por salvamento local + nuvem
+  // Salvamento local e sincronização automática
   window.saveGame = function () {
     if (!currentUser) return;
 
     try {
       const dados = dadosDoJogo();
-      localStorage.setItem('save_' + currentUser, JSON.stringify(dados));
+
+      localStorage.setItem(
+        'save_' + currentUser,
+        JSON.stringify(dados)
+      );
+
       localStorage.setItem('currentUser', currentUser);
     } catch (erro) {
       console.error('Erro no salvamento local:', erro);
@@ -197,10 +189,28 @@
     }
 
     if (data?.game_data) {
-      localStorage.setItem('save_' + currentUser, JSON.stringify(data.game_data));
-      aplicarDados(data.game_data);
+      const progresso = data.game_data;
+
+      // Restaura os itens permanentes antes de carregar o jogo
+      if (progresso.lojinhaPermanente !== undefined &&
+          progresso.lojinhaPermanente !== null) {
+        localStorage.setItem(
+          'lojinha_permanente_' + currentUser,
+          progresso.lojinhaPermanente
+        );
+      }
+
+      localStorage.setItem(
+        'save_' + currentUser,
+        JSON.stringify(progresso)
+      );
+
+      // Usa o carregador já existente no jogo
+      if (typeof carregarSave === 'function') {
+        carregarSave();
+      }
     } else {
-      // Conta nova: começa com o progresso inicial do jogo
+      // Conta nova
       if (typeof novo === 'function') novo();
       if (typeof check === 'function') check();
     }
@@ -209,12 +219,12 @@
     modal.style.display = 'none';
     limparMensagem();
 
-    // Salva imediatamente a primeira partida da conta nova
     if (!data?.game_data) await salvarNuvem();
 
     console.log('Jogador conectado:', nomeJogador);
   }
 
+  // Entrar
   window.fazerLogin = async function () {
     limparMensagem();
 
@@ -248,9 +258,13 @@
       return;
     }
 
-    await abrirJogo(data.user, data.user.user_metadata?.username);
+    await abrirJogo(
+      data.user,
+      data.user.user_metadata?.username
+    );
   };
 
+  // Criar conta
   botaoCadastro.onclick = async function () {
     limparMensagem();
 
@@ -301,7 +315,7 @@
     }
   };
 
-  // Sai também da conta do Supabase
+  // Sair
   window.logout = async function () {
     if (saveTimer) clearTimeout(saveTimer);
     await salvarNuvem();
@@ -314,6 +328,7 @@
     currentUser = null;
 
     localStorage.removeItem('currentUser');
+
     modal.style.display = 'flex';
     campoSenha.value = '';
     campoEmail.value = '';
@@ -323,13 +338,14 @@
     if (typeof closeMenu === 'function') closeMenu();
   };
 
-  // Impede que uma sessão antiga do login local seja aceita
+  // Desconsidera o antigo login local
   currentUser = null;
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
-  // Verifica se já existe uma sessão válida no Supabase
-  const { data: sessao, error: erroSessao } = await sb.auth.getSession();
+  // Recupera sessão existente
+  const { data: sessao, error: erroSessao } =
+    await sb.auth.getSession();
 
   if (erroSessao) {
     console.error(erroSessao);
@@ -339,12 +355,16 @@
 
   if (sessao.session) {
     const usuario = sessao.session.user;
-    await abrirJogo(usuario, usuario.user_metadata?.username);
+
+    await abrirJogo(
+      usuario,
+      usuario.user_metadata?.username
+    );
   } else {
     console.log('Aguardando login do jogador.');
   }
 
-  sb.auth.onAuthStateChange((evento, sessaoAtual) => {
+  sb.auth.onAuthStateChange((evento) => {
     if (evento === 'SIGNED_OUT') {
       usuarioId = null;
       nomeJogador = null;
