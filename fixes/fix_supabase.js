@@ -1,5 +1,4 @@
-
-// SUPABASE: LOGIN, PROTECAO DE VERSAO E SINCRONIZACAO EM TEMPO REAL
+// SUPABASE: LOGIN, PROTECAO DE VERSAO, XP E SINCRONIZACAO EM TEMPO REAL
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_Bd-vtxSYz23BH0L8k744SA_9t12A4dv';
@@ -36,13 +35,11 @@
   let versaoNuvem = 0;
   let sincronizacaoBloqueada = false;
 
-  // CONTROLE DAS ALTERACOES LOCAIS
   let alteracoesPendentes = false;
   let revisaoLocal = 0;
   let aplicandoProgresso = false;
   let avisoConflitoExibido = false;
 
-  // REALTIME
   let canalRealtime = null;
   let processandoEvento = false;
   let eventoPendente = false;
@@ -132,6 +129,7 @@
 
   function mensagem(msg) {
     const el = document.getElementById('loginErro');
+
     el.innerText = msg;
     el.style.display = 'block';
     el.style.background = '#FFF3CD';
@@ -149,10 +147,12 @@
 
   if (!document.getElementById('loginEmail')) {
     const email = document.createElement('input');
+
     email.id = 'loginEmail';
     email.type = 'email';
     email.placeholder = 'Seu e-mail';
     email.autocomplete = 'email';
+
     email.style.cssText =
       'width:100%;padding:10px;border:2.5px solid #111;border-radius:10px;margin-top:6px;box-sizing:border-box';
 
@@ -169,13 +169,18 @@
   let botaoCadastro = document.getElementById('botaoCadastroSupabase');
 
   if (!botaoCadastro) {
-    botaoCadastro = document.createElement('button');
+    botaoCadastro = document.createElement('button';
     botaoCadastro.id = 'botaoCadastroSupabase';
     botaoCadastro.className = 'btn preto';
     botaoCadastro.textContent = 'CRIAR CONTA';
     botaoCadastro.style.cssText = 'width:100%;margin-top:8px';
+
     botaoLogin.insertAdjacentElement('afterend', botaoCadastro);
   }
+
+  // =====================================================
+  // DADOS DO JOGO, INCLUINDO XP
+  // =====================================================
 
   function dadosDoJogo() {
     const inventario = obterInventarioAtual();
@@ -185,6 +190,10 @@
       money,
       fame,
       level,
+
+      // XP do jogador
+      xp: Math.max(0, Number(window.xpAtual) || 0),
+
       dolar,
       inv: inventario,
       usado,
@@ -202,6 +211,10 @@
     };
   }
 
+  // =====================================================
+  // APLICAR PROGRESSO RECEBIDO DO SUPABASE
+  // =====================================================
+
   function aplicarProgresso(progresso, inventarioFinal) {
     aplicandoProgresso = true;
 
@@ -209,8 +222,28 @@
       day = progresso.day ?? 1;
       money = progresso.money ?? 500;
       fame = progresso.fame ?? 1;
-      level = progresso.level ?? 1;
-      dolar = progresso.dolar ?? 0;
+
+      level = Math.min(
+        1000,
+        Math.max(1, Number(progresso.level ?? 1))
+      );
+
+      window.xpAtual = Math.max(
+        0,
+        Number(progresso.xp ?? progresso.xpAtual ?? 0) || 0
+      );
+
+      // Normaliza XP acumulado, se necessário.
+      if (typeof window.xpNecessarioProximoNivel === 'function') {
+        while (level < 1000) {
+          const necessario = window.xpNecessarioProximoNivel();
+
+          if (window.xpAtual < necessario) break;
+
+          window.xpAtual -= necessario;
+          level++;
+        }
+      }
 
       inv = inventarioFinal;
 
@@ -234,17 +267,40 @@
         ativasDesafios = progresso.ativasDesafios;
       }
 
-      if (typeof renderSlots === 'function') renderSlots();
-      if (typeof atualizarTituloAvatar === 'function') atualizarTituloAvatar();
-      if (typeof check === 'function') check();
+      if (typeof renderSlots === 'function') {
+        renderSlots();
+      }
+
+      if (typeof atualizarTituloAvatar === 'function') {
+        atualizarTituloAvatar();
+      }
+
+      if (typeof check === 'function') {
+        check();
+      }
+
+      if (typeof window.atualizarBarraXP === 'function') {
+        window.atualizarBarraXP();
+      }
 
       console.log('PROGRESSO APLICADO:', {
-        day, money, level, fame, dolar, inv
+        day,
+        money,
+        level,
+        xp: window.xpAtual,
+        fame,
+        dolar,
+        inv
       });
+
     } finally {
       aplicandoProgresso = false;
     }
   }
+
+  // =====================================================
+  // PROTEÇÃO CONTRA CONFLITOS
+  // =====================================================
 
   function bloquearPorConflito(motivo) {
     sincronizacaoBloqueada = true;
@@ -268,6 +324,10 @@
     }
   }
 
+  // =====================================================
+  // SALVAR NA NUVEM
+  // =====================================================
+
   async function salvarNuvem() {
     if (
       !usuarioId ||
@@ -279,6 +339,7 @@
     }
 
     salvamentoEmAndamento = true;
+
     const revisaoSalva = revisaoLocal;
 
     try {
@@ -291,6 +352,7 @@
 
       dadosAtuais.inv = inventarioFinal;
       dadosAtuais.lojinhaPermanente = inventarioFinal;
+
       inv = inventarioFinal;
 
       const { data, error } = await sb.rpc(
@@ -310,6 +372,7 @@
           versaoLocal: versaoNuvem,
           versaoNuvemAtual: resultado?.current_version
         });
+
         return;
       }
 
@@ -318,7 +381,10 @@
       const chave = chaveInventario();
 
       if (chave) {
-        localStorage.setItem(chave, JSON.stringify(inventarioFinal));
+        localStorage.setItem(
+          chave,
+          JSON.stringify(inventarioFinal)
+        );
       }
 
       localStorage.setItem(
@@ -334,12 +400,14 @@
         money: dadosAtuais.money,
         day: dadosAtuais.day,
         level: dadosAtuais.level,
+        xp: dadosAtuais.xp,
         version: versaoNuvem,
         inventario: inventarioFinal
       });
 
     } catch (erro) {
       console.error('Erro ao salvar na nuvem:', erro);
+
     } finally {
       salvamentoEmAndamento = false;
 
@@ -371,12 +439,17 @@
     alteracoesPendentes = true;
     revisaoLocal++;
 
-    if (saveTimer) clearTimeout(saveTimer);
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+    }
 
     saveTimer = setTimeout(salvarNuvem, 1500);
   }
 
-  // RECEBE E APLICA ALTERACOES DE OUTROS DISPOSITIVOS
+  // =====================================================
+  // RECEBER ALTERAÇÕES DE OUTROS DISPOSITIVOS
+  // =====================================================
+
   async function processarAtualizacaoRemota() {
     if (
       !usuarioId ||
@@ -407,13 +480,13 @@
 
       if (novaVersao <= versaoNuvem) return;
 
-      // NAO SUBSTITUI ALTERACOES LOCAIS AINDA NAO SALVAS
       if (alteracoesPendentes || salvamentoEmAndamento) {
         bloquearPorConflito({
           motivo: 'Chegou uma atualização enquanto havia alterações locais pendentes.',
           versaoLocal: versaoNuvem,
           versaoRemota: novaVersao
         });
+
         return;
       }
 
@@ -429,7 +502,10 @@
       const chave = chaveInventario();
 
       if (chave) {
-        localStorage.setItem(chave, JSON.stringify(inventarioFinal));
+        localStorage.setItem(
+          chave,
+          JSON.stringify(inventarioFinal)
+        );
       }
 
       aplicarProgresso(progresso, inventarioFinal);
@@ -448,11 +524,13 @@
         money,
         day,
         level,
+        xp: window.xpAtual,
         inv
       });
 
     } catch (erro) {
       console.error('Erro ao receber atualização remota:', erro);
+
     } finally {
       processandoEvento = false;
 
@@ -462,6 +540,10 @@
       }
     }
   }
+
+  // =====================================================
+  // REALTIME
+  // =====================================================
 
   function configurarRealtime() {
     if (!usuarioId || !carregamentoConcluido) return;
@@ -497,7 +579,10 @@
       });
   }
 
+  // =====================================================
   // INTERCEPTA O SALVAMENTO ORIGINAL
+  // =====================================================
+
   const salvarJogoAnterior = window.saveGame;
 
   window.saveGame = function () {
@@ -524,18 +609,26 @@
     agendarSalvamentoNuvem();
   };
 
-  // SINCRONIZA APOS COMPRAR ITEM
+  // =====================================================
+  // SINCRONIZA APÓS COMPRAR ITEM
+  // =====================================================
+
   if (typeof window.comprarItem === 'function') {
     const comprarItemAnterior = window.comprarItem;
 
     window.comprarItem = function () {
       const resultado = comprarItemAnterior.apply(this, arguments);
+
       agendarSalvamentoNuvem();
+
       return resultado;
     };
   }
 
+  // =====================================================
   // CARREGAMENTO PRINCIPAL
+  // =====================================================
+
   async function abrirJogo(usuario, nome) {
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
@@ -563,6 +656,7 @@
     localStorage.setItem('currentUser', currentUser);
 
     campoNome.value = nomeJogador;
+
     atualizarMenu();
 
     mensagem('Carregando seu progresso...');
@@ -575,7 +669,9 @@
 
     if (error) {
       console.error(error);
+
       mensagem('Erro ao carregar seu progresso. Tente novamente.');
+
       return;
     }
 
@@ -593,6 +689,7 @@
       saveLocal = JSON.parse(
         localStorage.getItem('save_' + currentUser) || '{}'
       );
+
     } catch (e) {
       saveLocal = {};
     }
@@ -617,7 +714,10 @@
       );
 
       if (chave) {
-        localStorage.setItem(chave, JSON.stringify(inventarioFinal));
+        localStorage.setItem(
+          chave,
+          JSON.stringify(inventarioFinal)
+        );
       }
 
       aplicarProgresso(progresso, inventarioFinal);
@@ -629,7 +729,9 @@
         JSON.stringify(dadosCarregados)
       );
 
-      if (typeof renderSlots === 'function') renderSlots();
+      if (typeof renderSlots === 'function') {
+        renderSlots();
+      }
 
     } else {
       if (saveLocal && Object.keys(saveLocal).length > 0) {
@@ -639,8 +741,12 @@
         );
 
         aplicarProgresso(saveLocal, inventarioFinal);
+
       } else {
-        inv = mesclarInventarios(inventarioLocal, inventarioSaveLocal);
+        inv = mesclarInventarios(
+          inventarioLocal,
+          inventarioSaveLocal
+        );
 
         if (typeof novo === 'function') novo();
         if (typeof check === 'function') check();
@@ -656,7 +762,12 @@
 
     carregamentoConcluido = true;
 
+    if (typeof window.atualizarBarraXP === 'function') {
+      window.atualizarBarraXP();
+    }
+
     modal.style.display = 'none';
+
     limparMensagem();
 
     configurarRealtime();
@@ -666,12 +777,16 @@
       money,
       day,
       level,
+      xp: window.xpAtual,
       version: versaoNuvem,
       inv
     });
   }
 
+  // =====================================================
   // LOGIN
+  // =====================================================
+
   window.fazerLogin = async function () {
     limparMensagem();
 
@@ -701,14 +816,22 @@
 
     if (error) {
       mensagem('Não foi possível entrar. Confira o e-mail e a senha.');
+
       console.error(error);
+
       return;
     }
 
-    await abrirJogo(data.user, data.user.user_metadata?.username);
+    await abrirJogo(
+      data.user,
+      data.user.user_metadata?.username
+    );
   };
 
+  // =====================================================
   // CRIAR CONTA
+  // =====================================================
+
   botaoCadastro.onclick = async function () {
     limparMensagem();
 
@@ -748,12 +871,15 @@
 
     if (error) {
       mensagem('Erro ao criar conta: ' + error.message);
+
       console.error(error);
+
       return;
     }
 
     if (data.session) {
       await abrirJogo(data.user, nome);
+
     } else {
       mensagem(
         'Conta criada! Confira seu e-mail e clique no link de confirmação para entrar.'
@@ -761,7 +887,10 @@
     }
   };
 
+  // =====================================================
   // SAIR
+  // =====================================================
+
   window.logout = async function () {
     if (saveTimer) {
       clearTimeout(saveTimer);
@@ -788,26 +917,39 @@
     localStorage.removeItem('currentUser');
 
     modal.style.display = 'flex';
+
     campoSenha.value = '';
     campoEmail.value = '';
 
     atualizarMenu();
 
-    if (typeof closeMenu === 'function') closeMenu();
+    if (typeof closeMenu === 'function') {
+      closeMenu();
+    }
   };
 
+  // =====================================================
   // IGNORA LOGIN ANTIGO
+  // =====================================================
+
   currentUser = null;
+
   localStorage.removeItem('currentUser');
+
   modal.style.display = 'flex';
 
-  // VERIFICA SESSAO
+  // =====================================================
+  // VERIFICA SESSÃO
+  // =====================================================
+
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
   if (erroSessao) {
     console.error(erroSessao);
+
     mensagem('Não foi possível verificar sua sessão. Atualize a página.');
+
     return;
   }
 
@@ -818,9 +960,14 @@
       usuario,
       usuario.user_metadata?.username
     );
+
   } else {
     console.log('Aguardando login do jogador.');
   }
+
+  // =====================================================
+  // ESTADO DE AUTENTICAÇÃO
+  // =====================================================
 
   sb.auth.onAuthStateChange((evento) => {
     if (evento === 'SIGNED_OUT') {
