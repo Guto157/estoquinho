@@ -35,13 +35,11 @@
   let versaoNuvem = 0;
   let sincronizacaoBloqueada = false;
 
-  // CONTROLE DAS ALTERACOES LOCAIS
   let alteracoesPendentes = false;
   let revisaoLocal = 0;
   let aplicandoProgresso = false;
   let avisoConflitoExibido = false;
 
-  // REALTIME
   let canalRealtime = null;
   let processandoEvento = false;
   let eventoPendente = false;
@@ -188,7 +186,7 @@
       money,
       fame,
       level,
-      xpAtual: Math.max(0, Number(window.xpAtual) || 0),
+      xpAtual: Number(window.xpAtual) || 0,
       dolar,
       inv: inventario,
       usado,
@@ -218,7 +216,7 @@
       money = progresso.money ?? 500;
       fame = progresso.fame ?? 1;
       level = progresso.level ?? 1;
-      window.xpAtual = Math.max(0, Number(progresso.xpAtual) || 0);
+      window.xpAtual = progresso.xpAtual ?? 0;
       dolar = progresso.dolar ?? 0;
 
       inv = inventarioFinal;
@@ -243,6 +241,10 @@
         ativasDesafios = progresso.ativasDesafios;
       }
 
+      if (typeof window.atualizarNivelXP === 'function') {
+        window.atualizarNivelXP();
+      }
+
       if (typeof renderSlots === 'function') renderSlots();
       if (typeof atualizarTituloAvatar === 'function') atualizarTituloAvatar();
       if (typeof check === 'function') check();
@@ -252,7 +254,13 @@
       }
 
       console.log('PROGRESSO APLICADO:', {
-        day, money, level, xpAtual: window.xpAtual, fame, dolar, inv
+        day,
+        money,
+        level,
+        xpAtual: window.xpAtual,
+        fame,
+        dolar,
+        inv
       });
     } finally {
       aplicandoProgresso = false;
@@ -280,6 +288,10 @@
       );
     }
   }
+
+  // =====================================================
+  // SALVAR NA NUVEM
+  // =====================================================
 
   async function salvarNuvem() {
     if (
@@ -390,7 +402,10 @@
     saveTimer = setTimeout(salvarNuvem, 1500);
   }
 
-  // RECEBE E APLICA ALTERACOES DE OUTROS DISPOSITIVOS
+  // =====================================================
+  // RECEBER ALTERACOES DE OUTROS DISPOSITIVOS
+  // =====================================================
+
   async function processarAtualizacaoRemota() {
     if (
       !usuarioId ||
@@ -421,7 +436,6 @@
 
       if (novaVersao <= versaoNuvem) return;
 
-      // NAO SUBSTITUI ALTERACOES LOCAIS AINDA NAO SALVAS
       if (alteracoesPendentes || salvamentoEmAndamento) {
         bloquearPorConflito({
           motivo: 'Chegou uma atualização enquanto havia alterações locais pendentes.',
@@ -512,7 +526,10 @@
       });
   }
 
+  // =====================================================
   // INTERCEPTA O SALVAMENTO ORIGINAL
+  // =====================================================
+
   const salvarJogoAnterior = window.saveGame;
 
   window.saveGame = function () {
@@ -539,7 +556,10 @@
     agendarSalvamentoNuvem();
   };
 
-  // SINCRONIZA APOS COMPRAR ITEM
+  // =====================================================
+  // SINCRONIZA APÓS COMPRAR ITEM
+  // =====================================================
+
   if (typeof window.comprarItem === 'function') {
     const comprarItemAnterior = window.comprarItem;
 
@@ -550,7 +570,10 @@
     };
   }
 
+  // =====================================================
   // CARREGAMENTO PRINCIPAL
+  // =====================================================
+
   async function abrirJogo(usuario, nome) {
     usuarioId = usuario.id;
     nomeJogador = nome || usuario.email.split('@')[0];
@@ -657,8 +680,8 @@
       } else {
         inv = mesclarInventarios(inventarioLocal, inventarioSaveLocal);
 
-        // Sem save anterior, começa com XP zerado.
         window.xpAtual = 0;
+        level = 1;
 
         if (typeof novo === 'function') novo();
         if (typeof check === 'function') check();
@@ -673,10 +696,6 @@
     }
 
     carregamentoConcluido = true;
-
-    if (typeof window.atualizarBarraXP === 'function') {
-      window.atualizarBarraXP();
-    }
 
     modal.style.display = 'none';
     limparMensagem();
@@ -694,7 +713,10 @@
     });
   }
 
+  // =====================================================
   // LOGIN
+  // =====================================================
+
   window.fazerLogin = async function () {
     limparMensagem();
 
@@ -731,7 +753,10 @@
     await abrirJogo(data.user, data.user.user_metadata?.username);
   };
 
+  // =====================================================
   // CRIAR CONTA
+  // =====================================================
+
   botaoCadastro.onclick = async function () {
     limparMensagem();
 
@@ -784,7 +809,10 @@
     }
   };
 
+  // =====================================================
   // SAIR
+  // =====================================================
+
   window.logout = async function () {
     if (saveTimer) {
       clearTimeout(saveTimer);
@@ -819,12 +847,18 @@
     if (typeof closeMenu === 'function') closeMenu();
   };
 
+  // =====================================================
   // IGNORA LOGIN ANTIGO
+  // =====================================================
+
   currentUser = null;
   localStorage.removeItem('currentUser');
   modal.style.display = 'flex';
 
+  // =====================================================
   // VERIFICA SESSAO
+  // =====================================================
+
   const { data: sessao, error: erroSessao } =
     await sb.auth.getSession();
 
