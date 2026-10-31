@@ -1,6 +1,6 @@
 
-// fixes/fix_home.js - SISTEMA FINANCEIRO E SALVAMENTO
-console.log("FIX HOME - FINANCEIRO E SALVAMENTO CORRIGIDOS");
+// fixes/fix_home.js - SISTEMA FINANCEIRO, DIÁLOGOS E SALVAMENTO
+console.log("FIX HOME - FINANCEIRO, DIÁLOGOS E GIROFLEX");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -15,21 +15,249 @@ function fb(v,t){
  setTimeout(function(){e.remove()},2200);
 }
 
+// =====================================================
+// DIÁLOGOS DOS CLIENTES
+// =====================================================
+
+const dialogosClientes = [
+ "Estou precisando de uma força. É só até o fim da semana!",
+ "Tive um imprevisto e fiquei sem dinheiro. Pode me ajudar?",
+ "Prometo que pago certinho. Não costumo atrasar!",
+ "Meu pagamento ainda não caiu. Preciso resolver uma coisa.",
+ "Apareceu uma conta que eu não estava esperando.",
+ "Estou numa situação complicada. Você consegue quebrar essa?",
+ "Preciso de dinheiro para resolver um problema urgente.",
+ "É um empréstimo rápido. Logo você recebe de volta.",
+ "Estou esperando receber um dinheiro. Só preciso de uma ajuda.",
+ "Não queria pedir, mas hoje realmente estou precisando.",
+ "Tive um gasto inesperado e meu orçamento foi embora.",
+ "Me ajuda dessa vez? Na próxima semana eu acerto tudo.",
+ "É uma oportunidade que apareceu e não posso perder.",
+ "Estou apertado hoje, mas tenho como pagar depois.",
+ "Pode confiar. Quero resolver isso sem deixar ninguém na mão."
+];
+
+// =====================================================
+// DIÁLOGOS DOS POLICIAIS DISFARÇADOS
+// =====================================================
+
+const dialogosPoliciais = [
+ "Preciso de um dinheiro para resolver um assunto na delegacia...",
+ "Você costuma emprestar dinheiro para pessoas que fazem perguntas?",
+ "Estou trabalhando numa investigação e surgiu um imprevisto.",
+ "Meu documento está aqui, mas prefiro não mostrar agora.",
+ "Você sabe se tem alguma câmera funcionando por aqui?",
+ "Preciso levantar umas informações antes de continuar.",
+ "Esse lugar costuma receber muita gente durante o dia?",
+ "Estou com uma ocorrência para resolver e preciso de dinheiro.",
+ "Não se preocupe, estou acostumado a lidar com situações assim.",
+ "Você conhece alguém que trabalha na segurança pública?",
+ "Estou fazendo umas verificações por aqui. É coisa de rotina.",
+ "Depois talvez eu precise fazer algumas perguntas. Por enquanto, só preciso de ajuda.",
+ "Você sempre empresta dinheiro sem perguntar muita coisa?",
+ "Estou acompanhando uma situação suspeita aqui na região.",
+ "Melhor não comentar muito sobre meu trabalho. Pode me ajudar?"
+];
+
+// =====================================================
+// ESTILO DO BALÃO DE DIÁLOGO
+// =====================================================
+
+(function(){
+ if(document.getElementById('fix-dialogos-style'))return;
+
+ const style=document.createElement('style');
+ style.id='fix-dialogos-style';
+
+ style.textContent=`
+  #bubble {
+    display:block !important;
+    position:relative;
+    background:#fff !important;
+    color:#222 !important;
+    border:2px solid #ddd !important;
+    border-radius:16px !important;
+    padding:14px 16px !important;
+    margin:12px 5px 18px !important;
+    font-size:15px !important;
+    font-weight:600 !important;
+    line-height:1.5 !important;
+    text-align:left !important;
+    box-shadow:0 3px 8px rgba(0,0,0,.15);
+    min-height:45px;
+  }
+
+  #bubble:before {
+    content:"";
+    position:absolute;
+    top:-10px;
+    left:24px;
+    width:16px;
+    height:16px;
+    background:#fff;
+    border-top:2px solid #ddd;
+    border-left:2px solid #ddd;
+    transform:rotate(45deg);
+  }
+
+  #hist {
+    display:none !important;
+  }
+
+  #giroflex-policial {
+    position:fixed;
+    inset:0;
+    z-index:99998;
+    pointer-events:none;
+    animation:giroflexFlash .18s infinite alternate;
+  }
+
+  #giroflex-policial .giroflex-luzes {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:13px;
+    display:flex;
+  }
+
+  #giroflex-policial .luz-azul {
+    width:50%;
+    background:#0066ff;
+    box-shadow:0 0 30px 12px #0066ff;
+    animation:luzAzul .25s infinite alternate;
+  }
+
+  #giroflex-policial .luz-vermelha {
+    width:50%;
+    background:#ff0000;
+    box-shadow:0 0 30px 12px #ff0000;
+    animation:luzVermelha .25s infinite alternate;
+  }
+
+  @keyframes giroflexFlash {
+    0% {background:rgba(0,70,255,.10)}
+    100% {background:rgba(255,0,0,.10)}
+  }
+
+  @keyframes luzAzul {
+    0% {opacity:1}
+    100% {opacity:.25}
+  }
+
+  @keyframes luzVermelha {
+    0% {opacity:.25}
+    100% {opacity:1}
+  }
+ `;
+
+ document.head.appendChild(style);
+})();
+
+// =====================================================
+// EFEITO GIROFLEX
+// =====================================================
+
+window.giroflexPolicial=function(){
+ let antigo=document.getElementById('giroflex-policial');
+ if(antigo)antigo.remove();
+
+ let giro=document.createElement('div');
+ giro.id='giroflex-policial';
+
+ giro.innerHTML=`
+  <div class="giroflex-luzes">
+   <div class="luz-azul"></div>
+   <div class="luz-vermelha"></div>
+  </div>
+ `;
+
+ document.body.appendChild(giro);
+
+ setTimeout(function(){
+  giro.remove();
+ },2200);
+};
+
+// =====================================================
+// CONTROLE DE DIÁLOGOS
+// =====================================================
+
+window.obterDialogo=function(personagem){
+ let lista=personagem.policia?dialogosPoliciais:dialogosClientes;
+
+ // Cada personagem recebe seu próprio conjunto de 15 falas.
+ if(!personagem._dialogosFixHome){
+  let originais=Array.isArray(personagem.falas)?personagem.falas:[];
+  let base=lista.slice();
+
+  // Inclui falas originais do personagem quando disponíveis.
+  originais.forEach(function(f){
+   if(typeof f==='string' && f.trim() && !base.includes(f)){
+    base.push(f);
+   }
+  });
+
+  // Personaliza as falas com o nome do personagem.
+  let nome=personagem.n || 'Cliente';
+
+  let personalizadas=base.map(function(f){
+   return f.replace(/\{nome\}/g,nome);
+  });
+
+  // Embaralha e seleciona 15 falas diferentes.
+  for(let i=personalizadas.length-1;i>0;i--){
+   let j=Math.floor(Math.random()*(i+1));
+   [personalizadas[i],personalizadas[j]]=
+   [personalizadas[j],personalizadas[i]];
+  }
+
+  personagem._dialogosFixHome=personalizadas.slice(0,15);
+ }
+
+ let falas=personagem._dialogosFixHome;
+
+ // Evita repetir a última fala do mesmo personagem.
+ let ultima=personagem._ultimaFalaFixHome;
+ let disponiveis=falas.filter(f=>f!==ultima);
+
+ if(disponiveis.length===0)disponiveis=falas;
+
+ let escolhida=disponiveis[Math.floor(Math.random()*disponiveis.length)];
+ personagem._ultimaFalaFixHome=escolhida;
+
+ return escolhida;
+};
+
+// =====================================================
+// CONTROLES GERAIS
+// =====================================================
+
 window.taxaNegarAtual=0;
 window.incNegar=5;
 window.vezNegar=0;
 window.travado=false;
 
+// =====================================================
+// NOVO CLIENTE
+// =====================================================
+
 window.novo=function(){
  window.travado=false;
+
  let c=document.getElementById('choices');
  if(c)c.style.pointerEvents='auto';
 
  let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
  let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
- if(d.length==0){usado={};d=l;}
+
+ if(d.length==0){
+  usado={};
+  d=l;
+ }
 
  let np=d[Math.floor(Math.random()*d.length)];
+
  if(usado._ultimo&&d.length>1){
   let t=0;
   while(np.n===usado._ultimo&&t<10){
@@ -46,14 +274,17 @@ window.novo=function(){
  document.getElementById('clienteAvatar').style.background=cur.cor;
 
  let cb=cur.r=='BAIXO'?'#00E676':cur.r=='MÉDIO'?'#FFD600':'#FF5252';
+
  document.getElementById('clienteBox').style.borderColor=cb;
  document.getElementById('nome').innerText=cur.n;
  document.getElementById('tag').innerText=cur.r;
  document.getElementById('tag').style.background=cb;
 
- let f=cur.falas[Math.floor(Math.random()*cur.falas.length)];
+ // NOVO SISTEMA DE DIÁLOGOS
+ let f=window.obterDialogo(cur);
+
  document.getElementById('hist').innerText=f;
- document.getElementById('bubble').innerText=cur.n+': "'+f+'"';
+ document.getElementById('bubble').innerText='"'+f+'"';
 
  let base=40+(level*18)+(day*2);
  let rm=cur.r=='BAIXO'?0.9:cur.r=='MÉDIO'?1.15:1.35;
@@ -100,10 +331,15 @@ window.novo=function(){
  });
 };
 
+// =====================================================
+// SISTEMA DE JOGO
+// =====================================================
+
 window.jogar=function(tipo){
  if(window.travado)return;
 
  window.travado=true;
+
  let c=document.getElementById('choices');
  if(c)c.style.pointerEvents='none';
 
@@ -119,6 +355,7 @@ window.jogar=function(tipo){
   money-=desc;
 
   if(desc>0)fb(desc,'c');
+
   negarCount++;
 
   if(window.vezNegar===0){
@@ -153,6 +390,9 @@ window.jogar=function(tipo){
  }
 
  if(cur.policia){
+  // O GIROFLEX SÓ APARECE DEPOIS DO CLIQUE.
+  window.giroflexPolicial();
+
   usado._policia=(usado._policia||0)+1;
 
   let fi=Math.floor(money*0.5);
@@ -236,7 +476,10 @@ window.jogar=function(tipo){
  }
 };
 
-// ACEITAR PERDA: recupera somente o percentual da moto.
+// =====================================================
+// ACEITAR PERDA
+// =====================================================
+
 window.aceitarPerda=function(){
  document.getElementById('adSave').style.display='none';
 
@@ -257,7 +500,10 @@ window.aceitarPerda=function(){
  novo();
 };
 
-// ANÚNCIO: recupera sempre 50% do valor emprestado.
+// =====================================================
+// RECOMPENSA DO ANÚNCIO
+// =====================================================
+
 window.recompensaLiberada=function(){
  document.getElementById('adModal').style.display='none';
 
@@ -296,6 +542,10 @@ window.recompensaLiberada=function(){
  pendenteTipo=null;
 };
 
+// =====================================================
+// FALÊNCIA
+// =====================================================
+
 window.falencia=function(){
  money=100;
  window.taxaNegarAtual=0;
@@ -311,6 +561,10 @@ window.falencia=function(){
  alert('💸 FALÊNCIA! Resetado R$100');
  location.reload();
 };
+
+// =====================================================
+// REINICIAR JOGO
+// =====================================================
 
 window.restartFull=function(){
  day=1;
@@ -336,7 +590,10 @@ window.restartFull=function(){
  novo();
 };
 
-// CORREÇÃO DO CARREGAMENTO DO SAVE
+// =====================================================
+// CARREGAMENTO DO SAVE
+// =====================================================
+
 window.carregarSave=function(){
  let raw=localStorage.getItem('save_'+currentUser);
 
@@ -380,14 +637,20 @@ window.carregarSave=function(){
  }
 };
 
-// Recarrega o save depois que o patch é instalado.
+// =====================================================
+// INICIALIZAÇÃO
+// =====================================================
+
 if(currentUser){
  window.carregarSave();
 }else{
  novo();
 }
 
-// CORREÇÃO: JOGO OCUPA TODA A LARGURA NO NOTEBOOK
+// =====================================================
+// JOGO OCUPA TODA A LARGURA NO NOTEBOOK
+// =====================================================
+
 (function(){
  const style = document.createElement('style');
  style.id = 'fix-game-desktop-width';
