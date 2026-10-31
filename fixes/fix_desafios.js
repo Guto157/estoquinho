@@ -1,8 +1,9 @@
+
 (function () {
   if (window.fixDesafios500Ativo) return;
   window.fixDesafios500Ativo = true;
 
-  console.log("FIX DESAFIOS 500 - ATUALIZAÇÃO EM SEGUNDO PLANO");
+  console.log("FIX DESAFIOS 500 - LAYOUT E OBJETIVOS ATUALIZADOS");
 
   const categorias = [
     {
@@ -64,6 +65,18 @@
       nome: "Recuperação",
       descricao: m => `Recupere R$${m} através de vídeos`,
       base: [100,250,500,1000,1500,2500,4000,6000,10000,15000]
+    },
+    {
+      tipo: "nivel",
+      nome: "Evolução",
+      descricao: m => `Alcance o nível ${m}`,
+      base: [5,10,15,20,30,40,50,65,80,100]
+    },
+    {
+      tipo: "pagadorFiel",
+      nome: "Pagador fiel",
+      descricao: m => `Conclua ${m} empréstimos`,
+      base: [10,20,30,50,75,100,150,200,250,350]
     }
   ];
 
@@ -105,12 +118,26 @@
     return lista;
   }
 
+  function desafioRemovido(d) {
+    const texto = [
+      d && d.t,
+      d && d.objetivo,
+      d && d.nome
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    return (
+      /lvl\s*68/.test(texto) ||
+      /pagar\s*115x/.test(texto)
+    );
+  }
+
   function obterProgresso(d) {
     switch (d.tipo) {
       case "caixa":
         return Number(money) || 0;
 
       case "totalEmp":
+      case "pagadorFiel":
         return Number(totalEmp) || 0;
 
       case "lucroTotal":
@@ -137,6 +164,9 @@
       case "recAnuncios":
         return Number(usado && usado._dinheiroAnuncios) || 0;
 
+      case "nivel":
+        return Number(level) || 1;
+
       default:
         return 0;
     }
@@ -146,7 +176,6 @@
     if (d.objetivo) return d.objetivo;
 
     const categoria = categorias.find(c => c.tipo === d.tipo);
-
     if (categoria) return categoria.descricao(d.meta);
 
     return d.t || "Complete este desafio";
@@ -154,15 +183,15 @@
 
   const novosDesafios = gerarDesafios();
 
-  const idsAntigos = Array.isArray(ativasDesafios)
-    ? ativasDesafios.map(d => Number(d.id))
+  const desafiosAntigos = Array.isArray(ativasDesafios)
+    ? ativasDesafios.filter(d => !desafioRemovido(d))
     : [];
 
-  todosDesafios.splice(0, todosDesafios.length, ...novosDesafios);
-
-  ativasDesafios = idsAntigos
-    .map(id => novosDesafios.find(d => d.id === id))
+  ativasDesafios = desafiosAntigos
+    .map(d => novosDesafios.find(n => Number(n.id) === Number(d.id)))
     .filter(Boolean);
+
+  todosDesafios.splice(0, todosDesafios.length, ...novosDesafios);
 
   if (ativasDesafios.length === 0) {
     ativasDesafios = novosDesafios.slice(0, 3);
@@ -180,10 +209,20 @@
   let ultimaAssinatura = "";
 
   function renderizarLista() {
+    let concluidos = Math.min(500, Math.max(0, proxDesafioIdx - 3));
+
     let html = `
-      <div class="conquistaCard">
-        <b>🏆 DESAFIOS</b><br>
-        <small>Progresso: ${Math.min(500, proxDesafioIdx - 3)} / 500</small>
+      <div style="
+        background:#111;
+        color:#FFD600;
+        padding:8px 12px;
+        border-radius:10px;
+        font-weight:900;
+        font-size:12px;
+        margin-bottom:8px;
+        text-align:center
+      ">
+        🏆 ${concluidos}/500 DESAFIOS
       </div>
     `;
 
@@ -194,21 +233,51 @@
       const feito = prog >= meta;
 
       html += `
-        <div class="conquistaCard ${feito ? "feita" : ""}">
-          <b>${i + 1}. ${d.t || "Desafio"} ${feito ? "💲" : ""}</b><br>
-          <small>🎯 ${obterDescricao(d)}</small><br>
-          <small>⭐ ${"★".repeat(Math.max(1, Number(d.estrelas) || 1))} | ${d.dif || "DESAFIO"}</small><br>
-          <small>🎁 💲${Number(d.premioDolar) || 0}</small>
+        <div class="card" style="padding:10px">
+          <b style="
+            font-size:13px;
+            display:block;
+            line-height:1.2
+          ">
+            ${i + 1}. ${d.t || "Desafio"} ${feito ? "💲" : ""}
+          </b>
+
+          <small style="
+            font-size:11px;
+            color:#444;
+            display:block;
+            margin:4px 0 6px 0;
+            line-height:1.3
+          ">
+            🎯 ${obterDescricao(d)}
+          </small>
+
+          <small style="font-size:11px;display:block;margin-bottom:5px">
+            ⭐ ${"★".repeat(Math.max(1, Number(d.estrelas) || 1))}
+            | ${d.dif || "DESAFIO"}
+            | 🎁 💲${Number(d.premioDolar) || 0}
+          </small>
 
           <div class="progress">
             <div class="bar" style="width:${pct}%"></div>
           </div>
 
-          <small>${Math.floor(prog)}/${meta} ${pct}%</small>
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            margin-top:3px
+          ">
+            <small style="font-size:11px">
+              ${Math.floor(prog)}/${meta}
+            </small>
+            <small style="font-size:11px;font-weight:900">
+              ${pct}%
+            </small>
+          </div>
 
           ${
             feito
-              ? `<button class="btn verde" onclick="coletarDesafio(${d.id})">✅ RESGATAR 💲${d.premioDolar}</button>`
+              ? `<button class="btn verde" style="margin-top:6px;padding:10px" onclick="coletarDesafio(${d.id})">✅ COLETAR 💲${d.premioDolar}</button>`
               : ""
           }
         </div>
@@ -216,13 +285,13 @@
     });
 
     const lista = document.getElementById("listaDesafios");
-
     if (lista) lista.innerHTML = html;
   }
 
-  // Atualiza os dados sem abrir o modal.
   function atualizarDesafios() {
     if (!Array.isArray(ativasDesafios)) return;
+
+    ativasDesafios = ativasDesafios.filter(d => !desafioRemovido(d));
 
     ativasDesafios.forEach(d => {
       d.prog = obterProgresso(d);
@@ -240,17 +309,14 @@
 
     desafiosParaColetar = prontos;
 
-    // Atualiza o Dolinha.
     if (typeof atualizarNotificacoes === "function") {
       atualizarNotificacoes();
     }
 
-    // Atualiza a área de coleta apenas quando necessário.
     if (mudou && typeof renderColeta === "function") {
       renderColeta();
     }
 
-    // Atualiza as barras somente se o modal já estiver aberto.
     const modal = document.getElementById("desafiosModal");
 
     if (mudou && modal && modal.style.display === "flex") {
@@ -258,13 +324,11 @@
     }
   }
 
-  // O modal só abre quando o jogador clicar no botão.
   window.openDesafios = function () {
     atualizarDesafios();
     renderizarLista();
 
     const modal = document.getElementById("desafiosModal");
-
     if (modal) modal.style.display = "flex";
   };
 
@@ -278,11 +342,9 @@
     if (idx < 0) return;
 
     const d = ativasDesafios[idx];
-
     if (d.prog < d.meta) return;
 
     dolar += Number(d.premioDolar) || 0;
-
     ativasDesafios.splice(idx, 1);
 
     if (proxDesafioIdx < todosDesafios.length) {
@@ -290,7 +352,6 @@
       proxDesafioIdx++;
     }
 
-    // Recalcula imediatamente os avisos.
     ultimaAssinatura = "";
     atualizarDesafios();
 
@@ -305,7 +366,6 @@
     renderizarLista();
   };
 
-  // Atualiza depois das ações normais do jogo.
   const checkOriginal = window.check;
 
   if (typeof checkOriginal === "function") {
@@ -326,7 +386,6 @@
     };
   }
 
-  // Conta somente recompensas efetivamente liberadas pelo jogo.
   const recompensaOriginal = window.recompensaLiberada;
 
   if (typeof recompensaOriginal === "function") {
@@ -361,10 +420,6 @@
     };
   }
 
-  // Verificação independente em segundo plano.
-  // Não abre modal nem interrompe o jogo.
   setInterval(atualizarDesafios, 1000);
-
   atualizarDesafios();
-
 })();
