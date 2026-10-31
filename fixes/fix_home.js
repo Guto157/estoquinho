@@ -1,201 +1,179 @@
-// fixes/fix_home.js - FINANCEIRO, DIÁLOGOS, GIROFLEX E CLIENTE PERSISTENTE
+// fixes/fix_home.js - FINANCEIRO, DIÁLOGOS, GIROFLEX, XP E CLIENTE PERSISTENTE
 console.log("FIX HOME - SISTEMA COMPLETO ATUALIZADO");
 
 // =====================================================
-// SISTEMA DE XP E LEVEL
+// SISTEMA XP E LEVEL
 // =====================================================
 
-window.xpAtual = Math.max(0, Number(window.xpAtual) || 0);
+if (typeof window.xpAtual !== 'number') {
+ window.xpAtual = 0;
+}
 
-window.xpNecessarioProximoNivel = function(){
- let L = Math.max(1, Number(level) || 1);
- return 5 * L * (L + 1) / 2;
+window.xpNecessarioNivel = function(nivel){
+ return Math.floor(5 * nivel * (nivel + 1) / 2);
 };
 
-window.atualizarBarraXP = function(){
- let nivel = Math.max(1, Number(level) || 1);
- let xp = Math.max(0, Number(window.xpAtual) || 0);
- let maximo = 1000;
-
- let referencia = null;
-
- // Procura o elemento LEVEL existente sem substituir seu conteúdo.
- const seletores = [
-  '#level',
-  '#levelDisplay',
-  '#level-display',
-  '#playerLevel',
-  '#player-level',
-  '.level'
- ];
-
- for(const seletor of seletores){
-  const el = document.querySelector(seletor);
-  if(el){
-   referencia = el;
-   break;
-  }
- }
-
- if(!referencia){
-  const elementos = document.querySelectorAll('body *');
-
-  for(const el of elementos){
-   if(el.id === 'barraXP' || el.closest('#barraXP'))continue;
-   if(el.children.length > 2)continue;
-
-   const texto = (el.textContent || '').trim();
-
-   if(/^LEVEL\s*[:#-]?\s*\d+/i.test(texto)){
-    referencia = el;
-    break;
-   }
-  }
- }
-
- if(!referencia)return;
-
- let barra = document.getElementById('barraXP');
-
- if(!barra){
-  barra = document.createElement('div');
-  barra.id = 'barraXP';
-
-  barra.style.cssText = [
-   'height:9px',
-   'width:100%',
-   'max-width:180px',
-   'margin:3px 0 5px',
-   'border-radius:20px',
-   'background:#333',
-   'border:1px solid #555',
-   'overflow:hidden',
-   'position:relative',
-   'box-sizing:border-box',
-   'font-size:7px',
-   'line-height:7px'
-  ].join(';');
-
-  barra.innerHTML = `
-   <div id="barraXPPreenchimento" style="
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg,#00c853,#aaff00);
-    border-radius:20px;
-    transition:width .25s;
-   "></div>
-   <span id="barraXPTexto" style="
-    position:absolute;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#fff;
-    font-size:7px;
-    font-weight:900;
-    text-shadow:0 1px 2px #000;
-    white-space:nowrap;
-   "></span>
-  `;
-
-  referencia.insertAdjacentElement('afterend',barra);
- }
-
- // Mantém a barra junto ao elemento LEVEL caso a interface seja recriada.
- if(barra.previousElementSibling !== referencia){
-  referencia.insertAdjacentElement('afterend',barra);
- }
-
- const preenchimento = document.getElementById('barraXPPreenchimento');
- const texto = document.getElementById('barraXPTexto');
-
- if(nivel >= maximo){
-  if(preenchimento)preenchimento.style.width = '100%';
-  if(texto)texto.textContent = 'MÁXIMO';
-  return;
- }
-
- const necessario = window.xpNecessarioProximoNivel();
- const percentual = necessario > 0
-  ? Math.min(100,(xp / necessario) * 100)
-  : 0;
-
- if(preenchimento)preenchimento.style.width = percentual + '%';
-
- if(texto){
-  texto.textContent = Math.floor(xp) + '/' + necessario;
- }
-};
-
-window.alterarXP = function(quantidade, motivo){
- let valor = Number(quantidade) || 0;
-
- if(!valor)return;
-
- let nivelAtual = Math.max(1,Number(level) || 1);
-
- if(nivelAtual >= 1000){
-  level = 1000;
+window.atualizarNivelXP = function(){
+ if (typeof window.xpAtual !== 'number' || !Number.isFinite(window.xpAtual)) {
   window.xpAtual = 0;
-  window.atualizarBarraXP();
-  return;
  }
 
- window.xpAtual = Math.max(0,(Number(window.xpAtual) || 0) + valor);
+ window.xpAtual = Math.max(0, Math.floor(window.xpAtual));
 
- // Aproveita todo o XP excedente nos próximos níveis.
- while(level < 1000){
-  const necessario = window.xpNecessarioProximoNivel();
+ if (typeof level !== 'number' || !Number.isFinite(level)) {
+  level = 1;
+ }
 
-  if(window.xpAtual < necessario)break;
+ level = Math.max(1, Math.min(1000, Math.floor(level)));
 
-  window.xpAtual -= necessario;
+ while (
+  level < 1000 &&
+  window.xpAtual >= window.xpNecessarioNivel(level)
+ ) {
+  window.xpAtual -= window.xpNecessarioNivel(level);
   level++;
  }
 
- if(level >= 1000){
-  level = 1000;
-  window.xpAtual = 0;
- }
-
  window.atualizarBarraXP();
-
- console.log('XP ALTERADO:',{
-  quantidade:valor,
-  motivo:motivo || '',
-  xp:window.xpAtual,
-  level:level
- });
-
- // Salva localmente e solicita sincronização com a nuvem.
- if(typeof window.saveGame === 'function'){
-  window.saveGame();
- }
 };
 
-// Atualiza a barra quando o LEVEL ou a tela forem recriados.
+window.atualizarBarraXP = function(){
+ const elementoNivel = document.getElementById('lvl');
+ if (!elementoNivel) return;
+
+ let barra = document.getElementById('barraXP');
+
+ if (!barra) {
+  barra = document.createElement('div');
+  barra.id = 'barraXP';
+
+  barra.style.cssText = `
+   display:block;
+   position:relative;
+   width:110px;
+   height:13px;
+   margin:3px 0 0 auto;
+   border:1px solid rgba(255,255,255,.65);
+   border-radius:10px;
+   background:rgba(0,0,0,.35);
+   overflow:hidden;
+   box-sizing:border-box;
+   font-size:9px;
+   line-height:11px;
+   text-align:center;
+   font-weight:900;
+   color:#fff;
+   text-shadow:0 1px 2px #000;
+   z-index:2;
+  `;
+
+  const preenchimento = document.createElement('div');
+  preenchimento.id = 'barraXPPreenchimento';
+
+  preenchimento.style.cssText = `
+   position:absolute;
+   top:0;
+   left:0;
+   height:100%;
+   width:0%;
+   background:linear-gradient(90deg,#00c853,#76ff03);
+   transition:width .25s ease;
+   border-radius:10px;
+  `;
+
+  const texto = document.createElement('span');
+  texto.id = 'textoXP';
+
+  texto.style.cssText = `
+   position:absolute;
+   inset:0;
+   display:flex;
+   align-items:center;
+   justify-content:center;
+   z-index:2;
+   white-space:nowrap;
+  `;
+
+  barra.appendChild(preenchimento);
+  barra.appendChild(texto);
+  elementoNivel.insertAdjacentElement('afterend', barra);
+ }
+
+ const preenchimento = document.getElementById('barraXPPreenchimento');
+ const texto = document.getElementById('textoXP');
+
+ if (!preenchimento || !texto) return;
+
+ if (level >= 1000) {
+  preenchimento.style.width = '100%';
+  texto.textContent = 'LEVEL MÁXIMO';
+  return;
+ }
+
+ const necessario = window.xpNecessarioNivel(level);
+ const atual = Math.min(window.xpAtual, necessario);
+ const porcentagem = necessario > 0
+  ? Math.min(100, (atual / necessario) * 100)
+  : 0;
+
+ preenchimento.style.width = porcentagem + '%';
+ texto.textContent = atual + '/' + necessario;
+};
+
+window.alterarXP = function(valor){
+ valor = Math.floor(Number(valor) || 0);
+
+ if (valor < 0) {
+  window.xpAtual = Math.max(0, window.xpAtual + valor);
+ } else {
+  window.xpAtual += valor;
+ }
+
+ window.atualizarNivelXP();
+
+ console.log('XP ALTERADO:', {
+  xp: window.xpAtual,
+  level: level,
+  alteracao: valor
+ });
+};
+
+// =====================================================
+// INTEGRAÇÃO COM O CHECK ORIGINAL
+// =====================================================
+
 (function(){
- function iniciarAtualizacaoXP(){
+ const checkOriginalXP = window.check;
+
+ if (typeof checkOriginalXP !== 'function') {
+  console.error('Não foi possível localizar a função check original.');
+  return;
+ }
+
+ window.check = function(){
+  window.atualizarNivelXP();
+
+  const resultado = checkOriginalXP.apply(this, arguments);
+
+  // O check original calculava LEVEL pela fama.
+  // Aqui o LEVEL volta a ser controlado pelo XP.
+  window.atualizarNivelXP();
+
+  const elementoNivel = document.getElementById('lvl');
+
+  if (elementoNivel) {
+   elementoNivel.innerText = level;
+  }
+
   window.atualizarBarraXP();
 
-  if(window.observadorXP)return;
+  // Salva novamente com o LEVEL correto.
+  if (typeof window.saveGame === 'function') {
+   window.saveGame();
+  }
 
-  window.observadorXP = new MutationObserver(function(){
-   window.atualizarBarraXP();
-  });
-
-  window.observadorXP.observe(document.body,{
-   childList:true,
-   subtree:true,
-   characterData:true
-  });
- }
-
- if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded',iniciarAtualizacaoXP);
- }else{
-  iniciarAtualizacaoXP();
- }
+  return resultado;
+ };
 })();
 
 // =====================================================
@@ -485,7 +463,6 @@ window.novo=function(){
 
  let np=null;
 
- // Tenta recuperar o mesmo cliente.
  if(salvo){
   let lista=salvo.policia?policiaisDisfarcados:personagensComuns;
 
@@ -503,7 +480,6 @@ window.novo=function(){
   }
  }
 
- // Se não encontrou cliente salvo, sorteia um novo.
  if(!np){
   let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
 
@@ -555,11 +531,9 @@ window.novo=function(){
   cur.voltaJurosAtual=vcJuros;
   cur.chanceAtual=cc;
 
-  // Salva cliente, diálogo e valores para sobreviver ao F5.
   window.salvarClienteAtual();
  }
 
- // Atualiza a apresentação.
  document.getElementById('clienteAvatar').innerText=cur.sig;
  document.getElementById('clienteAvatar').style.background=cur.cor;
 
@@ -628,6 +602,7 @@ window.jogar=function(tipo){
   if(desc>0)fb(desc,'c');
 
   negarCount++;
+  window.alterarXP(-1);
 
   if(window.vezNegar===0){
    window.taxaNegarAtual=5;
@@ -645,16 +620,11 @@ window.jogar=function(tipo){
   day++;
 
   log('❌ Negou '+cur.n+' -'+(desc==0?'Grátis':'R$'+desc));
-
-  window.alterarXP(-1,'Negou cliente');
-
   check();
   novo();
   return;
  }
 
- // A PARTIR DAQUI O JOGADOR ESCOLHEU EMPRESTAR.
- // O CLIENTE ANTERIOR NÃO DEVE VOLTAR APÓS ATUALIZAR.
  window.limparClienteAtual();
 
  if(window.taxaNegarAtual>0){
@@ -667,8 +637,7 @@ window.jogar=function(tipo){
   }
  }
 
- // POLICIAL DISFARÇADO
- // Polícia não concede nem retira XP.
+ // POLICIAL: NÃO GANHA NEM PERDE XP
  if(cur.policia){
   window.giroflexPolicial();
 
@@ -712,7 +681,6 @@ window.jogar=function(tipo){
 
  if(ch<5)ch=5;
 
- // Desconta o valor emprestado apenas uma vez.
  money-=peBase;
  fb(peBase,'c');
 
@@ -728,23 +696,23 @@ window.jogar=function(tipo){
   totalLucro+=lucro;
   seq++;
 
+  // PAGAMENTO NORMAL +3 XP / PAGAMENTO COM JUROS +5 XP
+  window.alterarXP(tipo=='juros'?5:3);
+
   document.getElementById('bubble').innerText='✅ Pagou R$'+de;
   log('✅ '+cur.n+' pagou R$'+de+' - lucro R$'+lucro);
-
-  // Pagamento normal: +3 XP. Pagamento com juros: +5 XP.
-  window.alterarXP(tipo=='juros'?5:3,tipo=='juros'?'Pagamento com juros':'Pagamento normal');
 
   day++;
   check();
   novo();
 
  }else{
+  // CALOTE: -1 XP
+  window.alterarXP(-1);
+
   fame=Math.max(0,fame-0.5);
   seq=0;
   pendentePerda=peBase;
-
-  // Calote: -1 XP. Aceitar perda ou recuperar pelo anúncio não altera XP.
-  window.alterarXP(-1,'Calote');
 
   let recMoto=getRecuperacaoBonus();
 
@@ -763,6 +731,7 @@ window.jogar=function(tipo){
 
 // =====================================================
 // ACEITAR PERDA
+// NÃO ALTERA XP
 // =====================================================
 
 window.aceitarPerda=function(){
@@ -787,6 +756,7 @@ window.aceitarPerda=function(){
 
 // =====================================================
 // RECOMPENSA DO ANÚNCIO
+// NÃO ALTERA XP
 // =====================================================
 
 window.recompensaLiberada=function(){
@@ -857,11 +827,8 @@ window.restartFull=function(){
  money=500;
  fame=1;
  level=1;
- usado={};
-
- // Reinicia o XP junto com o jogo.
  window.xpAtual=0;
- window.atualizarBarraXP();
+ usado={};
 
  window.limparClienteAtual();
 
@@ -879,9 +846,6 @@ window.restartFull=function(){
 
  document.getElementById('gameOver').style.display='none';
  check();
-
- if(typeof window.saveGame==='function')window.saveGame();
-
  novo();
 };
 
@@ -894,9 +858,9 @@ window.carregarSave=function(){
 
  if(!raw){
   window.xpAtual=0;
+  level=1;
   novo();
   check();
-  window.atualizarBarraXP();
   return;
  }
 
@@ -906,7 +870,11 @@ window.carregarSave=function(){
   day=s.day ?? 1;
   money=s.money ?? 500;
   fame=s.fame ?? 1;
+
+  // Mantém o nível antigo de quem ainda não tem XP salvo.
   level=s.level ?? 1;
+  window.xpAtual=s.xpAtual ?? 0;
+
   dolar=s.dolar ?? 0;
   inv=s.inv ?? {};
   usado=s.usado ?? {};
@@ -919,24 +887,20 @@ window.carregarSave=function(){
   proxMissaoIdx=s.proxMissaoIdx ?? 3;
   proxDesafioIdx=s.proxDesafioIdx ?? 3;
 
-  // Recupera o XP salvo.
-  window.xpAtual=Math.max(0,Number(s.xpAtual) || 0);
-
   if(s.ativasMissoes)ativasMissoes=s.ativasMissoes;
   if(s.ativasDesafios)ativasDesafios=s.ativasDesafios;
+
+  window.atualizarNivelXP();
 
   renderSlots();
   atualizarTituloAvatar();
   novo();
   check();
-  window.atualizarBarraXP();
 
  }catch(e){
   console.error('Erro ao carregar save:',e);
-  window.xpAtual=0;
   novo();
   check();
-  window.atualizarBarraXP();
  }
 };
 
@@ -947,7 +911,10 @@ window.carregarSave=function(){
 if(currentUser){
  window.carregarSave();
 }else{
+ window.xpAtual=0;
+ level=1;
  novo();
+ check();
 }
 
 // =====================================================
