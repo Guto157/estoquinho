@@ -3,7 +3,7 @@
   if (window.fixDesafios500Ativo) return;
   window.fixDesafios500Ativo = true;
 
-  console.log("FIX DESAFIOS 500 CARREGADO");
+  console.log("FIX DESAFIOS 500 - CORRIGIDO");
 
   const categorias = [
     {
@@ -105,18 +105,30 @@
     return lista;
   }
 
-  function progresso(d) {
-    if (d.tipo === "caixa") return Number(money) || 0;
-    if (d.tipo === "totalEmp") return Number(totalEmp) || 0;
-    if (d.tipo === "lucroTotal") return Number(totalLucro) || 0;
-    if (d.tipo === "jurosTotal") return Number(jurosCount) || 0;
-    if (d.tipo === "negar") return Number(negarCount) || 0;
-    if (d.tipo === "fama") return Number(fame) || 0;
-    if (d.tipo === "seq") return Number(seq) || 0;
-    if (d.tipo === "dia") return Number(day) || 1;
-    if (d.tipo === "videos") return Number(usado?._videosAssistidos) || 0;
-    if (d.tipo === "recAnuncios") return Number(usado?._dinheiroAnuncios) || 0;
-    return 0;
+  function obterProgresso(d) {
+    switch (d.tipo) {
+      case "caixa": return Number(money) || 0;
+      case "totalEmp": return Number(totalEmp) || 0;
+      case "lucroTotal": return Number(totalLucro) || 0;
+      case "jurosTotal": return Number(jurosCount) || 0;
+      case "negar": return Number(negarCount) || 0;
+      case "fama": return Number(fame) || 0;
+      case "seq": return Number(seq) || 0;
+      case "dia": return Number(day) || 1;
+      case "videos": return Number(usado?._videosAssistidos) || 0;
+      case "recAnuncios": return Number(usado?._dinheiroAnuncios) || 0;
+      default: return 0;
+    }
+  }
+
+  function obterDescricao(d) {
+    if (d.objetivo) return d.objetivo;
+
+    const categoria = categorias.find(c => c.tipo === d.tipo);
+
+    if (categoria) return categoria.descricao(d.meta);
+
+    return d.t || "Complete este desafio";
   }
 
   const novos = gerarDesafios();
@@ -124,14 +136,14 @@
   todosDesafios.splice(0, todosDesafios.length, ...novos);
 
   const idsAntigos = Array.isArray(ativasDesafios)
-    ? ativasDesafios.map(d => d.id)
+    ? ativasDesafios.map(d => Number(d.id))
     : [];
 
   ativasDesafios = idsAntigos
     .map(id => novos.find(d => d.id === id))
     .filter(Boolean);
 
-  if (!ativasDesafios.length) {
+  if (ativasDesafios.length === 0) {
     ativasDesafios = novos.slice(0, 3);
     proxDesafioIdx = 3;
   }
@@ -141,8 +153,11 @@
   }
 
   function atualizarDesafios() {
+    if (!Array.isArray(ativasDesafios)) return;
+
     ativasDesafios.forEach(d => {
-      d.prog = progresso(d);
+      d.prog = obterProgresso(d);
+      d.objetivo = obterDescricao(d);
     });
 
     desafiosParaColetar = ativasDesafios.filter(
@@ -156,12 +171,16 @@
     if (typeof renderColeta === "function") {
       renderColeta();
     }
+
+    // Atualiza a tela se o modal estiver aberto
+    const modal = document.getElementById("desafiosModal");
+
+    if (modal && modal.style.display === "flex") {
+      renderizarLista();
+    }
   }
 
-  // Cartões com o mesmo padrão visual das conquistas.
-  window.openDesafios = function () {
-    atualizarDesafios();
-
+  function renderizarLista() {
     let html = `
       <div class="conquistaCard">
         <b>🏆 DESAFIOS</b><br>
@@ -170,23 +189,21 @@
     `;
 
     ativasDesafios.forEach((d, i) => {
-      const pct = Math.min(
-        100,
-        Math.floor((d.prog / d.meta) * 100)
-      );
-
-      const feito = d.prog >= d.meta;
+      const meta = Math.max(1, Number(d.meta) || 1);
+      const prog = Math.max(0, Number(d.prog) || 0);
+      const pct = Math.min(100, Math.floor(prog / meta * 100));
+      const feito = prog >= meta;
 
       html += `
         <div class="conquistaCard ${feito ? "feita" : ""}">
-          <b>${i + 1}. ${d.t} ${feito ? "💲" : ""}</b><br>
-          <small>🎯 ${d.objetivo || d.t}</small><br>
-          <small>⭐ ${"★".repeat(d.estrelas)} | ${d.dif}</small><br>
-          <small>🎁 💲${d.premioDolar}</small>
+          <b>${i + 1}. ${d.t || "Desafio"} ${feito ? "💲" : ""}</b><br>
+          <small>🎯 ${obterDescricao(d)}</small><br>
+          <small>⭐ ${"★".repeat(Math.max(1, Number(d.estrelas) || 1))} | ${d.dif || "DESAFIO"}</small><br>
+          <small>🎁 💲${Number(d.premioDolar) || 0}</small>
           <div class="progress">
             <div class="bar" style="width:${pct}%"></div>
           </div>
-          <small>${Math.floor(d.prog)}/${d.meta} ${pct}%</small>
+          <small>${Math.floor(prog)}/${meta} ${pct}%</small>
           ${
             feito
               ? `<button class="btn verde" onclick="coletarDesafio(${d.id})">✅ RESGATAR 💲${d.premioDolar}</button>`
@@ -196,20 +213,29 @@
       `;
     });
 
-    document.getElementById("listaDesafios").innerHTML = html;
+    const lista = document.getElementById("listaDesafios");
+    if (lista) lista.innerHTML = html;
+  }
+
+  window.atualizarProgressoDesafios = atualizarDesafios;
+
+  window.openDesafios = function () {
+    atualizarDesafios();
+    renderizarLista();
+
     document.getElementById("desafiosModal").style.display = "flex";
   };
 
   window.coletarDesafio = function (id) {
-    const idx = ativasDesafios.findIndex(d => d.id === id);
+    const idx = ativasDesafios.findIndex(d => Number(d.id) === Number(id));
     if (idx < 0) return;
 
     const d = ativasDesafios[idx];
-    d.prog = progresso(d);
+    d.prog = obterProgresso(d);
 
     if (d.prog < d.meta) return;
 
-    dolar += d.premioDolar;
+    dolar += Number(d.premioDolar) || 0;
     ativasDesafios.splice(idx, 1);
 
     if (proxDesafioIdx < todosDesafios.length) {
@@ -222,10 +248,31 @@
     if (typeof check === "function") check();
     if (typeof saveGame === "function") saveGame();
 
-    window.openDesafios();
+    renderizarLista();
   };
 
-  // Conta somente quando a recompensa do vídeo é liberada.
+  // Atualização automática no fluxo normal do jogo
+  const checkOriginal = window.check;
+
+  if (typeof checkOriginal === "function") {
+    window.check = function (...args) {
+      const resultado = checkOriginal.apply(this, args);
+      atualizarDesafios();
+      return resultado;
+    };
+  }
+
+  const progressOriginal = window.atualizarProgress;
+
+  if (typeof progressOriginal === "function") {
+    window.atualizarProgress = function (...args) {
+      const resultado = progressOriginal.apply(this, args);
+      atualizarDesafios();
+      return resultado;
+    };
+  }
+
+  // Conta somente quando a recompensa do anúncio é liberada
   const recompensaOriginal = window.recompensaLiberada;
 
   if (typeof recompensaOriginal === "function") {
@@ -250,7 +297,6 @@
 
         atualizarDesafios();
 
-        if (typeof check === "function") check();
         if (typeof saveGame === "function") saveGame();
       }
 
@@ -258,17 +304,6 @@
     };
   }
 
-  const atualizarOriginal = window.atualizarProgress;
-
-  if (typeof atualizarOriginal === "function") {
-    window.atualizarProgress = function (...args) {
-      const resultado = atualizarOriginal.apply(this, args);
-      atualizarDesafios();
-      return resultado;
-    };
-  }
-
   atualizarDesafios();
 
-  if (typeof saveGame === "function") saveGame();
 })();
