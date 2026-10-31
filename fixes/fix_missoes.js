@@ -1,5 +1,5 @@
 
-// fixes/fix_missoes.js - DESCRIÇÃO NOVA + CONTADOR + RESET
+// fixes/fix_missoes.js - DESCRIÇÃO NOVA + CONTADOR + REPOSIÇÃO APÓS RESET
 
 console.log("FIX MISSOES CARREGADO");
 
@@ -16,20 +16,23 @@ function formatarDescricaoMissao(m) {
   return m.t;
 }
 
-// Garante que existam missões ativas após o reset.
+// Garante que a geração original seja chamada quando a lista estiver vazia.
 window.garantirMissoesIniciais = function () {
-  if (!Array.isArray(window.ativasMissoes)) return false;
-  if (ativasMissoes.length > 0) return true;
-
-  if (typeof gerarMissoes === "function") {
-    const resultado = gerarMissoes();
-
-    if (Array.isArray(resultado)) {
-      ativasMissoes = resultado;
-    }
+  if (!Array.isArray(ativasMissoes)) {
+    ativasMissoes = [];
   }
 
-  return ativasMissoes.length > 0;
+  if (ativasMissoes.length > 0) return;
+
+  if (typeof gerarMissoes === "function") {
+    gerarMissoes();
+  }
+
+  if (!Array.isArray(ativasMissoes)) {
+    ativasMissoes = [];
+  }
+
+  console.log("MISSÕES INICIAIS:", ativasMissoes.length);
 };
 
 window.openMissoes = function () {
