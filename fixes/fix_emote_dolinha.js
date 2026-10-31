@@ -1,9 +1,8 @@
-
 (function () {
   if (window.fixEmoteDolinhaAtivo) return;
   window.fixEmoteDolinhaAtivo = true;
 
-  console.log("FIX EMOTE DOLINHA CORRIGIDO");
+  console.log("FIX EMOTE DOLINHA - NOTIFICAÇÕES SINCRONIZADAS");
 
   function el(id) {
     return document.getElementById(id);
@@ -27,7 +26,9 @@
 
     if (typeof titulosLevel !== "undefined") {
       titulosLevel.forEach(t => {
-        if (level >= t.l) lista.push("LEVEL:" + t.n);
+        if (level >= t.l) {
+          lista.push("LEVEL:" + t.n);
+        }
       });
     }
 
@@ -93,6 +94,7 @@
       titulosDesbloqueados().length > 0 &&
       !tituloJaVisualizado();
 
+    // Avisos individuais.
     exibir("notifMissoes", temMissao);
     exibir("notifDesafios", temDesafio);
     exibir("notifConquistasMenu", temConquista);
@@ -100,10 +102,16 @@
     exibir("notifTitulosMenu", temTitulo);
     exibir("notifTituloHud", temTitulo);
 
-    const temAlgum = temMissao || temDesafio || temConquista || temTitulo;
+    // Aviso geral.
+    const temAlgum =
+      temMissao ||
+      temDesafio ||
+      temConquista ||
+      temTitulo;
 
     exibir("notifMenuGeral", temAlgum);
 
+    // Destaque nos botões.
     const btnMissoes = el("btnMissoes");
     const btnDesafios = el("btnDesafios");
 
@@ -118,8 +126,7 @@
 
   window.atualizarNotificacoes = atualizarEmotes;
 
-  // Selecionar qualquer título reconhece os títulos
-  // que já estavam desbloqueados naquele momento.
+  // Reconhece os títulos já visualizados.
   const selecionarOriginal = window.selecionarTitulo;
 
   if (typeof selecionarOriginal === "function") {
@@ -152,8 +159,9 @@
     };
   }
 
-  // Atualização periódica para detectar novos desbloqueios.
+  // Verifica novos avisos periodicamente.
   setInterval(atualizarEmotes, 1000);
 
   atualizarEmotes();
+
 })();
