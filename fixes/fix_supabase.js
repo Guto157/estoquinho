@@ -1,4 +1,5 @@
-// SUPABASE: LOGIN E SINCRONIZACAO COMPLETA
+
+// SUPABASE: LOGIN E SINCRONIZACAO COM PROTECAO DE VERSAO
 (async function () {
   const SUPABASE_URL = 'https://zhcckqekuzatugimezlk.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_Bd-vtxSYz23BH0L8k744SA_9t12A4dv';
@@ -31,6 +32,10 @@
   let saveTimer = null;
   let carregamentoConcluido = false;
   let salvamentoEmAndamento = false;
+
+  // CONTROLE DE VERSAO DA NUVEM
+  let versaoNuvem = 0;
+  let sincronizacaoBloqueada = false;
 
   const modal = document.getElementById('loginModal');
   const campoNome = document.getElementById('loginUser');
@@ -230,7 +235,6 @@
       ativasDesafios = progresso.ativasDesafios;
     }
 
-    // Atualiza a interface sem chamar carregarSave() ou novo().
     if (typeof renderSlots === 'function') {
       renderSlots();
     }
@@ -253,12 +257,13 @@
     });
   }
 
-  // SALVAR NA NUVEM
+  // SALVAR NA NUVEM COM CONTROLE DE VERSAO
   async function salvarNuvem() {
     if (
       !usuarioId ||
       !carregamentoConcluido ||
-      salvamentoEmAndamento
+      salvamentoEmAndamento ||
+      sincronizacaoBloqueada
     ) {
       return;
     }
@@ -266,29 +271,52 @@
     salvamentoEmAndamento = true;
 
     try {
-      const { data: registro, error: erroLeitura } = await sb
-        .from('game_saves')
-        .select('game_data')
-        .eq('user_id', usuarioId)
-        .maybeSingle();
-
-      if (erroLeitura) throw erroLeitura;
-
-      // Confere se o usuário continua sendo o mesmo.
-      if (!usuarioId || !currentUser) return;
-
       const dadosAtuais = dadosDoJogo();
-      const dadosNuvem = registro?.game_data || {};
 
-      // Protege os itens permanentes.
       const inventarioFinal = mesclarInventarios(
-        dadosNuvem.inv,
-        dadosNuvem.lojinhaPermanente,
         dadosAtuais.inv,
         dadosAtuais.lojinhaPermanente
       );
 
+      dadosAtuais.inv = inventarioFinal;
+      dadosAtuais.lojinhaPermanente = inventarioFinal;
       inv = inventarioFinal;
+
+      const { data, error } = await sb.rpc(
+        'save_game_if_version',
+        {
+          p_game_data: dadosAtuais,
+          p_expected_version: versaoNuvem
+        }
+      );
+
+      if (error) throw error;
+
+      const resultado = Array.isArray(data) ? data[0] : data;
+
+      if (!resultado?.saved) {
+        sincronizacaoBloqueada = true;
+
+        if (saveTimer) {
+          clearTimeout(saveTimer);
+          saveTimer = null;
+        }
+
+        console.error('CONFLITO DE SALVAMENTO:', {
+          versaoLocal: versaoNuvem,
+          versaoNuvemAtual: resultado?.current_version
+        });
+
+        alert(
+          'ATENÇÃO: outro dispositivo salvou um progresso mais recente. ' +
+          'Este dispositivo foi impedido de sobrescrever os dados. ' +
+          'Atualize a página para carregar o progresso mais recente.'
+        );
+
+        return;
+      }
+
+      versaoNuvem = Number(resultado.current_version);
 
       const chave = chaveInventario();
 
@@ -299,30 +327,16 @@
         );
       }
 
-      dadosAtuais.inv = inventarioFinal;
-      dadosAtuais.lojinhaPermanente = inventarioFinal;
-
-      const { error } = await sb
-        .from('game_saves')
-        .upsert({
-          user_id: usuarioId,
-          game_data: dadosAtuais,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) throw error;
-
       localStorage.setItem(
         'save_' + nomeJogador,
         JSON.stringify(dadosAtuais)
       );
 
-      console.log('SALVAMENTO NA NUVEM CONCLUÍDO:', {
+      console.log('SALVAMENTO PROTEGIDO CONCLUÍDO:', {
         money: dadosAtuais.money,
         day: dadosAtuais.day,
         level: dadosAtuais.level,
+        version: versaoNuvem,
         inventario: inventarioFinal
       });
 
@@ -334,7 +348,13 @@
   }
 
   function agendarSalvamentoNuvem() {
-    if (!usuarioId || !carregamentoConcluido) return;
+    if (
+      !usuarioId ||
+      !carregamentoConcluido ||
+      sincronizacaoBloqueada
+    ) {
+      return;
+    }
 
     if (saveTimer) clearTimeout(saveTimer);
 
@@ -390,6 +410,9 @@
     nomeJogador = nome || usuario.email.split('@')[0];
     currentUser = nomeJogador;
 
+    versaoNuvem = 0;
+    sincronizacaoBloqueada = false;
+
     if (saveTimer) {
       clearTimeout(saveTimer);
       saveTimer = null;
@@ -407,7 +430,7 @@
 
     const { data, error } = await sb
       .from('game_saves')
-      .select('game_data')
+      .select('game_data, version')
       .eq('user_id', usuarioId)
       .maybeSingle();
 
@@ -417,9 +440,11 @@
       return;
     }
 
+    // REGISTRA A VERSAO QUE ESTE DISPOSITIVO CARREGOU
+    versaoNuvem = Number(data?.version ?? 0);
+
     const chave = chaveInventario();
 
-    // LÊ O INVENTÁRIO LOCAL SEM USÁ-LO PARA SUBSTITUIR O PROGRESSO.
     const inventarioLocal = chave
       ? converterInventario(localStorage.getItem(chave))
       : {};
@@ -448,7 +473,6 @@
         progresso.lojinhaPermanente
       );
 
-      // Mescla somente o inventário permanente.
       const inventarioFinal = mesclarInventarios(
         inventarioNuvem,
         inventarioSaveLocal,
@@ -462,11 +486,8 @@
         );
       }
 
-      // NÃO CHAMA carregarSave() AQUI.
-      // Aplica os valores remotos diretamente.
       aplicarProgresso(progresso, inventarioFinal);
 
-      // Grava localmente exatamente o progresso carregado.
       const dadosCarregados = dadosDoJogo();
 
       localStorage.setItem(
@@ -480,7 +501,6 @@
 
     } else {
       // CONTA SEM PROGRESSO NA NUVEM.
-      // Nesse caso, aproveita o save local, se existir.
       if (saveLocal && Object.keys(saveLocal).length > 0) {
         const inventarioFinal = mesclarInventarios(
           inventarioSaveLocal,
@@ -511,7 +531,6 @@
       }
     }
 
-    // SÓ LIBERA O SALVAMENTO DEPOIS DE TERMINAR O CARREGAMENTO.
     carregamentoConcluido = true;
 
     modal.style.display = 'none';
@@ -522,6 +541,7 @@
       money,
       day,
       level,
+      version: versaoNuvem,
       inv
     });
   }
@@ -634,6 +654,8 @@
     nomeJogador = null;
     carregamentoConcluido = false;
     currentUser = null;
+    versaoNuvem = 0;
+    sincronizacaoBloqueada = false;
 
     localStorage.removeItem('currentUser');
 
@@ -682,6 +704,14 @@
       nomeJogador = null;
       carregamentoConcluido = false;
       currentUser = null;
+      versaoNuvem = 0;
+      sincronizacaoBloqueada = false;
+
+      if (saveTimer) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+      }
+
       modal.style.display = 'flex';
     }
   });
