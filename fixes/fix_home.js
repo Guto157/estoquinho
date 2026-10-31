@@ -1,6 +1,6 @@
 
-// fixes/fix_home.js - SISTEMA FINANCEIRO, DIÁLOGOS E SALVAMENTO
-console.log("FIX HOME - FINANCEIRO, DIÁLOGOS E GIROFLEX");
+// fixes/fix_home.js - FINANCEIRO, DIÁLOGOS, GIROFLEX E CLIENTE PERSISTENTE
+console.log("FIX HOME - SISTEMA COMPLETO ATUALIZADO");
 
 function fb(v,t){
  var m=document.getElementById('money');
@@ -38,7 +38,7 @@ const dialogosClientes = [
 ];
 
 // =====================================================
-// DIÁLOGOS DOS POLICIAIS DISFARÇADOS
+// DIÁLOGOS DOS POLICIAIS
 // =====================================================
 
 const dialogosPoliciais = [
@@ -60,7 +60,7 @@ const dialogosPoliciais = [
 ];
 
 // =====================================================
-// ESTILO DO BALÃO DE DIÁLOGO
+// ESTILO DO BALÃO E GIROFLEX
 // =====================================================
 
 (function(){
@@ -155,7 +155,7 @@ const dialogosPoliciais = [
 })();
 
 // =====================================================
-// EFEITO GIROFLEX
+// GIROFLEX POLICIAL
 // =====================================================
 
 window.giroflexPolicial=function(){
@@ -180,32 +180,28 @@ window.giroflexPolicial=function(){
 };
 
 // =====================================================
-// CONTROLE DE DIÁLOGOS
+// SISTEMA DE DIÁLOGOS
 // =====================================================
 
 window.obterDialogo=function(personagem){
  let lista=personagem.policia?dialogosPoliciais:dialogosClientes;
 
- // Cada personagem recebe seu próprio conjunto de 15 falas.
  if(!personagem._dialogosFixHome){
   let originais=Array.isArray(personagem.falas)?personagem.falas:[];
   let base=lista.slice();
 
-  // Inclui falas originais do personagem quando disponíveis.
   originais.forEach(function(f){
    if(typeof f==='string' && f.trim() && !base.includes(f)){
     base.push(f);
    }
   });
 
-  // Personaliza as falas com o nome do personagem.
   let nome=personagem.n || 'Cliente';
 
   let personalizadas=base.map(function(f){
    return f.replace(/\{nome\}/g,nome);
   });
 
-  // Embaralha e seleciona 15 falas diferentes.
   for(let i=personalizadas.length-1;i>0;i--){
    let j=Math.floor(Math.random()*(i+1));
    [personalizadas[i],personalizadas[j]]=
@@ -216,8 +212,6 @@ window.obterDialogo=function(personagem){
  }
 
  let falas=personagem._dialogosFixHome;
-
- // Evita repetir a última fala do mesmo personagem.
  let ultima=personagem._ultimaFalaFixHome;
  let disponiveis=falas.filter(f=>f!==ultima);
 
@@ -230,6 +224,37 @@ window.obterDialogo=function(personagem){
 };
 
 // =====================================================
+// MEMORIZAR O CLIENTE ATUAL
+// =====================================================
+
+window.chaveClienteAtual=function(){
+ return 'cliente_atual_'+currentUser;
+};
+
+window.salvarClienteAtual=function(){
+ if(!cur)return;
+
+ let dados={
+  nome:cur.n,
+  policia:!!cur.policia,
+  dialogo:window.dialogoAtual,
+  pedeAtual:cur.pedeAtual,
+  voltaAtual:cur.voltaAtual,
+  voltaJurosAtual:cur.voltaJurosAtual,
+  chanceAtual:cur.chanceAtual
+ };
+
+ localStorage.setItem(
+  window.chaveClienteAtual(),
+  JSON.stringify(dados)
+ );
+};
+
+window.limparClienteAtual=function(){
+ localStorage.removeItem(window.chaveClienteAtual());
+};
+
+// =====================================================
 // CONTROLES GERAIS
 // =====================================================
 
@@ -239,7 +264,7 @@ window.vezNegar=0;
 window.travado=false;
 
 // =====================================================
-// NOVO CLIENTE
+// NOVO CLIENTE COM RECUPERAÇÃO APÓS F5
 // =====================================================
 
 window.novo=function(){
@@ -248,28 +273,93 @@ window.novo=function(){
  let c=document.getElementById('choices');
  if(c)c.style.pointerEvents='auto';
 
- let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
- let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
+ let salvo=null;
 
- if(d.length==0){
-  usado={};
-  d=l;
+ try{
+  salvo=JSON.parse(
+   localStorage.getItem(window.chaveClienteAtual())
+  );
+ }catch(e){
+  salvo=null;
  }
 
- let np=d[Math.floor(Math.random()*d.length)];
+ let np=null;
 
- if(usado._ultimo&&d.length>1){
-  let t=0;
-  while(np.n===usado._ultimo&&t<10){
-   np=d[Math.floor(Math.random()*d.length)];
-   t++;
+ // Tenta recuperar o mesmo cliente.
+ if(salvo){
+  let lista=salvo.policia?policiaisDisfarcados:personagensComuns;
+
+  np=lista.find(p=>p.n===salvo.nome);
+
+  if(np){
+   cur=np;
+
+   cur.pedeAtual=salvo.pedeAtual;
+   cur.voltaAtual=salvo.voltaAtual;
+   cur.voltaJurosAtual=salvo.voltaJurosAtual;
+   cur.chanceAtual=salvo.chanceAtual;
+
+   window.dialogoAtual=salvo.dialogo;
   }
  }
 
- cur=np;
- usado[cur.n]=(usado[cur.n]||0)+1;
- usado._ultimo=cur.n;
+ // Se não encontrou cliente salvo, sorteia um novo.
+ if(!np){
+  let l=Math.random()<0.15?policiaisDisfarcados:personagensComuns;
 
+  let d=l.filter(p=>!usado[p.n]||usado[p.n]<4);
+
+  if(d.length==0){
+   usado={};
+   d=l;
+  }
+
+  np=d[Math.floor(Math.random()*d.length)];
+
+  if(usado._ultimo&&d.length>1){
+   let t=0;
+
+   while(np.n===usado._ultimo&&t<10){
+    np=d[Math.floor(Math.random()*d.length)];
+    t++;
+   }
+  }
+
+  cur=np;
+
+  usado[cur.n]=(usado[cur.n]||0)+1;
+  usado._ultimo=cur.n;
+
+  let f=window.obterDialogo(cur);
+  window.dialogoAtual=f;
+
+  let base=40+(level*18)+(day*2);
+  let rm=cur.r=='BAIXO'?0.9:cur.r=='MÉDIO'?1.15:1.35;
+  let vr=0.85+Math.random()*0.3;
+  let pc=Math.floor(base*rm*vr);
+
+  let max=Math.floor(money*0.7);
+  if(max<20)max=20;
+  if(pc>max)pc=max;
+  if(pc<15)pc=15;
+
+  let bl=getTotalLucroBonus();
+  let vc=Math.floor(pc*2*(1+bl/100));
+  let vcJuros=Math.floor(pc*2*1.10*(1+bl/100));
+
+  let df=Math.floor(level*0.7+day*0.15);
+  let cc=Math.max(5,cur.c-df);
+
+  cur.pedeAtual=pc;
+  cur.voltaAtual=vc;
+  cur.voltaJurosAtual=vcJuros;
+  cur.chanceAtual=cc;
+
+  // Salva cliente, diálogo e valores para sobreviver ao F5.
+  window.salvarClienteAtual();
+ }
+
+ // Atualiza a apresentação.
  document.getElementById('clienteAvatar').innerText=cur.sig;
  document.getElementById('clienteAvatar').style.background=cur.cor;
 
@@ -280,46 +370,24 @@ window.novo=function(){
  document.getElementById('tag').innerText=cur.r;
  document.getElementById('tag').style.background=cb;
 
- // NOVO SISTEMA DE DIÁLOGOS
- let f=window.obterDialogo(cur);
+ document.getElementById('hist').innerText=window.dialogoAtual;
+ document.getElementById('bubble').innerText='"'+window.dialogoAtual+'"';
 
- document.getElementById('hist').innerText=f;
- document.getElementById('bubble').innerText='"'+f+'"';
-
- let base=40+(level*18)+(day*2);
- let rm=cur.r=='BAIXO'?0.9:cur.r=='MÉDIO'?1.15:1.35;
- let vr=0.85+Math.random()*0.3;
- let pc=Math.floor(base*rm*vr);
-
- let max=Math.floor(money*0.7);
- if(max<20)max=20;
- if(pc>max)pc=max;
- if(pc<15)pc=15;
-
- let bl=getTotalLucroBonus();
- let vc=Math.floor(pc*2*(1+bl/100));
- let vcJuros=Math.floor(pc*2*1.10*(1+bl/100));
- let df=Math.floor(level*0.7+day*0.15);
- let cc=Math.max(5,cur.c-df);
-
- cur.pedeAtual=pc;
- cur.voltaAtual=vc;
- cur.voltaJurosAtual=vcJuros;
- cur.chanceAtual=cc;
-
- document.getElementById('pede').innerText='R$'+pc;
- document.getElementById('volta').innerText='R$'+vc;
- document.getElementById('chance').innerText=cc+'%';
+ document.getElementById('pede').innerText='R$'+cur.pedeAtual;
+ document.getElementById('volta').innerText='R$'+cur.voltaAtual;
+ document.getElementById('chance').innerText=cur.chanceAtual+'%';
 
  let div=document.getElementById('choices');
  div.innerHTML='';
 
- let tn=window.vezNegar===0?'❌ NEGAR<small>Grátis</small>':'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
+ let tn=window.vezNegar===0
+  ?'❌ NEGAR<small>Grátis</small>'
+  :'❌ NEGAR<small>Paga R$'+window.taxaNegarAtual+'</small>';
 
  let ops=[
-  {t:'💵 EMPRESTAR R$'+pc,d:'Recebe R$'+vc,c:'amarelo',a:'emprestar'},
+  {t:'💵 EMPRESTAR R$'+cur.pedeAtual,d:'Recebe R$'+cur.voltaAtual,c:'amarelo',a:'emprestar'},
   {t:tn,d:'Evita calote',c:'branco',a:'negar'},
-  {t:'😈 JUROS R$'+vcJuros,d:'Recebe R$'+vcJuros,c:'preto',a:'juros'}
+  {t:'😈 JUROS R$'+cur.voltaJurosAtual,d:'Recebe R$'+cur.voltaJurosAtual,c:'preto',a:'juros'}
  ];
 
  ops.forEach(o=>{
@@ -350,7 +418,10 @@ window.jogar=function(tipo){
   return;
  }
 
+ // NEGAR CLIENTE
  if(tipo=='negar'){
+  window.limparClienteAtual();
+
   let desc=(window.vezNegar===0)?0:window.taxaNegarAtual;
   money-=desc;
 
@@ -379,6 +450,10 @@ window.jogar=function(tipo){
   return;
  }
 
+ // A PARTIR DAQUI O JOGADOR ESCOLHEU EMPRESTAR.
+ // O CLIENTE ANTERIOR NÃO DEVE VOLTAR APÓS ATUALIZAR.
+ window.limparClienteAtual();
+
  if(window.taxaNegarAtual>0){
   window.taxaNegarAtual=Math.max(0,window.taxaNegarAtual-5);
   window.incNegar=Math.max(5,window.incNegar-5);
@@ -389,8 +464,8 @@ window.jogar=function(tipo){
   }
  }
 
+ // POLICIAL DISFARÇADO
  if(cur.policia){
-  // O GIROFLEX SÓ APARECE DEPOIS DO CLIQUE.
   window.giroflexPolicial();
 
   usado._policia=(usado._policia||0)+1;
@@ -411,6 +486,7 @@ window.jogar=function(tipo){
   return;
  }
 
+ // CLIENTE COMUM
  let peBase=cur.pedeAtual;
  let de=cur.voltaAtual;
 
@@ -456,7 +532,6 @@ window.jogar=function(tipo){
   novo();
 
  }else{
-  // Calote: o principal já foi descontado.
   fame=Math.max(0,fame-0.5);
   seq=0;
   pendentePerda=peBase;
@@ -532,7 +607,6 @@ window.recompensaLiberada=function(){
  }
 
  if(pendenteTipo=='gameoverBanco'){
-  // Ao assistir o vídeo na falência, o caixa volta exatamente para R$300.
   money=300;
   document.getElementById('gameOver').style.display='none';
   check();
@@ -554,6 +628,8 @@ window.falencia=function(){
  window.travado=false;
  valorNegar=25;
 
+ window.limparClienteAtual();
+
  let c=document.getElementById('choices');
  if(c)c.style.pointerEvents='auto';
 
@@ -572,6 +648,8 @@ window.restartFull=function(){
  fame=1;
  level=1;
  usado={};
+
+ window.limparClienteAtual();
 
  window.travado=false;
  window.taxaNegarAtual=0;
